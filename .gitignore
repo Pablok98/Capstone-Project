@@ -127,3 +127,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Pycharm
+*.idea
+.idea
+
+# Local repo stuff
+extras
+extras/*
