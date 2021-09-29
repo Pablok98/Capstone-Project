@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from time import sleep
-from entities import Laborer, Bin, Truck, Crate
+from entities import *
 from sim import SimulationObject
 
 
@@ -120,11 +120,4 @@ class Lot(SimulationObject):
             'descargar_bin': self.carga_bin
         }
         metodos[evento]()
-
-
-class Plant:
-    def __init__(self):
-        pass
-
-
 

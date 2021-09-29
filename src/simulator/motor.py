@@ -3,8 +3,9 @@ from random import expovariate, randint, uniform, seed
 from datetime import datetime, timedelta
 from time import sleep
 
-from entities import Laborer, MotorDriver, TruckDriver, Truck, Hopper, Bin, Harvester
-from sites import Lot, Plant
+from entities import *
+from sites import *
+
 from sim import SimulationObject
 
 
