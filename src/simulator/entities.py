@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 
 
 class Laborer:
@@ -20,9 +21,28 @@ class Bin:
 
         self.carga_actual = 0
 
+        self.tiempo_descarga = None
+
     @property
     def lleno(self):
         return self.carga_actual == self.carga_maxima
+
+
+class Truck:
+    _id = 0
+
+    def __init__(self, tipo, tolva, bines):
+        Truck._id += 1
+        self.tipo = tipo
+        self.cap_tolva = tolva
+        self.cap_bines = bines
+
+        self.carros = []
+        self.bines = []
+
+    @property
+    def lleno(self):
+        return not len(self.bines) < self.cap_bines
 
 
 class MotorDriver:
@@ -35,14 +55,13 @@ class TruckDriver:
         pass
 
 
-class Truck:
-    def __init__(self):
-        pass
+
 
 
 class Hopper:
     def __init__(self):
         pass
+
 
 class Harvester:
     def __init__(self):

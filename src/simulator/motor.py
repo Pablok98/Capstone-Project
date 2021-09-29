@@ -23,10 +23,8 @@ class Wine:
         print(f"El jornalero {jornalero._id} fue asignado al lote {lote}")
         self.lotes[lote].jornaleros.append(jornalero)
 
-
     def run(self):
         pass
-
 
     def poblar(self):
         self.lotes['u_1_8'] = Lot('u_1_8', 8, 58000, 118, 231)
