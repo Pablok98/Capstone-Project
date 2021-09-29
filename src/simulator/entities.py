@@ -21,7 +21,7 @@ class Bin:
 
         self.carga_actual = 0
 
-        self.tiempo_descarga = None
+        self.tiempo_carga = None
 
     @property
     def lleno(self):
