@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from time import sleep
-from entities import Laborer, Bin, Truck
+from entities import Laborer, Bin, Truck, Crate
 from sim import SimulationObject
 
 
@@ -11,7 +11,7 @@ class Lot(SimulationObject):
         self.cantidad = ctd_uva
         self.dia_optimo = dia
 
-        self.lloviendo = False
+        self.lloviendo = 0
 
         self.fin_jornada = datetime(2021, 1, 1, hour=18, minute=0, second=0)
 
@@ -21,7 +21,6 @@ class Lot(SimulationObject):
         self.bines = []
         self.camiones = []
 
-
     def generar_tiempo_cajon(self):
         """
         Calcula el tiempo en que se llenará el próximo cajon (fecha)
@@ -29,7 +28,7 @@ class Lot(SimulationObject):
         tasa = 0
         for jornalere in self.jornaleros:
             tasa += jornalere.velocidad_cosecha
-        tiempo = 60*24*18 / tasa
+        tiempo = 60*24*18 / (tasa - (tasa * 0.3 * self.lloviendo))
         self.tiempo_proximo_cajon = SimulationObject.tiempo_actual + timedelta(minutes=tiempo)
 
     @property
@@ -97,16 +96,18 @@ class Lot(SimulationObject):
         self.generar_tiempo_cajon()
 
         _bin = self.proximo_bin_vacio
-        _bin.carga_actual += 1
+        _bin.cajones.append(Crate(self.tipo_uva))
 
         print(f"{self.nombre} - Se lleno un nuevo cajon a la hora {SimulationObject.tiempo_actual}")
 
-    def descarga_bin(self):
+    def carga_bin(self):
         """
         Se carga el bin al camión y se elimina de la lista de bines. Se actualiza el tiempo.
         """
         SimulationObject.tiempo_actual = self.tiempo_proximo_bin
-        self.bines.pop(0)
+        _bin = self.bines.pop(0)
+        camion = self.proximo_camion_vacio
+        camion.bines.append(_bin)
 
         print(f"{self.nombre} -Se descargó un bin a la hora {SimulationObject.tiempo_actual}")
 
@@ -116,7 +117,7 @@ class Lot(SimulationObject):
     def resolver_evento(self, evento):
         metodos = {
             'llenar_cajon': self.cajon_lleno,
-            'descargar_bin': self.descarga_bin
+            'descargar_bin': self.carga_bin
         }
         metodos[evento]()
 

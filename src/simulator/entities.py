@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from sim import SimulationObject
 
 
 class Laborer:
@@ -12,20 +13,28 @@ class Laborer:
         self.dias_trabajando = None
 
 
+class Crate(SimulationObject):  # (cajon)
+    _id = 0
+
+    def __init__(self, uva):
+        Crate._id += 1
+        self.tipo_uva = uva
+        self.hora_cosechada = SimulationObject.tiempo_actual
+
+
 class Bin:
     _id = 0
 
     def __init__(self):
         Bin._id += 1
+
+        self.cajones = []
         self.carga_maxima = 27
-
-        self.carga_actual = 0
-
         self.tiempo_carga = None
 
     @property
     def lleno(self):
-        return self.carga_actual == self.carga_maxima
+        return len(self.cajones) == self.carga_maxima
 
 
 class Truck:
@@ -53,9 +62,6 @@ class MotorDriver:
 class TruckDriver:
     def __init__(self):
         pass
-
-
-
 
 
 class Hopper:

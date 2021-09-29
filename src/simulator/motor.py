@@ -20,6 +20,9 @@ class Wine(SimulationObject):
         self.lotes[lote].jornaleros.append(jornalero)
 
     def poblar(self):
+        """
+        Asigna jornaleros y camiones a los lotes
+        """
         self.lotes['u_1_8'] = Lot('u_1_8', 8, 58000, 118)
         self.lotes['u_1_8'].jornaleros.append(Laborer())
         self.lotes['u_1_8'].jornaleros.append(Laborer())
@@ -34,8 +37,9 @@ class Wine(SimulationObject):
         self.lotes['u_1_9'].instanciar()
 
     def run(self):
+        # Placeholder lluvia
         for lote in self.lotes.values():
-            lote.lloviendo = randint(0, 1) == 1
+            lote.lloviendo = randint(0, 1)
 
         while SimulationObject.tiempo_actual < self.fin_jornada:
             eventos = {}
@@ -44,8 +48,7 @@ class Wine(SimulationObject):
                 eventos[lot] = {'event': evento, 'tiempo': tiempo}
             prox_lote = min(eventos, key=lambda x: eventos[x]['tiempo'])
             self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
-            sleep(0.15)
-
+            sleep(0.1)
 
 
 
