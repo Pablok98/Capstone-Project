@@ -23,6 +23,9 @@ class Lot(SimulationObject):
 
 
     def generar_tiempo_cajon(self):
+        """
+        Calcula el tiempo en que se llenará el próximo cajon (fecha)
+        """
         tasa = 0
         for jornalere in self.jornaleros:
             tasa += jornalere.velocidad_cosecha
@@ -44,8 +47,11 @@ class Lot(SimulationObject):
 
     @property
     def proximo_bin_vacio(self):
+        """
+        Retorna el proximo bin vacío para ocupar
+        """
         if not self.bines:
-            self.bines.append(Bin())
+            self.bines.append(Bin())  # agregar restriccion de bines(?)
         _bin = self.bines[-1]
         if _bin.lleno:
             _bin = Bin()
@@ -54,6 +60,10 @@ class Lot(SimulationObject):
 
     @property
     def tiempo_proximo_bin(self):
+        """
+        Retorna el tiempo en que se carga el próximo bin (fecha)
+        """
+        # Si es que hay bines y el último está lleno (si no, nada se va a descargar)
         if self.bines and self.bines[0].lleno:
             # Si es que no hemos definido aun un tiempo de descarga
             if not self.bines[0].tiempo_carga:
@@ -70,6 +80,9 @@ class Lot(SimulationObject):
 
     @property
     def proximo_camion_vacio(self):
+        """
+        Retorna el proximo camión vacío
+        """
         for camion in self.camiones:
             if not camion.lleno:
                 return camion
