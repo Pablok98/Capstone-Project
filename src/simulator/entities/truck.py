@@ -9,7 +9,9 @@ class Truck:
 
         self.planta_asignada = None
 
-        self.carros = []
+        self.de_bin = True
+
+        self.tolvas = []
         self.bines = []
 
     @property
@@ -19,6 +21,10 @@ class Truck:
     @property
     def tiene_contenido(self):
         return self.bines != []
+
+    @property
+    def espacio_tolva(self):
+        return len(self.tolvas) < self.cap_tolva
 
     def descargar(self):
         if self.tiene_contenido:

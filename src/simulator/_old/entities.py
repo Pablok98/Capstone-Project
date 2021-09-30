@@ -9,9 +9,6 @@ class TruckDriver:
         pass
 
 
-class Hopper:
-    def __init__(self):
-        pass
 
 
 class LiftTruck:

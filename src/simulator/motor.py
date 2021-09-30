@@ -37,11 +37,13 @@ class Wine(SimulationObject):
         self.lotes['u_1_8'].jornaleros.append(Laborer())
         self.lotes['u_1_8'].jornaleros.append(Laborer())
         camion = Truck("A", 2, 2)
+        camion.de_bin = False
+        self.lotes['u_1_8'].tolvas.append(Hopper())
         camion.planta_asignada = 'P1'
         self.lotes['u_1_8'].camiones.append(camion)
         self.lotes['u_1_8'].cosechadoras.append(Harvester())
         self.lotes['u_1_8'].instanciar()
-
+        """
         self.lotes['u_1_9'] = Lot('u_1_9', '3', 58000, 4)
         self.lotes['u_1_9'].jornaleros.append(Laborer())
         self.lotes['u_1_9'].jornaleros.append(Laborer())
@@ -53,7 +55,7 @@ class Wine(SimulationObject):
         camion.planta_asignada = 'P1'
         self.lotes['u_1_9'].camiones.append(camion)
         self.lotes['u_1_9'].instanciar()
-
+        """
     def run(self):
         # Placeholder lluvia
         for lote in self.lotes.values():
@@ -68,6 +70,7 @@ class Wine(SimulationObject):
             retorno = self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
             if retorno:
                 self.plantas[retorno.planta_asignada].descargar_camion(retorno)
+            sleep(1)
         for planta in self.plantas.values():
             planta.procesar_dia()
 

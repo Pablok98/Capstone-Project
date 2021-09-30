@@ -18,10 +18,15 @@ class Lot(SimulationObject):
         self.tiempo_proximo_cajon = None
         self.tiempo_proximo_binlleno = None
 
+        self.tolva_a_enganchar = None
+
         self.jornaleros = []
         self.cosechadoras = []
         self.bines = []
         self.camiones = []
+        self.tolvas = []
+
+        self.flag_bin = True
 
     def generar_tiempo_cajon(self):
         """
@@ -55,10 +60,11 @@ class Lot(SimulationObject):
             self.tiempo_proximo_cajon,
             self.tiempo_proximo_bin,
             self.tiempo_proximo_camion,
-            self.tiempo_proximo_binlleno
+            self.tiempo_proximo_binlleno,
+            self.tiempo_proximo_tolva
         ]
         tiempo_prox_evento = min(tiempos)
-        eventos = ['llenar_cajon', 'cargar_bin', 'salida_camion', 'bin_lleno']
+        eventos = ['llenar_cajon', 'cargar_bin', 'salida_camion', 'bin_lleno', 'enganchar_tolva']
         return self.nombre, eventos[tiempos.index(tiempo_prox_evento)], tiempo_prox_evento
 
     @property
@@ -104,15 +110,48 @@ class Lot(SimulationObject):
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
     @property
+    def tiempo_proximo_tolva(self):
+        for tolva in self.tolvas:
+            if tolva.lleno:
+                hora = tolva.tiempo_transporte
+                self.tolva_a_enganchar = tolva
+                if hora:
+                    return hora
+                tolva.tiempo_transporte = SimulationObject.tiempo_actual + timedelta(minutes=15)
+                return tolva.tiempo_transporte
+        return datetime(3000, 1, 1, hour=6, minute=0, second=0)
+
+    @property
     def proximo_camion_vacio(self):
         """
-        Retorna el proximo camión vacío
+        Retorna el proximo camión que tiene espacio para un bin
         """
         for camion in self.camiones:
-            if not camion.lleno:
+            if not camion.lleno and camion.de_bin:
                 return camion
         print("No hay camiones con espacio disponible!")
         return None
+
+    @property
+    def a_cargar(self):
+        t_flag = False
+        b_flag = False
+        for camion in self.camiones:
+            if camion.de_bin:
+                b_flag = True
+            else:
+                t_flag = True
+            if t_flag and b_flag:
+                break
+        else:
+            self.flag_bin = b_flag
+        if not self.flag_bin and self.tolvas:
+            for tolva in self.tolvas:
+                if not tolva.lleno:
+                    return tolva
+            return tolva
+        self.flag_bin = not self.flag_bin
+        return self.proximo_bin_vacio
 
     def cajon_lleno(self):
         """
@@ -120,11 +159,10 @@ class Lot(SimulationObject):
         """
         SimulationObject.tiempo_actual = self.tiempo_proximo_cajon
         self.generar_tiempo_cajon()
-
-        _bin = self.proximo_bin_vacio
-
+        lugar_a_cargar = self.a_cargar
         delta_optimo = SimulationObject.tiempo_actual - self.dia_optimo
-        _bin.cajones.append(Crate(self.tipo_uva, delta_optimo))
+        cajon = Crate(self.tipo_uva, delta_optimo)
+        lugar_a_cargar.cargar_cajon(cajon)
 
         print(f"{self.nombre} - Se lleno un nuevo cajon a la hora {SimulationObject.tiempo_actual}")
 
@@ -132,7 +170,7 @@ class Lot(SimulationObject):
         """
         Se carga el bin al camión y se elimina de la lista de bines. Se actualiza el tiempo.
         """
-        SimulationObject.tiempo_actual = self.tiempo_proximo_bin
+        SimulationObject.tiempo_actual = self.tiempo_proximo_binlleno
         _bin = self.bines.pop(0)
         camion = self.proximo_camion_vacio
         camion.bines.append(_bin)
@@ -154,6 +192,7 @@ class Lot(SimulationObject):
                 return self.camiones.pop(i)
 
     def llenar_bin(self):
+        SimulationObject.tiempo_actual = self.tiempo_proximo_cajon
         self.generar_tiempo_bin()
         delta_optimo = SimulationObject.tiempo_actual - self.dia_optimo
         _bin = Bin()
@@ -162,12 +201,27 @@ class Lot(SimulationObject):
 
         print(f"{self.nombre} -Se llenó (automatico) un bin a la hora {SimulationObject.tiempo_actual}")
 
+    def enganchar_tolva(self):
+        SimulationObject.tiempo_actual = self.tolva_a_enganchar.tiempo_transporte
+        for camion in self.camiones:
+            if not camion.de_bin and camion.espacio_tolva:
+                print(f"{self.nombre} - Se enganchó el tolva {self.tolva_a_enganchar._id} al camion {camion._id} a las {SimulationObject.tiempo_actual}")
+
+                camion.tolvas.append(self.tolva_a_enganchar)
+                self.tolvas.pop(self.tolvas.index(self.tolva_a_enganchar))
+                self.tolva_a_enganchar = None
+                break
+        else:
+            print(f"{self.nombre} - Hay un carro tolva que no se puede enganchar")
+            self.tolva_a_enganchar.tiempo_transporte = None
+
     def resolver_evento(self, evento):
         metodos = {
             'llenar_cajon': self.cajon_lleno,
             'cargar_bin': self.carga_bin,
             'salida_camion': self.salida_camion,
-            'bin_lleno': self.llenar_bin
+            'bin_lleno': self.llenar_bin,
+            'enganchar_tolva': self.enganchar_tolva
         }
         return metodos[evento]()
 

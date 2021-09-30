@@ -15,6 +15,9 @@ class Bin:
     def lleno(self):
         return len(self.cajones) == self.carga_maxima
 
+    def cargar_cajon(self, cajon):
+        self.cajones.append(cajon)
+
     def descargar(self):
         """
         Retorna los kilos y la calidad promedio del bin
