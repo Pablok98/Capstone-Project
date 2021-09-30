@@ -9,15 +9,17 @@ class Lot(SimulationObject):
         self.nombre = nombre
         self.tipo_uva = uva
         self.cantidad = ctd_uva
-        self.dia_optimo = dia
+        self.dia_optimo = SimulationObject.tiempo_actual + timedelta(days=dia-1)
 
         self.lloviendo = 0
 
         self.fin_jornada = datetime(2021, 1, 1, hour=18, minute=0, second=0)
 
         self.tiempo_proximo_cajon = None
+        self.tiempo_proximo_binlleno = None
 
         self.jornaleros = []
+        self.cosechadoras = []
         self.bines = []
         self.camiones = []
 
@@ -25,11 +27,24 @@ class Lot(SimulationObject):
         """
         Calcula el tiempo en que se llenará el próximo cajon (fecha)
         """
+        if not self.jornaleros:
+            self.tiempo_proximo_cajon = datetime(3000, 1, 1, hour=6, minute=0, second=0)
+            return
         tasa = 0
         for jornalere in self.jornaleros:
             tasa += jornalere.velocidad_cosecha
         tiempo = 60*24*18 / (tasa - (tasa * 0.3 * self.lloviendo))
         self.tiempo_proximo_cajon = SimulationObject.tiempo_actual + timedelta(minutes=tiempo)
+
+    def generar_tiempo_bin(self):
+        if not self.cosechadoras:
+            self.tiempo_proximo_binlleno = datetime(3000, 1, 1, hour=6, minute=0, second=0)
+            return
+        tasa = 0
+        for cosechadore in self.cosechadoras:
+            tasa += cosechadore.velocidad_cosecha
+        tiempo = 60*486 / (tasa - (tasa * 0.6 * self.lloviendo))
+        self.tiempo_proximo_binlleno = SimulationObject.tiempo_actual + timedelta(minutes=tiempo)
 
     @property
     def proximo_evento(self):
@@ -38,10 +53,12 @@ class Lot(SimulationObject):
         """
         tiempos = [
             self.tiempo_proximo_cajon,
-            self.tiempo_proximo_bin
+            self.tiempo_proximo_bin,
+            self.tiempo_proximo_camion,
+            self.tiempo_proximo_binlleno
         ]
         tiempo_prox_evento = min(tiempos)
-        eventos = ['llenar_cajon', 'descargar_bin']
+        eventos = ['llenar_cajon', 'cargar_bin', 'salida_camion', 'bin_lleno']
         return self.nombre, eventos[tiempos.index(tiempo_prox_evento)], tiempo_prox_evento
 
     @property
@@ -53,6 +70,8 @@ class Lot(SimulationObject):
             self.bines.append(Bin())  # agregar restriccion de bines(?)
         _bin = self.bines[-1]
         if _bin.lleno:
+            print(
+                f"{self.nombre} -Se llenó (manual) un bin a la hora {SimulationObject.tiempo_actual}")
             _bin = Bin()
             self.bines.append(_bin)
         return _bin
@@ -78,6 +97,13 @@ class Lot(SimulationObject):
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
     @property
+    def tiempo_proximo_camion(self):
+        for camion in self.camiones:
+            if camion.lleno:
+                return SimulationObject.tiempo_actual
+        return datetime(3000, 1, 1, hour=6, minute=0, second=0)
+
+    @property
     def proximo_camion_vacio(self):
         """
         Retorna el proximo camión vacío
@@ -96,7 +122,9 @@ class Lot(SimulationObject):
         self.generar_tiempo_cajon()
 
         _bin = self.proximo_bin_vacio
-        _bin.cajones.append(Crate(self.tipo_uva))
+
+        delta_optimo = SimulationObject.tiempo_actual - self.dia_optimo
+        _bin.cajones.append(Crate(self.tipo_uva, delta_optimo))
 
         print(f"{self.nombre} - Se lleno un nuevo cajon a la hora {SimulationObject.tiempo_actual}")
 
@@ -109,15 +137,37 @@ class Lot(SimulationObject):
         camion = self.proximo_camion_vacio
         camion.bines.append(_bin)
 
-        print(f"{self.nombre} -Se descargó un bin a la hora {SimulationObject.tiempo_actual}")
+        print(f"{self.nombre} -Se cargó un bin a la hora {SimulationObject.tiempo_actual}")
 
     def instanciar(self):
         self.generar_tiempo_cajon()
+        self.generar_tiempo_bin()
+
+    def salida_camion(self):
+        """
+        Se despacha camión y se eliminca de la lista de camiones disp.
+        """
+        for i, camion in enumerate(self.camiones):
+            if camion.lleno:
+                print(
+                    f"{self.nombre} - Se despachó un camión a la hora {SimulationObject.tiempo_actual}")
+                return self.camiones.pop(i)
+
+    def llenar_bin(self):
+        self.generar_tiempo_bin()
+        delta_optimo = SimulationObject.tiempo_actual - self.dia_optimo
+        _bin = Bin()
+        _bin.llenar(self.tipo_uva, delta_optimo)
+        self.bines.insert(0, _bin)
+
+        print(f"{self.nombre} -Se llenó (automatico) un bin a la hora {SimulationObject.tiempo_actual}")
 
     def resolver_evento(self, evento):
         metodos = {
             'llenar_cajon': self.cajon_lleno,
-            'descargar_bin': self.carga_bin
+            'cargar_bin': self.carga_bin,
+            'salida_camion': self.salida_camion,
+            'bin_lleno': self.llenar_bin
         }
-        metodos[evento]()
+        return metodos[evento]()
 

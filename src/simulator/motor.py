@@ -24,17 +24,34 @@ class Wine(SimulationObject):
         """
         Asigna jornaleros y camiones a los lotes
         """
-        self.lotes['u_1_8'] = Lot('u_1_8', 8, 58000, 118)
+        self.plantas['P1'] = Plant('P1', 2500000, 150000, 50000, 40000)
+
+        self.lotes['u_1_8'] = Lot('u_1_8', '1', 58000, 1)
         self.lotes['u_1_8'].jornaleros.append(Laborer())
         self.lotes['u_1_8'].jornaleros.append(Laborer())
         self.lotes['u_1_8'].jornaleros.append(Laborer())
-        self.lotes['u_1_8'].camiones.append(Truck("A", 2, 36))
+        self.lotes['u_1_8'].jornaleros.append(Laborer())
+        self.lotes['u_1_8'].jornaleros.append(Laborer())
+        self.lotes['u_1_8'].jornaleros.append(Laborer())
+        self.lotes['u_1_8'].jornaleros.append(Laborer())
+        self.lotes['u_1_8'].jornaleros.append(Laborer())
+        self.lotes['u_1_8'].jornaleros.append(Laborer())
+        camion = Truck("A", 2, 2)
+        camion.planta_asignada = 'P1'
+        self.lotes['u_1_8'].camiones.append(camion)
+        self.lotes['u_1_8'].cosechadoras.append(Harvester())
         self.lotes['u_1_8'].instanciar()
 
-        self.lotes['u_1_9'] = Lot('u_1_9', 8, 58000, 118)
+        self.lotes['u_1_9'] = Lot('u_1_9', '3', 58000, 4)
         self.lotes['u_1_9'].jornaleros.append(Laborer())
         self.lotes['u_1_9'].jornaleros.append(Laborer())
-        self.lotes['u_1_9'].camiones.append(Truck("A", 2, 36))
+        self.lotes['u_1_9'].jornaleros.append(Laborer())
+        self.lotes['u_1_9'].jornaleros.append(Laborer())
+        self.lotes['u_1_9'].jornaleros.append(Laborer())
+        self.lotes['u_1_9'].jornaleros.append(Laborer())
+        camion = Truck("A", 2, 2)
+        camion.planta_asignada = 'P1'
+        self.lotes['u_1_9'].camiones.append(camion)
         self.lotes['u_1_9'].instanciar()
 
     def run(self):
@@ -48,9 +65,11 @@ class Wine(SimulationObject):
                 lot, evento, tiempo = lote.proximo_evento
                 eventos[lot] = {'event': evento, 'tiempo': tiempo}
             prox_lote = min(eventos, key=lambda x: eventos[x]['tiempo'])
-            self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
-            sleep(0.1)
-
+            retorno = self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
+            if retorno:
+                self.plantas[retorno.planta_asignada].descargar_camion(retorno)
+        for planta in self.plantas.values():
+            planta.procesar_dia()
 
 
 if __name__ == "__main__":
