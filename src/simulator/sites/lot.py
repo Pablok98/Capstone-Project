@@ -148,8 +148,8 @@ class Lot(SimulationObject):
         if not self.flag_bin and self.tolvas:
             for tolva in self.tolvas:
                 if not tolva.lleno:
+                    self.flag_bin = not self.flag_bin
                     return tolva
-            return tolva
         self.flag_bin = not self.flag_bin
         return self.proximo_bin_vacio
 
