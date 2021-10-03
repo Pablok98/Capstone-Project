@@ -1,6 +1,8 @@
 import pandas as pd
 from random import randint
 
+from os.path import join
+
 
 def simulate_rain(lot_frame, time_range):
     rain_data = []
@@ -15,3 +17,8 @@ def simulate_rain(lot_frame, time_range):
             resultado = 1 if (randint(0, 100)/100 < rain_prob) else 0
             rain_data[index][f'day {day + 1}'] = resultado
     return rain_data
+
+
+def read_data():
+    df = pd.read_excel(join('..', 'data', 'lluvia_generada.xlsx'))
+    return df
