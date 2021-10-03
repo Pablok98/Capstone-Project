@@ -16,11 +16,18 @@ class Truck:
 
     @property
     def lleno(self):
-        return not len(self.bines) < self.cap_bines
+        if self.de_bin:
+            return not len(self.bines) < self.cap_bines
+        return not len(self.tolvas) < self.cap_tolva
 
     @property
     def tiene_contenido(self):
-        return self.bines != []
+        if self.de_bin:
+            return self.bines != []
+        for tolva in self.tolvas:
+            if tolva.tiene_contenido:
+                return True
+        return False
 
     @property
     def espacio_tolva(self):
@@ -28,5 +35,10 @@ class Truck:
 
     def descargar(self):
         if self.tiene_contenido:
-            bin_ = self.bines.pop(0)
-            return bin_.descargar()
+            if self.de_bin:
+                bin_ = self.bines.pop(0)
+                return bin_.descargar()
+            else:
+                for tolva in self.tolvas:
+                    if tolva.tiene_contenido:
+                        return tolva.descargar()
