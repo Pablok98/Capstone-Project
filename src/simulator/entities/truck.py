@@ -14,6 +14,8 @@ class Truck:
         self.tolvas = []
         self.bines = []
 
+        self.driver = None
+
     @property
     def lleno(self):
         if self.de_bin:

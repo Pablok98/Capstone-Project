@@ -30,6 +30,14 @@ class Wine(SimulationObject):
         print(f"El jornalero {jornalero._id} fue asignado al lote {lote}")
         self.lotes[lote].jornaleros.append(jornalero)
 
+    def assign_truck(self, truck, lot):
+        print(f"El camion {truck._id} fue asignado al lote {lot}")
+        self.lotes[lot].camiones.append(truck)
+
+    def assign_driver(self, driver, truck):
+        print(f'El conductor {driver._id} fue asignado al camion {truck._id}')
+        driver.assign_truck(truck)
+
     def poblar(self):
         pass
 
