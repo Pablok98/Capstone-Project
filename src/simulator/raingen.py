@@ -20,5 +20,5 @@ def simulate_rain(lot_frame, time_range):
 
 
 def read_data():
-    df = pd.read_excel(join('..', 'data', 'lluvia_generada.xlsx'))
+    df = pd.read_excel(join('data', 'lluvia_generada.xlsx'))
     return df

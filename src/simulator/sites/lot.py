@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from time import sleep
-from entities import *
-from sim import SimulationObject
+from ..entities import *
+from ..sim import SimulationObject
 
 
 class Lot(SimulationObject):

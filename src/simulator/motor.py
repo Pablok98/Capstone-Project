@@ -3,11 +3,11 @@ from random import expovariate, randint, uniform, seed
 from datetime import datetime, timedelta
 from time import sleep
 
-from entities import *
-from sites import *
+from .entities import *
+from .sites import *
 
-from sim import SimulationObject
-import raingen
+from .sim import SimulationObject
+from . import raingen
 
 import os
 
@@ -92,9 +92,3 @@ class Wine(SimulationObject):
 
     def _tasignar_jornalero(self, lote):
         self.lotes[lote].jornaleros.append(Laborer())
-
-
-if __name__ == "__main__":
-    winifera = Wine()
-    winifera.test()
-    winifera.run()

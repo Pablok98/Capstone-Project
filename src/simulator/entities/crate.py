@@ -1,4 +1,4 @@
-from sim import SimulationObject
+from ..sim import SimulationObject
 
 
 class Crate(SimulationObject):  # (cajon)
