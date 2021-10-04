@@ -11,6 +11,10 @@ class Lot(SimulationObject):
         self.cantidad = ctd_uva
         self.dia_optimo = SimulationObject.tiempo_actual + timedelta(days=dia-1)
 
+        # Cambiar por input
+        self.rango_calidad = [0.85, 0.95]
+        self.penalizacion = 0
+
         self.lloviendo = 0
 
         self.fin_jornada = datetime(2021, 1, 1, hour=18, minute=0, second=0)
@@ -19,6 +23,7 @@ class Lot(SimulationObject):
         self.tiempo_proximo_binlleno = None
 
         self.tolva_a_enganchar = None
+        self.bin_a_cargar = None
 
         self.jornaleros = []
         self.cosechadoras = []
@@ -27,6 +32,21 @@ class Lot(SimulationObject):
         self.tolvas = []
 
         self.flag_bin = True
+
+    @property
+    def delta_optimo(self):
+        delta = SimulationObject.tiempo_actual - self.dia_optimo
+        return delta.days
+
+    @property
+    def calidad_actual(self):
+        a = (self.rango_calidad[0] + self.rango_calidad[1] - 2) / 98
+        b = (self.rango_calidad[1] - self.rango_calidad[0]) / 14
+        calidad = a*(self.delta_optimo**2) + b*self.delta_optimo + 1
+        calidad = calidad * (1 - self.penalizacion)
+        if calidad > 1:
+            calidad = 1
+        return calidad
 
     # ----------- JORNALEROS Y CAJONES ----------------------------------------------
     def generar_tiempo_cajon(self):
@@ -52,7 +72,7 @@ class Lot(SimulationObject):
         _bin = self.bines[-1]
         if _bin.lleno:
             print(
-                f"{self.nombre} -Se llenó (manual) un bin a la hora {SimulationObject.tiempo_actual}")
+                f"{self.nombre} - Se empezó a llenar un nuevo bin manualmente un bin a la hora {SimulationObject.tiempo_actual}")
             _bin = Bin()
             self.bines.append(_bin)
         return _bin
@@ -89,8 +109,7 @@ class Lot(SimulationObject):
         SimulationObject.tiempo_actual = self.tiempo_proximo_cajon
         self.generar_tiempo_cajon()
         lugar_a_cargar = self.a_cargar
-        delta_optimo = SimulationObject.tiempo_actual - self.dia_optimo
-        cajon = Crate(self.tipo_uva, delta_optimo)
+        cajon = Crate(self.tipo_uva, self.calidad_actual)
         lugar_a_cargar.cargar_cajon(cajon)
 
         print(f"{self.nombre} - Se lleno un nuevo cajon a la hora {SimulationObject.tiempo_actual}")
@@ -112,12 +131,12 @@ class Lot(SimulationObject):
         """
         EVENTO COSECHADORA LLENA UN BIN
         """
-        SimulationObject.tiempo_actual = self.tiempo_proximo_cajon
+        SimulationObject.tiempo_actual = self.tiempo_proximo_binlleno
         self.generar_tiempo_bin()
-        delta_optimo = SimulationObject.tiempo_actual - self.dia_optimo
         _bin = Bin()
-        _bin.llenar(self.tipo_uva, delta_optimo)
+        _bin.llenar(self.tipo_uva, self.calidad_actual)
         self.bines.insert(0, _bin)
+        print(f"{self.nombre} - Se llenó un bin automático a la hora {SimulationObject.tiempo_actual}")
 
     # --------------------------------------------------------------------------------------
     # Carga de bines a camiones
@@ -129,7 +148,7 @@ class Lot(SimulationObject):
         for camion in self.camiones:
             if not camion.lleno and camion.de_bin:
                 return camion
-        print("No hay camiones con espacio disponible!")
+        #print("No hay camiones con espacio disponible!")
         return None
 
     @property
@@ -139,27 +158,24 @@ class Lot(SimulationObject):
         """
         # Si es que hay bines y el último está lleno (si no, nada se va a descargar)
         if self.bines and self.bines[0].lleno:
-            # Si es que no hemos definido aun un tiempo de descarga
-            if not self.bines[0].tiempo_carga:
-                # En el caso de que se cumpla lo anterior, pero no hay camion, entonces no se puede
-                if not self.proximo_camion_vacio:
-                    print("Hay un bin que no tiene a donde cargarse!")
-                    return datetime(3000, 1, 1, hour=6, minute=0, second=0)
-                # En caso contrario, se define el tiempo de descarga
-                else:
-                    self.bines[0].tiempo_carga = SimulationObject.tiempo_actual + timedelta(minutes=10)
-            # Retornamos el tiempo determinado
-            return self.bines[0].tiempo_carga
+            if not self.proximo_camion_vacio:
+                #print("Hay un bin que no tiene a donde cargarse!")
+                return datetime(3000, 1, 1, hour=6, minute=0, second=0)
+            if not self.bin_a_cargar:
+                self.bin_a_cargar = self.bines[0]
+                self.bin_a_cargar.tiempo_carga = SimulationObject.tiempo_actual + timedelta(minutes=10)
+            return self.bin_a_cargar.tiempo_carga
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
     def carga_bin(self):
         """
         Se carga el bin al camión y se elimina de la lista de bines. Se actualiza el tiempo.
         """
-        SimulationObject.tiempo_actual = self.tiempo_proximo_binlleno
-        _bin = self.bines.pop(0)
+        SimulationObject.tiempo_actual = self.bin_a_cargar.tiempo_carga
+        self.bines.pop(self.bines.index(self.bin_a_cargar))
         camion = self.proximo_camion_vacio
-        camion.bines.append(_bin)
+        camion.bines.append(self.bin_a_cargar)
+        self.bin_a_cargar = None
 
         print(f"{self.nombre} -Se cargó un bin a la hora {SimulationObject.tiempo_actual}")
     # ------------------------------------------------------------------------------------------
@@ -238,6 +254,21 @@ class Lot(SimulationObject):
             'enganchar_tolva': self.enganchar_tolva
         }
         return metodos[evento]()
+
+    def llover(self, lluvia):
+        self.lloviendo = lluvia
+        if lluvia:
+            self.penalizar()
+
+    def penalizar(self):
+        if 0.98 <= self.calidad_actual <= 1:
+            self.penalizacion += 0.1
+        elif 0.95 <= self.calidad_actual < 0.98:
+            self.penalizacion += 0.07
+        elif 0.90 <= self.calidad_actual < 0.95:
+            self.penalizacion += 0.05
+        else:
+            self.penalizacion += 0.03
 
     def instanciar(self):
         self.generar_tiempo_cajon()

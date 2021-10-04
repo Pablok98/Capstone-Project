@@ -3,6 +3,7 @@ class Truck:
 
     def __init__(self, tipo, tolva, bines):
         Truck._id += 1
+        self.id = Truck._id
         self.tipo = tipo
         self.cap_tolva = tolva
         self.cap_bines = bines

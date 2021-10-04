@@ -26,7 +26,7 @@ class Plant:
         Recibe un camion y calcula el proceso de llenar la planta
         """
         self.camiones.append(camion)
-        print(f"Descargando camion {camion._id} en la planta {self.nombre}")
+        print(f"Descargando camion {camion.id} en la planta {self.nombre}")
         while self.carga_actual < self.cap_ferm and camion.tiene_contenido:
             kilos, calidad = camion.descargar()
             self.uva_actual.append((kilos, calidad))

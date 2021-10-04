@@ -24,7 +24,8 @@ class Wine(SimulationObject):
     def set_daily_rain(self):
         for lot in self.lotes.values():
             mask = self.rain_data['Lote COD'] == lot.nombre
-            lot.lloviendo = int(self.rain_data[mask][f'day {self.dia}'])
+            lluvia = int(self.rain_data[mask][f'day {self.dia}'])
+            lot.llover(0)
 
     def asignar_jornalero(self, jornalero, lote):
         print(f"El jornalero {jornalero._id} fue asignado al lote {lote}")
@@ -54,6 +55,7 @@ class Wine(SimulationObject):
             retorno = self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
             if retorno:
                 self.plantas[retorno.planta_asignada].descargar_camion(retorno)
+
         for planta in self.plantas.values():
             planta.procesar_dia()
 
@@ -69,6 +71,7 @@ class Wine(SimulationObject):
         camion.planta_asignada = 'P1'
         self.lotes['U_1_8_58_118'].camiones.append(camion)
         camion = Truck("B", 1, 2)
+        camion.planta_asignada = 'P1'
         self.lotes['U_1_8_58_118'].camiones.append(camion)
         self.lotes['U_1_8_58_118'].cosechadoras.append(Harvester())
         self.lotes['U_1_8_58_118'].instanciar()

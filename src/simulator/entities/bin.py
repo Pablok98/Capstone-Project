@@ -35,9 +35,9 @@ class Bin:
         self.tiempo_carga = None
         return kg, calidad
 
-    def llenar(self, tipo_uva, delta_optimo):
+    def llenar(self, tipo_uva, calidad):
         for _ in range(self.carga_maxima):
-            self.cajones.append(Crate(tipo_uva, delta_optimo))
+            self.cajones.append(Crate(tipo_uva, calidad))
 
 
 
