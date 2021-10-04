@@ -302,6 +302,41 @@ class Lot(SimulationObject):
         ctd_bines = len(self.bines)
         ctd_tolvas = len(self.tolvas)
         ctd_camiones = len(self.camiones)
+        camiones = {}
+        for camion in self.camiones:
+            camiones[camion.id] = camion.estado()
+
+        data = {
+            'nombre_lote': self.nombre,
+            'ctd_jornaleros': ctd_jornaleros,
+            'tasa_jornaleros': tasa_jornaleros,
+            'ctd_cosechadoras': ctd_cosechadoras,
+            'tasa_cosechadoras': tasa_cosechadoras,
+            'ctd_bines': ctd_bines,
+            'ctd_tolvas': ctd_tolvas,
+            'ctd_camiones': ctd_camiones,
+            'camiones': camiones
+        }
+        return data
+
+    @property
+    def estado_string(self):
+        # De aca eliminar y cambiar por sacar el diccionario de estado
+        ctd_jornaleros = len(self.jornaleros)
+        tasa = 0
+        for jornalere in self.jornaleros:
+            tasa += jornalere.velocidad_cosecha
+        tasa_jornaleros = (tasa - (tasa * 0.3 * self.lloviendo)) / 60*24
+
+        ctd_cosechadoras = len(self.cosechadoras)
+        tasa = 0
+        for cosechadere in self.cosechadoras:
+            tasa += cosechadere.velocidad_cosecha
+        tasa_cosechadoras = (tasa - (tasa * 0.6 * self.lloviendo)) / 60
+
+        ctd_bines = len(self.bines)
+        ctd_tolvas = len(self.tolvas)
+        ctd_camiones = len(self.camiones)
         camiones = ""
         for camion in self.camiones:
             estado = camion.estado()
@@ -312,13 +347,14 @@ class Lot(SimulationObject):
             Nivel de ocupacion:   {estado['ocupacion']}
             """
             camiones += string_camion
+        # Hasta aca
         string = f"""
         _____________________________________________
         //          Lote: {self.nombre}            //
         ---------------------------------------------
         ***************   General  ******************
         Jornaleros trabajando:       {ctd_jornaleros}
-        Tasa de cosecha jornaleros : {tasa_jornaleros} kg/min
+        Tasa de cosecha jornaleros: {tasa_jornaleros} kg/min
         
         Cosechadoras automáticas:     {ctd_cosechadoras}
         Tasa de cosecha cosechadoras : {tasa_cosechadoras} kg/min

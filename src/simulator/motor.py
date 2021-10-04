@@ -11,13 +11,18 @@ from . import raingen
 
 import os
 
+
 class Wine(SimulationObject):
-    def __init__(self):
+    def __init__(self, ui=False):
         self.lotes = {}
         self.plantas = {}
         self.rain_data = None
         self.dia = 1
         self.fin_jornada = datetime(2021, 1, 1, hour=18, minute=0, second=0)
+
+        self.ui = ui
+        self.status_signal = None
+        self.command_signal = None
 
     def set_rain_data(self):
         self.rain_data = raingen.read_data()
@@ -47,6 +52,9 @@ class Wine(SimulationObject):
         for lote in self.lotes.values():
             lote.iniciar_dia()
 
+        if self.ui:
+            self.command_signal.emit('lotes_inicial', self.lotes)
+
         self.set_rain_data()
         self.set_daily_rain()
 
@@ -60,12 +68,30 @@ class Wine(SimulationObject):
             if retorno:
                 self.plantas[retorno.planta_asignada].descargar_camion(retorno)
 
+            if self.ui:
+                self.status_signal.emit(self.estado_lotes_ui())
+            else:
+                print(self.estado_lotes_noui())
+            sleep(1)
+
         for lote in self.lotes.values():
             for camion in lote.camiones:
                 self.plantas[camion.planta_asignada].descargar_camion(camion)
 
         for planta in self.plantas.values():
             planta.procesar_dia()
+
+    def estado_lotes_ui(self):
+        data = {}
+        for lote in self.lotes.values():
+            data[lote.nombre] = lote.estado
+        return data
+
+    def estado_lotes_noui(self):
+        string = ""
+        for lote in self.lotes.values():
+            string += lote.estado_string
+        return string
 
     def test(self):
         self.plantas['P1'] = Plant('P1', 2500000, 150000, 50000, 40000)
