@@ -42,3 +42,10 @@ class Truck:
                 for tolva in self.tolvas:
                     if tolva.tiene_contenido:
                         return tolva.descargar()
+
+    def assign_driver(self, driver):
+        if self.driver:
+            print(f'Truck {self._id} already has a driver')
+
+        else:
+            self.driver = driver
