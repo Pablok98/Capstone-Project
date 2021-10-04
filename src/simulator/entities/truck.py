@@ -52,3 +52,14 @@ class Truck:
 
         else:
             self.driver = driver
+
+    def estado(self):
+        tipo = 'Bines' if self.de_bin else 'Tolva'
+        capacidad = self.cap_bines if self.de_bin else self.cap_tolva
+        ocupacion = len(self.bines) if self.de_bin else len(self.tolvas)
+        return {
+            'id': self.id,
+            'tipo': tipo,
+            'capacidad': capacidad,
+            'ocupacion': ocupacion
+        }

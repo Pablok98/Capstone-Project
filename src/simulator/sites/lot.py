@@ -270,10 +270,67 @@ class Lot(SimulationObject):
         else:
             self.penalizacion += 0.03
 
-    def instanciar(self):
+    def iniciar_dia(self):
+        self.tiempo_proximo_cajon = None
+        self.tiempo_proximo_binlleno = None
+        self.tolva_a_enganchar = None
+        self.bin_a_cargar = None
+        self.flag_bin = True
         self.generar_tiempo_cajon()
         self.generar_tiempo_bin()
 
+        self.generar_tiempo_cajon()
+        self.generar_tiempo_bin()
+
+    def fin_dia(self):
+        pass
+
+    @property
+    def estado(self):
+        ctd_jornaleros = len(self.jornaleros)
+        tasa = 0
+        for jornalere in self.jornaleros:
+            tasa += jornalere.velocidad_cosecha
+        tasa_jornaleros = (tasa - (tasa * 0.3 * self.lloviendo)) / 60*24
+
+        ctd_cosechadoras = len(self.cosechadoras)
+        tasa = 0
+        for cosechadere in self.cosechadoras:
+            tasa += cosechadere.velocidad_cosecha
+        tasa_cosechadoras = (tasa - (tasa * 0.6 * self.lloviendo)) / 60
+
+        ctd_bines = len(self.bines)
+        ctd_tolvas = len(self.tolvas)
+        ctd_camiones = len(self.camiones)
+        camiones = ""
+        for camion in self.camiones:
+            estado = camion.estado()
+            string_camion = f"""
+            * Camion {estado['id']} *
+            Tipo:                 {estado['tipo']}
+            Capacidad:            {estado['capacidad']}
+            Nivel de ocupacion:   {estado['ocupacion']}
+            """
+            camiones += string_camion
+        string = f"""
+        _____________________________________________
+        //          Lote: {self.nombre}            //
+        ---------------------------------------------
+        ***************   General  ******************
+        Jornaleros trabajando:       {ctd_jornaleros}
+        Tasa de cosecha jornaleros : {tasa_jornaleros} kg/min
+        
+        Cosechadoras automáticas:     {ctd_cosechadoras}
+        Tasa de cosecha cosechadoras : {tasa_cosechadoras} kg/min
+        
+        Bines en el sitio:             {ctd_bines}
+        Tolvas en el sitio:            {ctd_tolvas}
+        
+        ***************   Camiones  ******************
+        Camiones en sitio:              {ctd_camiones}
+        {camiones}
+        """
+        return string
 
 
 
