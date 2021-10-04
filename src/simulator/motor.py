@@ -12,7 +12,6 @@ import raingen
 
 class Wine(SimulationObject):
     def __init__(self):
-        # Entities
         self.lotes = {}
         self.plantas = {}
         self.rain_data = None
@@ -47,7 +46,6 @@ class Wine(SimulationObject):
             retorno = self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
             if retorno:
                 self.plantas[retorno.planta_asignada].descargar_camion(retorno)
-            sleep(1)
         for planta in self.plantas.values():
             planta.procesar_dia()
 
@@ -66,7 +64,7 @@ class Wine(SimulationObject):
         self.lotes['U_1_8_58_118'].camiones.append(camion)
         self.lotes['U_1_8_58_118'].cosechadoras.append(Harvester())
         self.lotes['U_1_8_58_118'].instanciar()
-        """
+
         self.lotes['U_2_6_138_123'] = Lot('U_2_6_138_123', '3', 58000, 4)
         for _ in range(5):
             self._tasignar_jornalero('U_2_6_138_123')
@@ -74,7 +72,6 @@ class Wine(SimulationObject):
         camion.planta_asignada = 'P1'
         self.lotes['U_2_6_138_123'].camiones.append(camion)
         self.lotes['U_2_6_138_123'].instanciar()
-        """
 
     def _tasignar_jornalero(self, lote):
         self.lotes[lote].jornaleros.append(Laborer())
