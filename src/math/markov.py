@@ -2,7 +2,7 @@ import numpy as np
 
 
 # -- Obtiene la distribución estacionaria dada la matriz de transición --
-def stationary_distribution(p_matrix, accuracy=100):
+def stationary_distribution(p_matrix, accuracy=1000):
     pi = np.linalg.matrix_power(np.array(p_matrix), accuracy)[0]
     return pi
 # -----------------------------------------------------------------------
