@@ -70,6 +70,7 @@ class LotSqare(QWidget):
                 new_text = label.text().split(":")[0] + f": {data}"
                 label.setText(new_text)
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 

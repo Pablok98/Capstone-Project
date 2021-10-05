@@ -93,10 +93,16 @@ class Wine(SimulationObject):
             string += lote.estado_string
         return string
 
+    def instanciar_lotes(self, info):
+        for name, info_lote in info.items():
+            self.lotes[name] = Lot(name, info_lote["Tipo_UVA"], info_lote["Tn"],
+                                   info_lote["Dia_optimo_cosecha"], info_lote["rango_calidad"])
+        print()
+
     def test(self):
         self.plantas['P1'] = Plant('P1', 2500000, 150000, 50000, 40000)
 
-        self.lotes['U_1_8_58_118'] = Lot('U_1_8_58_118', '1', 58000, 1)
+        self.lotes['U_1_8_58_118'] = Lot('U_1_8_58_118', '1', 58000, 1, [0.9, 0.85])
         for _ in range(5):
             self._tasignar_jornalero('U_1_8_58_118')
         camion = Truck("A", 1, 2)
@@ -109,7 +115,7 @@ class Wine(SimulationObject):
         self.lotes['U_1_8_58_118'].camiones.append(camion)
         self.lotes['U_1_8_58_118'].cosechadoras.append(Harvester())
 
-        self.lotes['U_2_6_138_123'] = Lot('U_2_6_138_123', '3', 58000, 4)
+        self.lotes['U_2_6_138_123'] = Lot('U_2_6_138_123', '3', 58000, 4, [0.9, 0.85])
         for _ in range(5):
             self._tasignar_jornalero('U_2_6_138_123')
         camion = Truck("A", 2, 2)

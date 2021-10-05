@@ -1,13 +1,19 @@
-
-
 class Plant:
-    def __init__(self, nombre, cap_ferm, cap_prod, cap_tolva, cap_bin):
-        self.nombre = nombre
-        self.cap_ferm = cap_ferm
-        self.cap_prod = cap_prod
-        self.cap_tolva = cap_tolva
-        self.cap_bin = cap_bin
+    def __init__(self, name: str, ferm_cap: int, prod_cap: int, hopper_cap: int, bin_cap: int):
+        """
 
+        :param name: MUST be unique. Name of the plant, which will used by the simulator to both
+                    display and reference.
+        :param ferm_cap: Maximum capacity of grapes (in kg) that the plant can contain at once.
+        :param prod_cap: Maximum capacity of grapes (in kg) that the plant can contain at once.
+        :param hopper_cap:
+        :param bin_cap:
+        """
+        self.nombren = name
+        self.cap_ferm = ferm_cap
+        self.cap_prod = prod_cap
+        self.cap_tolva = hopper_cap
+        self.cap_bin = bin_cap
         self.uva_actual = []
         self.vino_total_producido = 0
         self.uva_procesada = 0
@@ -45,5 +51,3 @@ class Plant:
 
     def __str__(self):
         return f"Planta: {self.nombre}. Uva procesada: {self.uva_procesada}. Vino procesado: {self.vino_total_producido}"
-
-
