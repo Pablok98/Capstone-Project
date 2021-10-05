@@ -1,5 +1,5 @@
 import random
-from utilities import *
+from .utilities import *
 
 
 # -- Simula muchas iteraciones de semanas y obtiene la calidad promedio por día de la semana --

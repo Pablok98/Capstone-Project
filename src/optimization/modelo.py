@@ -1,5 +1,6 @@
 import numpy as np
 from gurobipy import *
+from parametros import *
 
 
 
@@ -52,10 +53,10 @@ p_terceros = m.addVars(P,T, vtype=GRB.CONTINUOUS)
 
 #Restricciones Cosecha
 m.addConstrs((c_cant_uva = ef_cos[l,t] * c_auto[l,t] + ef_cuad[l,t] * c_manual[l,t] for l in L for t in T))
-m.addConstrs((c_cosecha[l,t] <= c_disponible[l,t] for l in L for t in T))
+m.addConstrs((c_cosecha[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
 m.addConstrs((c_cosecha[l,t] <= c_auto[l,t] + c_manual[l,t] for l in L for t in T))
-m.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M)) #aca talvez para mejorar rendimiento se puede poner distintos M
-m.addConstrs((c_manual[l,t] <=c_cosecha[l,t] * M))
+m.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M for l in L for t in T)) #aca talvez para mejorar rendimiento se puede poner distintos M
+m.addConstrs((c_manual[l,t] <=c_cosecha[l,t] * M for l in L for t in T))
 m.addConstrs((sum(c_manual[l,t] for l in L) <= 5 for t in T))
 m.addConstrs((sum(c_cuad[k,l,t] for k in K) = c_manual[l,t]))
 m.addConstrs((c_bines[l,t] >= ((ef_cos[l,t] * c_auto[l,t] + ef_cuad * sum(c_man_bin[k,l,t] for k in K))/cap_bin) for l in L for t in T))
@@ -70,7 +71,7 @@ m.addConstrs((c_disponibilidad[l,0] == DI[l] for l in L))
 #restriccion cajones??
 
 #Restricciones Transporte
-m.addConstrs((sum(t_ruta[l,p,t] for p in P) == c_cosecha[l,t]))
+m.addConstrs((sum(t_ruta[l,p,t] for p in P) == c_cosecha[l,t] for l in L for t in T))
 m.addConstrs((sum(t_ruta[l,p,t] for p in P) == 1 for l in L for t in T))
 m.addConstrs((camion_tercero_b[l,t] + sum(t_camion_bin[c,l,t] * cap_bines[c] for c in C) >= c_bines[l,t] for l in L for t in T))
 m.addConstrs((camion_tercero_t[l,t] + sum(t_camion_tolva[c,l,t] * cap_tolva[c] for c in C) >= c_tolva[l,t] for l in L for t in T))
