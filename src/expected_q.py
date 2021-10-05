@@ -32,5 +32,13 @@ def get_expected_q(analitic: bool):
 # ---------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    results = get_expected_q(True)
-    print(results['U_1_8_58_118'])
+    # results_anal = get_expected_q(True)
+    results_sim = get_expected_q(False)
+
+    # with open('analitic_expected_q.json', 'w') as file:
+    #     json.dump(results_anal, file)
+
+    with open('simulated_expected_q.json') as file:
+        json.dump(results_sim, file)
+
+    
