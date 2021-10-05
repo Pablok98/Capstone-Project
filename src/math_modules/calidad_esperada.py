@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from utilities import *
+from .utilities import *
 
 # -- Estas funciones obtienen recursivamente el valor esperado de la calidad --
 def E_quality(t, p_rain, f_optimal_q, f_mu):

@@ -5,6 +5,7 @@ from calidad_esperada_sim import *
 from markov import stationary_distribution
 
 # Aquí probamos todos los archivos de /math
+
 for p_11, p_01 in ((0.3, 0.2), (0.4, 0.3), (0.5, 0.2), (0.6, 0.3), (0.9, 0.1)):
     m_transicion = np.array([[p_11, (1 - p_11)], [p_01, (1 - p_01)]])
     p_lluvia = stationary_distribution(m_transicion)[0]
