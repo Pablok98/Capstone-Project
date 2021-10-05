@@ -6,10 +6,12 @@ from math_modules.markov import stationary_distribution
 from files import read_lot_data
 import json
 
-# -- Calcula los valores esperados de la calidad por lote y por dia de la semana --
+# -- Calcula los valores esperados de la calidad por lote y por dia del veraizon --
 def get_expected_q(analitic: bool):
 
     results = {}
+
+    i = 0
 
     for name, info in read_lot_data().items():
         p_01 = info['p_01']
@@ -27,6 +29,8 @@ def get_expected_q(analitic: bool):
             lot_results = run_sim(100000, 14, p_matrix, mu, f_optimal_q)
 
         results[name] = lot_results
+        print(i)
+        i += 1
         
     return results
 # ---------------------------------------------------------------------------------
@@ -38,7 +42,7 @@ if __name__ == '__main__':
     # with open('analitic_expected_q.json', 'w') as file:
     #     json.dump(results_anal, file)
 
-    with open('simulated_expected_q.json') as file:
+    with open('simulated_expected_q.json', 'w') as file:
         json.dump(results_sim, file)
 
     

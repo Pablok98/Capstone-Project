@@ -2,7 +2,7 @@ import random
 from .utilities import *
 
 
-# -- Simula muchas iteraciones de semanas y obtiene la calidad promedio por día de la semana --
+# -- Simula muchas iteraciones de semanas y obtiene la calidad promedio por día del veraizon --
 def run_sim(iteraciones, len_simulacion, m_transicion, funcion_mu, funcion_q, lluvia_inicial=False):
     simulaciones = []
     for _ in range(iteraciones):
