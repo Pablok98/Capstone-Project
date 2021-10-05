@@ -4,14 +4,13 @@ from ..sim import SimulationObject
 
 
 class Lot(SimulationObject):
-    def __init__(self, nombre, uva, ctd_uva, dia):
+    def __init__(self, nombre, uva, ctd_uva, dia, rango_calidad):
         self.nombre = nombre
         self.tipo_uva = uva
         self.cantidad = ctd_uva
         self.dia_optimo = SimulationObject.tiempo_actual + timedelta(days=dia-1)
 
-        # Cambiar por input
-        self.rango_calidad = [0.85, 0.95]
+        self.rango_calidad = rango_calidad
         self.penalizacion = 0
 
         self.lloviendo = 0
