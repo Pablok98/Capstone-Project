@@ -8,7 +8,7 @@ print(type(ef_cos[2][2]))
 cal = conseguir_cal()
 
 m = Model()
-m.Params.OutputFlag = 0
+# m.Params.OutputFlag = 0
 
 
 #Variables Cosecha
@@ -95,7 +95,9 @@ sobrecosto_ocupacion = quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[
 # auxiliar = quicksum(c_cosecha[l,t] for l in L for t in T)
 promedio = quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)
 # sobrecosto_cal = quicksum(penalizacion*(1 - (promedio / auxiliar)))
-m.setObjective(costo_terceros + sobrecosto_ocupacion + quicksum(penalizacion*(1 - promedio )) + quicksum(cost_proc[p]*p_proc[p,t] for p in P for t in T))
+m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - promedio) + quicksum(costo_procesado[p]*p_proc[p,t] for p in P for t in T))
 
 m.update()
 m.optimize()
+print(m.objVal)
+print(m.getVars())
