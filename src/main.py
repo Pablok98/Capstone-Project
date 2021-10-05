@@ -15,12 +15,13 @@ write_excel_listed(rain_data, p.RAIN_DATA_PATH)
 ui = True
 
 winifera = Wine(ui)
-winifera.test()
+
 
 
 lot_data = read_lot_data()
-winifera.instanciar_lotes(lot_data)
 
+winifera.instanciar_lotes(lot_data)
+winifera.test()
 
 if ui:
     from PyQt5.QtWidgets import QApplication

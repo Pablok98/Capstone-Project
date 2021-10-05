@@ -9,7 +9,7 @@ class Plant:
         :param hopper_cap:
         :param bin_cap:
         """
-        self.nombren = name
+        self.nombre = name
         self.cap_ferm = ferm_cap
         self.cap_prod = prod_cap
         self.cap_tolva = hopper_cap
