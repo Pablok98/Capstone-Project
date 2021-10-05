@@ -11,3 +11,6 @@ MISC_SHEET = "otros"
 MAX_DAILY_UNLOAD = 0.3
 
 TIME_RANGE = 7
+
+# Jornaleros
+MAX_DIAS_TRABAJO = 6

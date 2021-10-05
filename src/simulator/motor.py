@@ -35,12 +35,11 @@ class Wine(SimulationObject):
             lot.llover(lluvia)
 
     def asignar_jornalero(self, jornalero, lote):
-        print(f"El jornalero {jornalero._id} fue asignado al lote {lote}")
-        self.lotes[lote].jornaleros.append(jornalero)
+        self.lotes[lote].asignar_jornalero(jornalero)
 
     def assign_truck(self, truck, lot):
         print(f"El camion {truck._id} fue asignado al lote {lot}")
-        self.lotes[lot].camiones.append(truck)
+        self.lotes[lot].assign_truck(truck)
         truck.current_lot = self.lotes[lot]
 
     def assign_driver(self, driver, truck):

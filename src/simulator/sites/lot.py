@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+
+from src.params import MAX_DIAS_TRABAJO
 from ..entities import *
 from ..sim import SimulationObject
 
@@ -283,7 +285,18 @@ class Lot(SimulationObject):
         self.generar_tiempo_bin()
 
     def fin_dia(self):
-        pass
+        for jornalero in self.jornaleros:
+            jornalero.dias_trabajando += 1
+
+    def asignar_jornalero(self, jornalero):
+        if jornalero.dias_trabajando < MAX_DIAS_TRABAJO:
+            self.jornaleros.append(jornalero)
+            print(f"El jornalero {jornalero._id} fue asignado al lote {self.nombre}")
+        
+        else:
+            print(f"El jornalero {jornalero._id} no pudo ser asignado al lote {self.nombre}" +
+            "porque excede los dias maximos de trabajo")
+             
 
     @property
     def estado(self):
