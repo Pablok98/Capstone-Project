@@ -7,23 +7,31 @@ class Plant(SimulationObject):
     MAX_DAILY_UNLOAD = 0.3
     def __init__(self, name: str, ferm_cap: int, prod_cap: int, hopper_cap: int, bin_cap: int):
         """
+        Represents a plant site, which can store and process grape daily. Trucks bring grapes from
+        lots to unload them for processing.
 
         :param name: MUST be unique. Name of the plant, which will used by the simulator to both
                     display and reference.
-        :param ferm_cap: Maximum capacity of grapes (in kg) that the plant can contain at once.
-        :param prod_cap: Maximum capacity of grapes (in kg) that the plant can contain at once.
-        :param hopper_cap:
-        :param bin_cap:
+        :param ferm_cap: Maximum capacity of grapes that the plant can contain at once.
+        :param prod_cap: Maximum capacity of grapes that the plant can process in one day.
+        :param hopper_cap: Maximum rate of grapes that can be unloaded to the plant from a truck
+                        with hopper(s)
+        :param bin_cap: Maximum rate of grapes that can be unloaded to the plant from a truck
+                        loaded with bin(s)
         """
         self.nombre = name
         self.cap_ferm = ferm_cap
         self.cap_prod = prod_cap
         self.cap_tolva = hopper_cap
         self.cap_bin = bin_cap
-        self.uva_actual = []
+
+        # uva_actual contains tuples, each with the pair (quantity, quality). When grape is unloaded
+        # from trucks, the quanity and quality is stored in the list.
+        self.uva_actual: list[tuple[int, float]] = []
+
+        # State variables
         self.vino_total_producido = 0
         self.uva_procesada = 0
-
         self.camiones = []
 
         self.tiempo_proximo_procesamiento = None
@@ -33,7 +41,14 @@ class Plant(SimulationObject):
 
 
     @property
-    def carga_actual(self):
+    def carga_actual(self) -> int:
+        """
+        Iterates through the batches (touples) of grape and counts the total grape currently
+        inside the plant.
+
+        :return: Current grape load
+
+        """
         carga = 0
         for batch in self.uva_actual:
             carga += batch[0]
