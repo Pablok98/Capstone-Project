@@ -43,7 +43,6 @@ class GUI(QMainWindow):
 
     def actualizar_estado(self, data):
         self.lot_grid.actualizar(data)
-        len()
 
 
 

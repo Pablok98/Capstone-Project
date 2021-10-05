@@ -1,4 +1,10 @@
-class Plant:
+# import params as p
+from datetime import datetime, timedelta
+from ..sim import SimulationObject
+
+
+class Plant(SimulationObject):
+    MAX_DAILY_UNLOAD = 0.3
     def __init__(self, name: str, ferm_cap: int, prod_cap: int, hopper_cap: int, bin_cap: int):
         """
 
@@ -9,7 +15,7 @@ class Plant:
         :param hopper_cap:
         :param bin_cap:
         """
-        self.nombren = name
+        self.nombre = name
         self.cap_ferm = ferm_cap
         self.cap_prod = prod_cap
         self.cap_tolva = hopper_cap
@@ -20,12 +26,22 @@ class Plant:
 
         self.camiones = []
 
+        self.tiempo_proximo_procesamiento = None
+
+        self.daily_grapes = 0
+
+
+
     @property
     def carga_actual(self):
         carga = 0
         for batch in self.uva_actual:
             carga += batch[0]
         return carga
+
+    @property
+    def daily_grape_percentage(self):
+        return round(self.daily_grapes / self.cap_ferm, 3)
 
     def descargar_camion(self, camion):
         """
@@ -36,6 +52,7 @@ class Plant:
         while self.carga_actual < self.cap_ferm and camion.tiene_contenido:
             kilos, calidad = camion.descargar()
             self.uva_actual.append((kilos, calidad))
+            self.daily_grapes += kilos
 
     def procesar_dia(self):
         print(f"Procesando uva en la planta {self.nombre}")
@@ -48,6 +65,19 @@ class Plant:
             self.uva_procesada += batch[0]
             self.vino_total_producido += batch[0] * batch[1]
         print(self)
+
+    @property
+    def proximo_evento(self):
+        if not self.camiones or self.daily_grape_percentage >= Plant.MAX_DAILY_UNLOAD:
+            return datetime(3000, 1, 1, hour=6, minute=0, second=0)
+        if not self.tiempo_proximo_procesamiento:
+            self.tiempo_proximo_procesamiento = SimulationObject.tiempo_actual + timedelta(minutes=60)
+        return self.nombre, 'descarga', self.tiempo_proximo_procesamiento
+
+    def resolver_evento(self, evento):
+        if evento == 'descarga':
+
+
 
     def __str__(self):
         return f"Planta: {self.nombre}. Uva procesada: {self.uva_procesada}. Vino procesado: {self.vino_total_producido}"

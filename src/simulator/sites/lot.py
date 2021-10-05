@@ -4,7 +4,7 @@ from ..sim import SimulationObject
 
 
 class Lot(SimulationObject):
-    def __init__(self, nombre, uva, ctd_uva, dia, rango_calidad):
+    def __init__(self, nombre, uva, ctd_uva, dia, rango_calidad, plant_distances):
         self.nombre = nombre
         self.tipo_uva = uva
         self.cantidad = ctd_uva
@@ -30,6 +30,8 @@ class Lot(SimulationObject):
         self.tolvas = []
 
         self.flag_bin = True
+
+        self.plant_distances = plant_distances
 
     @property
     def delta_optimo(self):
