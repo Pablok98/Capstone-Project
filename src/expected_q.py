@@ -11,8 +11,6 @@ def get_expected_q(analitic: bool):
 
     results = {}
 
-    i = 0
-
     for name, info in read_lot_data().items():
         p_01 = info['p_01']
         p_11 = info['p_11']
@@ -29,18 +27,16 @@ def get_expected_q(analitic: bool):
             lot_results = run_sim(100000, 14, p_matrix, mu, f_optimal_q)
 
         results[name] = lot_results
-        print(i)
-        i += 1
         
     return results
 # ---------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    # results_anal = get_expected_q(True)
+    results_anal = get_expected_q(True)
     results_sim = get_expected_q(False)
 
-    # with open('analitic_expected_q.json', 'w') as file:
-    #     json.dump(results_anal, file)
+    with open('analitic_expected_q.json', 'w') as file:
+        json.dump(results_anal, file)
 
     with open('simulated_expected_q.json', 'w') as file:
         json.dump(results_sim, file)
