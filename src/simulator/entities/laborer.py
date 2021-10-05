@@ -3,6 +3,7 @@ class Laborer:
 
     def __init__(self):
         Laborer._id += 1
+        self.id = Laborer._id
         self.velocidad_cosecha = 700
         self.cantidad_cosechada = 0
         self.tiempo_cosechando = 0

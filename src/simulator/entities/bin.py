@@ -6,19 +6,20 @@ class Bin:
 
     def __init__(self):
         Bin._id += 1
+        self.id = Bin._id
 
         self.cajones = []
         self.carga_maxima = 27
         self.tiempo_carga = None
 
     @property
-    def lleno(self):
+    def lleno(self) -> bool:
         return len(self.cajones) == self.carga_maxima
 
-    def cargar_cajon(self, cajon):
+    def cargar_cajon(self, cajon: Crate) -> None:
         self.cajones.append(cajon)
 
-    def descargar(self):
+    def descargar(self) -> tuple[int, float]:
         """
         Retorna los kilos y la calidad promedio del bin
         """
@@ -35,7 +36,7 @@ class Bin:
         self.tiempo_carga = None
         return kg, calidad
 
-    def llenar(self, tipo_uva, calidad):
+    def llenar(self, tipo_uva: int, calidad: float) -> None:
         for _ in range(self.carga_maxima):
             self.cajones.append(Crate(tipo_uva, calidad))
 

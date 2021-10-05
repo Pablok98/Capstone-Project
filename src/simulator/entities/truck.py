@@ -1,3 +1,8 @@
+from src.params import MAX_DIAS_TRABAJO_CONDUCTORES
+from typing import Union
+from ..entities import *
+
+
 class Truck:
     _id = 0
 
@@ -8,18 +13,33 @@ class Truck:
         self.cap_tolva = tolva
         self.cap_bines = bines
 
-        self.planta_asignada = None
+        self.planta_asignada: Union[str, None] = None
 
         self.de_bin = True
 
-        self.tolvas = []
-        self.bines = []
+        self.tolvas: list[Hopper] = []
+        self.bines: list[Bin] = []
 
-        self.driver = None
+        self.driver: Union[TruckDriver, None] = None
 
         self.distance_travelled = 0
 
         self.current_lot = None
+
+    def clean(self):
+        self.tolvas = []
+        self.driver = []
+        self.current_lot = None
+
+    def assign_driver(self, driver):
+        if driver.dias_trabajando < MAX_DIAS_TRABAJO_CONDUCTORES:
+            self.driver = driver
+            driver.assign_truck(self)
+            print(f'El conductor {driver._id} fue asignado al camion {self._id}')
+
+        else:
+            print(f"El conductor {driver._id} no pudo ser asignado al camion {self.id}" +
+                  "porque excede los dias maximos de trabajo")
 
     @property
     def lleno(self):

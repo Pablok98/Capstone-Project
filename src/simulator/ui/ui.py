@@ -34,7 +34,6 @@ class GUI(QMainWindow):
         self.show()
 
     def parse_command(self, command, data):
-        print(data)
         if command == 'lotes_inicial':
             self.inicializar_lotes(data)
 

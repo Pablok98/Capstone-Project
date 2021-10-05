@@ -1,6 +1,12 @@
 # import params as p
 from datetime import datetime, timedelta
 from ..sim import SimulationObject
+from collections import namedtuple
+
+from ..entities import *
+from typing import Union
+
+Batch = namedtuple("Grape_batch", ["kilos", "calidad", "fecha_in"])
 
 
 class Plant(SimulationObject):
@@ -28,14 +34,13 @@ class Plant(SimulationObject):
 
         # uva_actual contains tuples, each with the pair (quantity, quality). When grape is unloaded
         # from trucks, the quanity and quality is stored in the list. todo add date
-        self.uva_actual: list[tuple[int, float, datetime]] = []
-
+        self.uva_actual: list[Batch] = []
         # State variables
         self.vino_total_producido = 0
         self.uva_procesada = 0
         self.camiones = []
 
-        self.tiempo_descarga = None
+        self.tiempo_descarga: Union[datetime, None] = None
 
         self.daily_grapes = 0
 
@@ -50,17 +55,17 @@ class Plant(SimulationObject):
         """
         carga = 0
         for batch in self.uva_actual:
-            carga += batch[0]
+            carga += batch.kilos
         return carga
 
     @property
-    def daily_grape_percentage(self):
+    def daily_grape_percentage(self) -> float:
         return round(self.daily_grapes / self.cap_ferm, 3)
 
-    def llegada_camion(self, camion):
+    def llegada_camion(self, camion: Truck) -> None:
         self.camiones.append(camion)
 
-    def descargar_camiones(self):
+    def descargar_camiones(self) -> None:
         SimulationObject.tiempo_actual = self.tiempo_descarga
         self.tiempo_descarga = None
 
@@ -71,35 +76,36 @@ class Plant(SimulationObject):
             descargado = 0
             while descargado < tasa and camion.tiene_contenido:
                 kilos, calidad = camion.descargar()
-                self.uva_actual.append((kilos, calidad, SimulationObject.tiempo_actual))
+                uva = Batch(kilos, calidad, SimulationObject.tiempo_actual)
+                self.uva_actual.append(uva)
                 self.daily_grapes += kilos
                 descargado += kilos
             if not camion.tiene_contenido:
                 self.camiones.pop(0)
 
-    def procesar_dia(self):
+    def procesar_dia(self) -> None:
         print(f"Procesando uva en la planta {self.nombre}")
         procesado = 0
         while procesado < self.cap_prod:
             if not self.uva_actual:
                 break
-            if not (SimulationObject.tiempo_actual - self.uva_actual[0][2]).days >= 7:
+            if not (SimulationObject.tiempo_actual - self.uva_actual[0].fecha_in).days >= 7:
                 break
             batch = self.uva_actual.pop(0)
-            procesado += batch[0]
-            self.uva_procesada += batch[0]
-            self.vino_total_producido += (batch[0] * batch[1]) * 0.55
+            procesado += batch.kilos
+            self.uva_procesada += batch.kilos
+            self.vino_total_producido += (batch.kilos * batch.calidad) * 0.55
         print(self)
 
     @property
-    def proximo_evento(self):
+    def proximo_evento(self) -> tuple[str, str, datetime]:
         if not self.camiones or self.daily_grape_percentage >= Plant.MAX_DAILY_UNLOAD:
             return self.nombre, 'descarga', datetime(3000, 1, 1, hour=6, minute=0, second=0)
         if not self.tiempo_descarga:
             self.tiempo_descarga = SimulationObject.tiempo_actual + timedelta(minutes=60)
         return self.nombre, 'descarga', self.tiempo_descarga
 
-    def resolver_evento(self, evento):
+    def resolver_evento(self, evento: str) -> None:
         if evento == 'descarga':
             self.descargar_camiones()
 
