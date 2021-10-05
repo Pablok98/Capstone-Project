@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pandas as pd
 import params as p
 
@@ -12,7 +13,6 @@ def load_initial_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     misc_df = pd.read_excel(p.GIVEN_DATA_PATH, sheet_name=p.MISC_SHEET)
 
     return lot_df, misc_df
-
 
 def read_lot_data():
     lot, misc = load_initial_data()

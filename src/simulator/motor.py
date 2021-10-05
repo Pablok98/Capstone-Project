@@ -63,10 +63,22 @@ class Wine(SimulationObject):
             for lote in self.lotes.values():
                 lot, evento, tiempo = lote.proximo_evento
                 eventos[lot] = {'event': evento, 'tiempo': tiempo}
+
+            """
+            for plant in self.plants.values():
+                plant, evento, tiempo = plant.proximo_evento
+                eventos[plant] = 
+            """
             prox_lote = min(eventos, key=lambda x: eventos[x]['tiempo'])
+            # TEMPORAL
+
             retorno = self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
             if retorno:
-                self.plantas[retorno.planta_asignada].descargar_camion(retorno)
+
+                if type(retorno) == Truck:
+                    planta = self.plantas[retorno.planta_asignada]
+                    retorno.travel()
+                    planta.descargar_camion(retorno)
 
             if self.ui:
                 self.status_signal.emit(self.estado_lotes_ui())
@@ -94,10 +106,16 @@ class Wine(SimulationObject):
         return string
 
     def instanciar_lotes(self, info):
+        dist_plantas = {
+            "P1":info["km_a_P1"],
+            "P2":info["km_a_P2"],
+            "P3": info["km_a_P3"],
+            "P4": info["km_a_P4"],
+            "P5": info["km_a_P5"]
+        }
         for name, info_lote in info.items():
             self.lotes[name] = Lot(name, info_lote["Tipo_UVA"], info_lote["Tn"],
-                                   info_lote["Dia_optimo_cosecha"], info_lote["rango_calidad"])
-        print()
+                                   info_lote["Dia_optimo_cosecha"], info_lote["rango_calidad"], dist_plantas)
 
     def test(self):
         self.plantas['P1'] = Plant('P1', 2500000, 150000, 50000, 40000)

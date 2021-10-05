@@ -17,6 +17,10 @@ class Truck:
 
         self.driver = None
 
+        self.distance_travelled = 0
+
+        self.current_lot = None
+
     @property
     def lleno(self):
         if self.de_bin:
@@ -52,6 +56,10 @@ class Truck:
 
         else:
             self.driver = driver
+
+    def travel(self):
+        distance = self.current_lot.plant_distances[self.planta_asignada.nombre]
+        self.distance_travelled += distance
 
     def estado(self):
         tipo = 'Bines' if self.de_bin else 'Tolva'
