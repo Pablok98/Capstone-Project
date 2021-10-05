@@ -12,7 +12,7 @@ rain_data = simulate_rain(dfs[0], p.TIME_RANGE)
 write_excel_listed(rain_data, p.RAIN_DATA_PATH)
 """
 
-ui = False
+ui = True
 
 winifera = Wine(ui)
 

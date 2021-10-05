@@ -58,7 +58,7 @@ class Truck:
             self.driver = driver
 
     def travel(self):
-        distance = self.current_lot.plant_distances[self.planta_asignada.nombre]
+        distance = self.current_lot.plant_distances[self.planta_asignada]
         self.distance_travelled += distance
 
     def estado(self):
