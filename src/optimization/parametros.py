@@ -1,14 +1,19 @@
+import numpy as np
+import os
+import json
+import pandas as pd
+
 L = [0,1,2,3,4,5,6]
 T = [0,1,2,3,4,5,6,]
-K = 0 
-C = 0 #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
-P = 5
+K = [i for i in range(100)]
+C = [i for i in range(20)]#Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
+P = [0,1,2,3,4]
 M = 1000
 
 ###############################################################################
-ef_cos = 4000 * 10#10 hras  ->  #kg/día                         #lt
+ef_cos = [[4000 * 10 for t in T] for l in L]#10 hras  ->  #kg/día                         #lt
 ef_jorn = 700 #kg/dia                                           #lt
-ef_cuad = 5 * ef_jorn  #Cuadrillas de 5 personas                #lt
+ef_cuad = [[5 * ef_jorn for t in T] for l in L]  #Cuadrillas de 5 personas                #lt
 
 ###############################################################################
 
@@ -25,7 +30,7 @@ cap_cuadrillas = 0 # cuantas cuadrillas podremos ocupar
 
 
 #l
-DI = [58, 138, 120, 45, 65] #tn
+DI = [58, 138, 120, 45, 65, 100, 100] #tn
 
 
 #p
@@ -37,6 +42,7 @@ costo_procesado = [20.0, 30.8, 20.8, 27.8, 29.2] #Ch$ /kg
 
 
 #c
+
 cap_bines = [36, 36, 36, 36, 36, 36, 36, 32, 32, 32, 36, 36, 36, 36, 36, 36, 36, 36, 12, 
 12, 12, 12, 12, 12, 12] 
 cap_tolva = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1]
@@ -50,3 +56,45 @@ kg_tolva = 10000
 cantidad_tolvas = 100
 CFD = 10 #costo fijo diario
 penalizacion = 10
+
+
+def conseguir_cal():
+    curr_dir = os.path.dirname(__file__)
+    print(curr_dir)
+    parent = os.path.split(curr_dir)[0]
+    with open(os.path.join(parent, 'simulated_expected_q.json')) as jsonFile:
+        jsonObject = json.load(jsonFile)
+        jsonFile.close()
+
+    print(jsonObject)
+    calidades = list(jsonObject.values())
+    calidades = calidades[:7]
+    print(calidades)
+    print(len(calidades))
+    print(len(calidades[0]))
+
+    file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'))
+# print(file.head())
+
+    aux = []
+    for i in range(len(calidades)):
+        fila = []
+        # fila.append(i)
+        dia = 0
+        while dia != 180:
+            num = dia - file.iloc[i]['Dia optimo cosecha']
+            if num == -7:
+                for dato in calidades[i]:
+                    fila.append(dato)
+                dia += 14
+            else:
+                fila.append(0)
+            dia += 1
+        aux.append(fila)
+
+    return aux
+    print(aux)
+    print(len(aux))
+    print(len(aux[0]))
+
+
