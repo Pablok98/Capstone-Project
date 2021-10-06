@@ -3,8 +3,8 @@ import os
 import json
 import pandas as pd
 
-L = [0,1,2,3,4,5,6]
-T = [i for i in range(180)]
+L = [i for i in range(100)]
+T = [i for i in range(7)]
 K = [i for i in range(100)]
 C = [i for i in range(20)]#Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
 P = [0,1,2,3,4]
@@ -24,7 +24,7 @@ cap_cuadrillas = 200 # cuantas cuadrillas podremos ocupar
 
 def load_km():
     curr_dir = os.path.dirname(__file__)
-    print(curr_dir)
+    #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
     file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
     lista = []
@@ -35,7 +35,7 @@ def load_km():
 
 def load_DI():
     curr_dir = os.path.dirname(__file__)
-    print(curr_dir)
+    #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
     file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
     lista = []
@@ -78,7 +78,7 @@ penalizacion = 10
 
 
 
-def conseguir_cal():
+def conseguir_cal(actual):
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
@@ -88,8 +88,8 @@ def conseguir_cal():
 
     #print(jsonObject)
     calidades = list(jsonObject.values())
-    calidades = calidades[:7]
-    print(calidades)
+    #calidades = calidades[:7]
+    #print(calidades)
     #print(len(calidades))
     #print(len(calidades[0]))
 
@@ -111,8 +111,14 @@ def conseguir_cal():
                 fila.append(0)
             dia += 1
         aux.append(fila)
+    calfinal = []
+    for i in aux:
+        aux1 = []
+        for j in range(actual, actual+7):
+            aux1.append(i[j])
+        calfinal.append(aux1)
 
-    return aux
+    return calfinal
     #print(aux)
     #print(len(aux))
     #print(len(aux[0]))
@@ -120,3 +126,5 @@ def conseguir_cal():
 
 #print(km)
 #print(DI_l)
+#cal = conseguir_cal(80)
+#print(cal)
