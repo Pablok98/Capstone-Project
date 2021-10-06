@@ -82,7 +82,7 @@ def conseguir_cal():
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
-    with open(os.path.join(parent, 'simulated_expected_q.json')) as jsonFile:
+    with open(os.path.join(parent, 'data\simulated_expected_q.json')) as jsonFile:
         jsonObject = json.load(jsonFile)
         jsonFile.close()
 
