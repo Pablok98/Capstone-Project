@@ -15,9 +15,9 @@ m = Model()
 
 
 #Variables Cosecha
-c_cosecha = m.addVars(len(L),len(T),vtype=GRB.BINARY)
-c_auto = m.addVars(len(L),len(T), vtype=GRB.INTEGER)
-c_manual = m.addVars(len(L),len(T), vtype=GRB.INTEGER)
+c_cosecha = m.addVars(len(L),len(T),vtype=GRB.BINARY, name='cosecha')
+c_auto = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name ='a')
+c_manual = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='b')
 c_tolva = m.addVars(len(L),len(T), vtype=GRB.INTEGER)
 c_bines = m.addVars(len(L),len(T), vtype=GRB.INTEGER)
 c_cuad = m.addVars(len(K),len(L),len(T), vtype=GRB.BINARY)
@@ -33,15 +33,15 @@ t_ruta = m.addVars(len(L),len(P),len(T), vtype=GRB.BINARY)
 t_camion = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY)
 t_camion_bin = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY)
 t_camion_tolva = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY)
-camion_tercero_b = m.addVars(len(L),len(T), vtype=GRB.CONTINUOUS)
-camion_tercero_t = m.addVars(len(L),len(T), vtype=GRB.CONTINUOUS)
+camion_tercero_b = m.addVars(len(L),len(T), vtype=GRB.INTEGER)
+camion_tercero_t = m.addVars(len(L),len(T), vtype=GRB.INTEGER)
 
 #Variables Planta
-p_proc = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
-p_fermentando = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
-p_disp = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
-p_rec = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
-p_terceros = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
+p_proc = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='procesado')
+p_fermentando = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='fermentando')
+p_disp = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='disp')
+p_rec = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='recepcionado')
+p_terceros = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='terceros')
 
 #Variable Auxiliar
 auxiliar = m.addVar(vtype=GRB.CONTINUOUS)
@@ -56,7 +56,8 @@ m.addConstrs((c_cosecha[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
 m.addConstrs((c_cosecha[l,t] <= c_auto[l,t] + c_manual[l,t] for l in L for t in T))
 m.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M for l in L for t in T)) #aca talvez para mejorar rendimiento se puede poner distintos M
 m.addConstrs((c_manual[l,t] <=c_cosecha[l,t] * M for l in L for t in T))
-m.addConstrs((sum(c_manual[l,t] for l in L) <= 5 for t in T))
+m.addConstrs((sum(c_auto[l,t] for l in L) <= 5 for t in T))
+m.addConstrs((quicksum(c_manual[l,t] for l in L) <= 200 for t in T))
 m.addConstrs((sum(c_cuad[k,l,t] for k in K) == c_manual[l,t] for l in L for t in T))
 m.addConstrs((c_bines[l,t] >= ((ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * sum(c_man_bin[k,l,t] for k in K))/kg_bin) for l in L for t in T))
 m.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * sum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))
@@ -110,4 +111,5 @@ m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - auxilia
 m.update()
 m.optimize()
 # print(m.objVal)
-#print(m.getVars())
+for v in m.getVars():
+    print('%s %g' % (v.varName, v.x))

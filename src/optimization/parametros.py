@@ -3,7 +3,7 @@ import os
 import json
 import pandas as pd
 
-L = [0,1,2,3,4,5,6]
+L = [i for i in range(100)]
 T = [i for i in range(180)]
 K = [i for i in range(100)]
 C = [i for i in range(20)]#Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
@@ -88,7 +88,7 @@ def conseguir_cal():
 
     #print(jsonObject)
     calidades = list(jsonObject.values())
-    calidades = calidades[:7]
+    calidades = calidades
     print(calidades)
     #print(len(calidades))
     #print(len(calidades[0]))
