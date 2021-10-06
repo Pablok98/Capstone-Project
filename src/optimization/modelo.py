@@ -44,7 +44,7 @@ m.update()
 
 
 #Restricciones Cosecha
-# m.addConstrs((c_cant_uva == ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
+#m.addConstrs((c_cant_uva[l,t] == ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
 m.addConstrs((c_cosecha[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
 m.addConstrs((c_cosecha[l,t] <= c_auto[l,t] + c_manual[l,t] for l in L for t in T))
 m.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M for l in L for t in T)) #aca talvez para mejorar rendimiento se puede poner distintos M
@@ -100,4 +100,4 @@ m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - promedi
 m.update()
 m.optimize()
 print(m.objVal)
-print(m.getVars())
+#print(m.getVars())
