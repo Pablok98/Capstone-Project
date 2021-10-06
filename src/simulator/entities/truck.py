@@ -1,12 +1,13 @@
 from src.params import MAX_DIAS_TRABAJO_CONDUCTORES
 from typing import Union
 from ..entities import *
+from ..sites import *
 
 
 class Truck:
     _id = 0
 
-    def __init__(self, tipo, tolva, bines):
+    def __init__(self, tipo: str, tolva: int, bines: int):
         Truck._id += 1
         self.id = Truck._id
         self.tipo = tipo
@@ -24,14 +25,14 @@ class Truck:
 
         self.distance_travelled = 0
 
-        self.current_lot = None
+        self.current_lot: Union[Lot, None] = None
 
     def clean(self):
         self.tolvas = []
-        self.driver = []
+        self.driver = None
         self.current_lot = None
 
-    def assign_driver(self, driver):
+    def assign_driver(self, driver: TruckDriver) -> None:
         if driver.dias_trabajando < MAX_DIAS_TRABAJO_CONDUCTORES:
             self.driver = driver
             driver.assign_truck(self)
@@ -42,13 +43,13 @@ class Truck:
                   "porque excede los dias maximos de trabajo")
 
     @property
-    def lleno(self):
+    def lleno(self) -> bool:
         if self.de_bin:
             return not len(self.bines) < self.cap_bines
         return not len(self.tolvas) < self.cap_tolva
 
     @property
-    def tiene_contenido(self):
+    def tiene_contenido(self) -> bool:
         if self.de_bin:
             return self.bines != []
         for tolva in self.tolvas:
@@ -57,10 +58,10 @@ class Truck:
         return False
 
     @property
-    def espacio_tolva(self):
+    def espacio_tolva(self) -> bool:
         return len(self.tolvas) < self.cap_tolva
 
-    def descargar(self):
+    def descargar(self) -> Union[tuple[int, float], None]:
         if self.tiene_contenido:
             if self.de_bin:
                 bin_ = self.bines.pop(0)
@@ -70,18 +71,18 @@ class Truck:
                     if tolva.tiene_contenido:
                         return tolva.descargar()
 
-    def assign_driver(self, driver):
+    def assign_driver(self, driver: TruckDriver) -> None:
         if self.driver:
             print(f'Truck {self._id} already has a driver')
 
         else:
             self.driver = driver
 
-    def travel(self):
+    def travel(self) -> None:
         distance = self.current_lot.plant_distances[self.planta_asignada]
         self.distance_travelled += distance
 
-    def estado(self):
+    def estado(self) -> dict:
         tipo = 'Bines' if self.de_bin else 'Tolva'
         capacidad = self.cap_bines if self.de_bin else self.cap_tolva
         ocupacion = len(self.bines) if self.de_bin else len(self.tolvas)

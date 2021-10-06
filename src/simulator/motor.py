@@ -2,6 +2,9 @@ from collections import deque
 from random import expovariate, randint, uniform, seed
 from datetime import datetime, timedelta
 from time import sleep
+from typing import Union
+
+import pandas as pd
 
 from .entities import *
 from .sites import *
@@ -11,7 +14,7 @@ from . import raingen
 
 
 class Wine(SimulationObject):
-    def __init__(self, lot_data, ui=False):
+    def __init__(self, lot_data: dict, ui=False):
         self.lot_data = lot_data
         self.ui = ui
 
@@ -27,7 +30,7 @@ class Wine(SimulationObject):
         self.camioneros: list[TruckDriver] = []
         self.tractores: list[Tractor] = []
 
-        self.rain_data = None
+        self.rain_data: Union[pd.DataFrame, None] = None
 
         self.status_signal = None
         self.command_signal = None
@@ -44,31 +47,31 @@ class Wine(SimulationObject):
     def dia(self) -> int:
         return SimulationObject.tiempo_actual.day
 
-    def set_rain_data(self):
+    def set_rain_data(self) -> None:
         self.rain_data = raingen.read_data()
 
-    def set_daily_rain(self):
+    def set_daily_rain(self) -> None:
         for lot in self.lotes.values():
             mask = self.rain_data['Lote COD'] == lot.nombre
             lluvia = int(self.rain_data[mask][f'day {self.dia}'])
             lot.llover(lluvia)
 
-    def asignar_jornalero(self, jornalero, lote):
+    def asignar_jornalero(self, jornalero: Laborer, lote: str) -> None:
         self.lotes[lote].asignar_jornalero(jornalero)
 
-    def assign_truck(self, truck, lot):
+    def assign_truck(self, truck: Truck, lot: str) -> None:
         self.lotes[lot].assign_truck(truck)
 
     @staticmethod
-    def assign_truck_driver(driver, truck):
+    def assign_truck_driver(driver: TruckDriver, truck: Truck) -> None:
         truck.assign_driver(driver)
 
     @staticmethod
-    def assign_machine_driver(driver, machine):
+    def assign_machine_driver(driver: MachineDriver, machine: Union[LiftTruck, Tractor]) -> None:
         machine.assign_driver(driver)
 
     @property
-    def lotes_veraison(self):
+    def lotes_veraison(self) -> dict:
         results = {}
         for llabe, lote in self.lotes.items():
             dia_optimo = lote.dia_optimo
@@ -86,7 +89,7 @@ class Wine(SimulationObject):
             self._test_assing()
             self.simular_dia()
 
-    def simular_dia(self):
+    def simular_dia(self) -> None:
         for lote in self.lotes.values():
             lote.iniciar_dia()
 
@@ -148,13 +151,13 @@ class Wine(SimulationObject):
             data[lote.nombre] = lote.estado
         return data
 
-    def estado_lotes_noui(self):
+    def estado_lotes_noui(self) -> str:
         string = ""
         for lote in self.lotes.values():
             string += lote.estado_string
         return string
 
-    def instanciar_lotes(self, info):
+    def instanciar_lotes(self, info: dict) -> None:
         for name, info_lote in info.items():
             dist_plantas = {
                 "P1": info_lote["km_a_P1"],
@@ -167,7 +170,7 @@ class Wine(SimulationObject):
                                    info_lote["Dia_optimo_cosecha"], info_lote["rango_calidad"],
                                    dist_plantas)
 
-    def _test_instancing(self):
+    def _test_instancing(self) -> None:
         test_d = {
             "P1": 1,
             "P2": 2,
@@ -176,8 +179,8 @@ class Wine(SimulationObject):
             "P5": 5
         }
         # Overwrite test lots
-        self.lotes['U_1_8_58_118'] = Lot('U_1_8_58_118', '1', 58000, 1, [0.9, 0.85], test_d)
-        self.lotes['U_2_6_138_123'] = Lot('U_2_6_138_123', '3', 58000, 4, [0.9, 0.85], test_d)
+        self.lotes['U_1_8_58_118'] = Lot('U_1_8_58_118', 1, 58000, 1, [0.9, 0.85], test_d)
+        self.lotes['U_2_6_138_123'] = Lot('U_2_6_138_123', 3, 58000, 4, [0.9, 0.85], test_d)
         # Plant instancing
         self.plantas['P1'] = Plant('P1', 2500000, 150000, 50000, 40000)
 
@@ -194,12 +197,12 @@ class Wine(SimulationObject):
         self.camiones[camion.id] = camion
 
         # Hopper instancing
-        self.tolvas.append(Hopper)
+        self.tolvas.append(Hopper())
 
         # Harvester instancing
         self.cosechadoras.append(Harvester())
 
-    def _test_assing(self):
+    def _test_assing(self) -> None:
         for i, jornalero in enumerate(self.jornaleros):
             if i < 5:
                 self.asignar_jornalero(jornalero, 'U_1_8_58_118')

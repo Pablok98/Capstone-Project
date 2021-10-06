@@ -14,7 +14,8 @@ def load_initial_data() -> tuple[pd.DataFrame, pd.DataFrame]:
 
     return lot_df, misc_df
 
-def read_lot_data():
+
+def read_lot_data() -> dict:
     lot, misc = load_initial_data()
     info = {}
     cal_uvas = {}
@@ -43,7 +44,8 @@ def read_lot_data():
         info[row["Lote COD"]] = info_lot
     return info
 
-def write_excel_listed(data, target):
+
+def write_excel_listed(data: list, target: str) -> None:
     df = pd.DataFrame(data)
     df.to_excel(target, index=False)
 

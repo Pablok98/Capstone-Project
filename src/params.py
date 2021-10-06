@@ -12,7 +12,7 @@ CLP = 1
 UTM = 52842 * CLP
 
 # Paths and excel
-GIVEN_DATA_PATH = join('src', "data", "datos_entregados.xlsx")
+GIVEN_DATA_PATH = join("data", "datos_entregados.xlsx")
 RAIN_DATA_PATH = join("data", "lluvia_generada.xlsx")
 
 LOT_SHEET = "lotes"

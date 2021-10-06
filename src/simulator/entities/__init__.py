@@ -5,9 +5,10 @@ from .truck import Truck
 from .harvester import Harvester
 from .hopper import Hopper
 from .lifttruck import LiftTruck
+from .machine import Machine
 from .machinedriver import MachineDriver
 from .tractor import Tractor
 from .truckdriver import TruckDriver
 
 __all__ = ['Bin', 'Crate', 'Laborer', 'Truck', 'Harvester', 'Hopper', 'LiftTruck', 'MachineDriver',
-           'Tractor', 'TruckDriver']
+           'Tractor', 'TruckDriver', 'Machine']

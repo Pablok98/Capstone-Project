@@ -10,4 +10,4 @@ class Harvester(Machine):  # (cosechadora)
         super().__init__(TASA_DEPRECIACION_COSECHADORA, COSTO_POR_TONELADA_COSECHADORA)
         Harvester._id += 1
         self.id = Harvester._id
-        self.velocidad_cosecha = VELOCIDAD_COSECHADORA
+        self.velocidad_cosecha = VELOCIDAD_COSECHADORA  # por hora

@@ -1,3 +1,6 @@
+from ..entities import *
+
+
 class MachineDriver:
     _id = 0
 
@@ -9,5 +12,5 @@ class MachineDriver:
         self.dias_trabajo_semanales = 0
         self.dias_trabajo_totales = 0
 
-    def assign_machine(self, machine):
+    def assign_machine(self, machine: Machine):
         self.machine = machine
