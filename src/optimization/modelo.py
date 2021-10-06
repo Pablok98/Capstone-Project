@@ -4,7 +4,7 @@ from parametros import *
 from parametros import conseguir_cal
 
 ###############RELLENAR DIA EN EL QUE SE ESTA ACA PARA LA CALIDAD DE CADA LOTE########## 
-cal = conseguir_cal(90)
+cal = conseguir_cal(0)
 
 m = Model()
 # m.Params.OutputFlag = 0
