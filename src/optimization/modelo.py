@@ -3,12 +3,8 @@ from gurobipy import *
 from parametros import *
 from parametros import conseguir_cal
 
-print(ef_cos)
-print(type(ef_cos[2][2]))
-cal = conseguir_cal()
-print('Esto es cal', len(cal), len(cal[0]))
-print("Esto es DI")
-print(DI)
+###############RELLENAR DIA EN EL QUE SE ESTA ACA PARA LA CALIDAD DE CADA LOTE########## 
+cal = conseguir_cal(90)
 
 m = Model()
 # m.Params.OutputFlag = 0
@@ -111,5 +107,5 @@ m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - auxilia
 m.update()
 m.optimize()
 # print(m.objVal)
-for v in m.getVars():
-    print('%s %g' % (v.varName, v.x))
+#for v in m.getVars():
+ #   print('%s %g' % (v.varName, v.x))
