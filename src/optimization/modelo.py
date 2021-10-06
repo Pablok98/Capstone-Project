@@ -6,6 +6,8 @@ from parametros import conseguir_cal
 print(ef_cos)
 print(type(ef_cos[2][2]))
 cal = conseguir_cal()
+print("Esto es DI")
+print(DI)
 
 m = Model()
 # m.Params.OutputFlag = 0
@@ -44,7 +46,8 @@ m.update()
 
 
 #Restricciones Cosecha
-#m.addConstrs((c_cant_uva[l,t] == ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
+m.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
+m.addConstrs((c_cant_uva[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
 m.addConstrs((c_cosecha[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
 m.addConstrs((c_cosecha[l,t] <= c_auto[l,t] + c_manual[l,t] for l in L for t in T))
 m.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M for l in L for t in T)) #aca talvez para mejorar rendimiento se puede poner distintos M
@@ -76,8 +79,8 @@ m.addConstrs((p_proc[p,t] <= cap_proc[p] for p in P for t in T))
 m.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
 m.addConstrs((p_disp[p,t] == p_disp[p,t-1] + p_rec[p,t-7] - p_proc[p,t-1] for p in P for t in T if t >= 7))
 m.addConstrs((p_disp[p,t] == 0 for p in P for t in T if t < 7))
-m.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(c_cant_uva[l,t]*t_ruta[l,p,t] for l in L) for p in P for t in T))
-m.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) == sum(c_cant_uva[l,t] for l in L) for p in P for t in T))
+m.addConstrs((p_terceros[p,t] + p_rec[p,t] >= sum(c_cant_uva[l,t]*t_ruta[l,p,t] for l in L) for p in P for t in T))
+m.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(c_cant_uva[l,t] for l in L) for p in P for t in T))
 m.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3 for p in P for t in T))
 m.addConstrs((p_rec[p,t] <= cap_fermentacion[p] - p_fermentando[p,t] for p in P for t in T))
 m.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p] for p in P for t in T))
@@ -99,5 +102,5 @@ m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - promedi
 
 m.update()
 m.optimize()
-print(m.objVal)
+# print(m.objVal)
 #print(m.getVars())
