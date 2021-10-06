@@ -6,6 +6,7 @@ from parametros import conseguir_cal
 print(ef_cos)
 print(type(ef_cos[2][2]))
 cal = conseguir_cal()
+print('Esto es cal', len(cal), len(cal[0]))
 print("Esto es DI")
 print(DI)
 
@@ -41,6 +42,9 @@ p_fermentando = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
 p_disp = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
 p_rec = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
 p_terceros = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS)
+
+#Variable Auxiliar
+auxiliar = m.addVar(vtype=GRB.CONTINUOUS)
 
 m.update()
 
@@ -88,6 +92,9 @@ m.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p] for p in P for t in T))
 
 m.addConstrs((sum(t_camion[c,l,t] for l in L) == 1 for c in C for t in T))
 
+#Auxiliar
+m.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
+
 m.update()
 
 #Funcion Objetivo
@@ -98,7 +105,7 @@ sobrecosto_ocupacion = quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[
 # auxiliar = quicksum(c_cosecha[l,t] for l in L for t in T)
 promedio = quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)
 # sobrecosto_cal = quicksum(penalizacion*(1 - (promedio / auxiliar)))
-m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - promedio) + quicksum(costo_procesado[p]*p_proc[p,t] for p in P for t in T))
+m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - auxiliar) + quicksum(costo_procesado[p]*p_proc[p,t] for p in P for t in T))
 
 m.update()
 m.optimize()
