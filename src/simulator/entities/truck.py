@@ -1,15 +1,18 @@
-from src.params import MAX_DIAS_TRABAJO_CONDUCTORES
+import params as p
 from typing import Union
 from ..entities import *
 from ..sites import *
+from machine import Machine
 
 
-class Truck:
+class Truck(Machine):
     _id = 0
 
     def __init__(self, tipo: str, tolva: int, bines: int):
+        super().__init__(p.TASA_DEPRECIACION_TRACTOR, p.COSTO_POR_TONELADA_TRACTOR)
         Truck._id += 1
         self.id = Truck._id
+        self.nombre = 'camion'
         self.tipo = tipo
         self.cap_tolva = tolva
         self.cap_bines = bines
@@ -33,7 +36,7 @@ class Truck:
         self.current_lot = None
 
     def assign_driver(self, driver: TruckDriver) -> None:
-        if driver.dias_trabajando < MAX_DIAS_TRABAJO_CONDUCTORES:
+        if driver.dias_trabajando < p.MAX_DIAS_TRABAJO_CONDUCTORES:
             self.driver = driver
             driver.assign_truck(self)
             print(f'El conductor {driver._id} fue asignado al camion {self._id}')
