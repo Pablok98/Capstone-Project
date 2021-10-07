@@ -8,7 +8,7 @@ T = [i for i in range(7)]
 K = [i for i in range(100)]
 C = [i for i in range(20)]#Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
 P = [0,1,2,3,4]
-M = 1000
+M = 1000000
 
 ###############################################################################
 ef_cos = [[4000 * 10 for t in T] for l in L]#10 hras  ->  #kg/día                         #lt
@@ -40,7 +40,7 @@ def load_DI():
     file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
     lista = []
     for i in range (290):
-        lista.append(file.iloc[i]['Tn  '])
+        lista.append(1000*file.iloc[i]['Tn  '])
     return lista
 
 
