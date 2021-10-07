@@ -1,9 +1,10 @@
 from os import read
 import numpy as np
 from gurobipy import *
-from parametros import *
-from parametros import conseguir_cal
+from optimization.parametros import *
+from optimization.parametros import conseguir_cal
 from files import read_lot_data
+import pickle
 
 ###############RELLENAR DIA EN EL QUE SE ESTA ACA PARA LA CALIDAD DE CADA LOTE########## 
 cal = conseguir_cal(80)
@@ -108,6 +109,9 @@ m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - auxilia
 
 m.update()
 m.optimize()
+
+# with open('archivo.obj', 'w') as file:
+#     pickle.dump(m, file)
 # print(m.objVal)
 lot_names = list(read_lot_data().keys())
 
@@ -117,20 +121,33 @@ cosechadora = {}
 cuadrillas = {}
 monta = {}
 
-v = m.getVarByName('cosecha')
-lot_harvest = {lot_names[i]: {f'dia {t}': bool(v.x[i][t]) for t in range(7)} for i in range(len(lot_names))}
+lot_harvest = {lot_names[i]: {} for i in range(len(lot_names))}
 
 
+# v = m.getVarByName('cosecha')
+# lot_harvest = {lot_names[i]: {f'dia {t}': bool(m.getVarByName(f'cosecha[{i},{t}]').x) for t in range(7)} for i in range(len(lot_names))}
+# cosecha[95,0]
+
+for v in m.getVars():
+
+    if 'cosecha' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+
+        try:
+            lot_harvest[lot_names[l]]
+
+        except KeyError:
+            lot_harvest[lot_names[l]] = {}
+
+        lot_harvest[lot_names[l]][f'dia {t}'] = bool(v.x)
 
 
-# for v in m.getVars():
+        # print('%s %g' % (v.varName, v.x))
+    # if 'cantidad' in v.varName or 'aux' in v.varName:
+    #     print('%s %g' % (v.varName, v.x))
 
-#     if v.varName == 'cosecha':
-        
 
-#     if 'camion' in v.varName:
-#         print('%s %g' % (v.varName, v.x))
-#     if 'cantidad' in v.varName or 'aux' in v.varName:
-#         print('%s %g' % (v.varName, v.x))
 
 print(lot_harvest)
