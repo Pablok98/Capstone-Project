@@ -15,7 +15,7 @@ class Machine(ABC):
         self.working = False
 
 
-    def assign_driver(self, driver: MachineDriver) -> None:
+    def assign_driver(self, driver: 'MachineDriver') -> None:
         if driver.dias_trabajando < MAX_DIAS_TRABAJO_CONDUCTORES:
             self.driver = driver
             driver.assign_machine(self)

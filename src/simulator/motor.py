@@ -12,9 +12,9 @@ from .sites import *
 from .sim import SimulationObject
 from . import raingen
 
-from interface import Assignations
+from .interface import Assignations
+from params import TRUCK_DATA, PLANTS_DATA
 
-from .. import params as p
 
 class Wine(SimulationObject):
     def __init__(self, lot_data: dict, ui=False):
@@ -183,7 +183,7 @@ class Wine(SimulationObject):
     def initial_instancing(self):
         # Plant instancing
         # TODO: use keyword arguments
-        for p_name, plant in p.PLANTS_DATA.items():
+        for p_name, plant in PLANTS_DATA.items():
             self.plantas[p_name] = Plant(
                 p_name,
                 plant['ferm_cap']*1000,
@@ -191,7 +191,7 @@ class Wine(SimulationObject):
                 plant['hopper_cap']*1000,
                 plant['bin_cap']*1000
             )
-        for c_type, truck in p.TRUCK_DATA:
+        for c_type, truck in TRUCK_DATA:
             for _ in range(truck['avail_units']):
                 truck_i = Truck(c_type, truck['hopper_cap'], truck['bin_cap'])
                 self.camiones[truck_i.id] = truck_i

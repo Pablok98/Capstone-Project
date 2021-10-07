@@ -58,7 +58,7 @@ class Plant(SimulationObject):
         """
         return round(self.daily_grapes / self.cap_ferm, 3)
 
-    def llegada_camion(self, truck: Truck) -> None:
+    def llegada_camion(self, truck):# -> None:
         """
         Method to call when a truck gets to the plant.
 

@@ -12,7 +12,7 @@ camiones = {
   }
 }
 """
-from sim import SimulationObject
+from .sim import SimulationObject
 
 
 class Assignations(SimulationObject):

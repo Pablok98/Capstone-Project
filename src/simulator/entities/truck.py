@@ -2,7 +2,7 @@ import params as p
 from typing import Union
 from ..entities import *
 from ..sites import *
-from machine import Machine
+from .machine import Machine
 
 
 class Truck(Machine):
@@ -37,7 +37,7 @@ class Truck(Machine):
         self.current_lot = None
         self.planta_asignada = None
 
-    def assign_driver(self, driver: TruckDriver) -> None:
+    def assign_driver(self, driver: 'TruckDriver') -> None:
         if driver.dias_trabajando < p.MAX_DIAS_TRABAJO_CONDUCTORES:
             self.driver = driver
             driver.assign_truck(self)
@@ -76,7 +76,7 @@ class Truck(Machine):
                     if tolva.tiene_contenido:
                         return tolva.descargar()
 
-    def assign_driver(self, driver: TruckDriver) -> None:
+    def assign_driver(self, driver: 'TruckDriver') -> None:
         if self.driver:
             print(f'Truck {self._id} already has a driver')
 

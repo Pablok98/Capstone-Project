@@ -103,7 +103,7 @@ class Lot(SimulationObject):
             print(f"El jornalero {laborer.id} no pudo ser asignado al lote {self.nombre}" +
                   "porque excede los dias maximos de trabajo")
 
-    def assign_truck(self, truck: Truck) -> None:
+    def assign_truck(self, truck) -> None:
         """
         Assigns truck to the lot.
 
@@ -134,7 +134,7 @@ class Lot(SimulationObject):
         return _bin
 
     @property
-    def a_cargar(self) -> Union[Bin, Hopper, None]:
+    def a_cargar(self): #-> Union[Bin, Hopper, None]:
         # TODO: this shit sucks
         """
         Devuelve si se va a cargar el cajon al bin o a un tolva
@@ -212,7 +212,7 @@ class Lot(SimulationObject):
     # --------------------------------------------------------------------------------------
     # Carga de bines a camiones
     @property
-    def proximo_camion_vacio(self) -> Union[Truck, None]:
+    def proximo_camion_vacio(self):# -> Union[Truck, None]:
         """
         Retorna el proximo camión que tiene espacio para un bin
         """
@@ -274,7 +274,7 @@ class Lot(SimulationObject):
                 return SimulationObject.tiempo_actual
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
-    def salida_camion(self) -> Truck:
+    def salida_camion(self):# -> Truck:
         """
         Se despacha camión y se eliminca de la lista de camiones disp.
         """
@@ -332,7 +332,7 @@ class Lot(SimulationObject):
         eventos = ['llenar_cajon', 'cargar_bin', 'salida_camion', 'bin_lleno', 'enganchar_tolva']
         return self.nombre, eventos[tiempos.index(tiempo_prox_evento)], tiempo_prox_evento
 
-    def resolver_evento(self, evento: str) -> Union[Truck, None]:
+    def resolver_evento(self, evento: str):# -> Union[Truck, None]:
         metodos = {
             'llenar_cajon': self.cajon_lleno,
             'cargar_bin': self.carga_bin,
