@@ -32,8 +32,10 @@ class Truck(Machine):
 
     def clean(self):
         self.tolvas = []
+        self.de_bin = True
         self.driver = None
         self.current_lot = None
+        self.planta_asignada = None
 
     def assign_driver(self, driver: TruckDriver) -> None:
         if driver.dias_trabajando < p.MAX_DIAS_TRABAJO_CONDUCTORES:

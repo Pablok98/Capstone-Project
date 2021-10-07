@@ -12,6 +12,9 @@ from .sites import *
 from .sim import SimulationObject
 from . import raingen
 
+from interface import Assignations
+
+from .. import params as p
 
 class Wine(SimulationObject):
     def __init__(self, lot_data: dict, ui=False):
@@ -34,6 +37,8 @@ class Wine(SimulationObject):
 
         self.status_signal = None
         self.command_signal = None
+
+        self.assign_data = Assignations()
 
     @property
     def fin_jornada(self) -> datetime:
@@ -142,8 +147,13 @@ class Wine(SimulationObject):
             planta.procesar_dia()
 
         new_day = SimulationObject.tiempo_actual.day + 1
-        new_time = SimulationObject.tiempo_actual.replace(day=new_day, hour=6, minute=0, second=0)
+        try:
+            new_time = SimulationObject.tiempo_actual.replace(day=new_day, hour=6, minute=0, second=0)
+        except ValueError as error:
+            new_month = SimulationObject.tiempo_actual.month + 1
+            new_time = SimulationObject.tiempo_actual.replace(month=new_month, day=0, hour=6, minute=0, second=0)
         SimulationObject.tiempo_actual = new_time
+        SimulationObject.current_day += 1  # Todo: unhardcode, property tiempo actual
 
     def estado_lotes_ui(self):
         data = {}
@@ -169,6 +179,27 @@ class Wine(SimulationObject):
             self.lotes[name] = Lot(name, info_lote["Tipo_UVA"], info_lote["Tn"]*1000,
                                    info_lote["Dia_optimo_cosecha"], info_lote["rango_calidad"],
                                    dist_plantas)
+
+    def initial_instancing(self):
+        # Plant instancing
+        # TODO: use keyword arguments
+        for p_name, plant in p.PLANTS_DATA.items():
+            self.plantas[p_name] = Plant(
+                p_name,
+                plant['ferm_cap']*1000,
+                plant['prod_cap']*1000,
+                plant['hopper_cap']*1000,
+                plant['bin_cap']*1000
+            )
+        for c_type, truck in p.TRUCK_DATA:
+            for _ in range(truck['avail_units']):
+                truck_i = Truck(c_type, truck['hopper_cap'], truck['bin_cap'])
+                self.camiones[truck_i.id] = truck_i
+
+    def week_assignments(self):
+        # Clean state
+        for truck in self.camiones.values():
+            truck.clean()
 
     def _test_instancing(self) -> None:
         test_d = {
