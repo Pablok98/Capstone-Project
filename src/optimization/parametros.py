@@ -33,6 +33,16 @@ def load_km():
         file.iloc[i]['km a P4'], file.iloc[i]['km a P5']])
     return lista
 
+def dic_lote():
+    curr_dir = os.path.dirname(__file__)
+    #print(curr_dir)
+    parent = os.path.split(curr_dir)[0]
+    file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
+    lots = {}
+    for i in range (290):
+        lots[i] = file.iloc[i]['Lote COD']
+    return lots
+
 def load_DI():
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)

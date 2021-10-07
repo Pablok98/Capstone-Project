@@ -107,9 +107,16 @@ m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - auxilia
 m.update()
 m.optimize()
 print(m.objVal)
+lots = dic_lote()
+
+camiones = {}
+tolva = {}
+cosechadora = {}
+cuadrillas = {}
+monta = {}
+
 for v in m.getVars():
-    if 'cosecha' in v.varName:
+    if 'camion' in v.varName:
         print('%s %g' % (v.varName, v.x))
     if 'cantidad' in v.varName or 'aux' in v.varName:
         print('%s %g' % (v.varName, v.x))
-print(cal)
