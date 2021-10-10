@@ -8,27 +8,25 @@ from .machine import Machine
 class Truck(Machine):
     _id = 0
 
-    def __init__(self, tipo: str, tolva: int, bines: int):
+    def __init__(self, type_: str, hopper: int, bins: int):
         super().__init__(p.TASA_DEPRECIACION_TRACTOR, p.COSTO_POR_TONELADA_TRACTOR)
         Truck._id += 1
         self.id = Truck._id
+
         self.nombre = 'camion'
-        self.tipo = tipo
-        self.cap_tolva = tolva
-        self.cap_bines = bines
-
-        self.planta_asignada: Union[str, None] = None
-
-        self.de_bin = True
+        self.t_type = type_
+        self.hopper_cap = hopper
+        self.bin_cap = bins
 
         self.tolvas: list[Hopper] = []
         self.bines: list[Bin] = []
 
         self.driver: Union[TruckDriver, None] = None
+        self.planta_asignada: Union[str, None] = None
+        self.current_lot: Union[Lot, None] = None
 
         self.distance_travelled = 0
-
-        self.current_lot: Union[Lot, None] = None
+        self.de_bin = True
 
     def clean(self):
         self.tolvas = []
@@ -50,31 +48,31 @@ class Truck(Machine):
     @property
     def lleno(self) -> bool:
         if self.de_bin:
-            return not len(self.bines) < self.cap_bines
-        return not len(self.tolvas) < self.cap_tolva
+            return not len(self.bines) < self.bin_cap
+        return not len(self.tolvas) < self.hopper_cap
 
     @property
     def tiene_contenido(self) -> bool:
         if self.de_bin:
             return self.bines != []
         for tolva in self.tolvas:
-            if tolva.tiene_contenido:
+            if tolva.has_content:
                 return True
         return False
 
     @property
     def espacio_tolva(self) -> bool:
-        return len(self.tolvas) < self.cap_tolva
+        return len(self.tolvas) < self.hopper_cap
 
     def descargar(self) -> Union[tuple[int, float], None]:
         if self.tiene_contenido:
             if self.de_bin:
                 bin_ = self.bines.pop(0)
-                return bin_.descargar()
+                return bin_.unload()
             else:
                 for tolva in self.tolvas:
-                    if tolva.tiene_contenido:
-                        return tolva.descargar()
+                    if tolva.has_content:
+                        return tolva.unload()
 
     def assign_driver(self, driver: 'TruckDriver') -> None:
         if self.driver:
@@ -89,7 +87,7 @@ class Truck(Machine):
 
     def estado(self) -> dict:
         tipo = 'Bines' if self.de_bin else 'Tolva'
-        capacidad = self.cap_bines if self.de_bin else self.cap_tolva
+        capacidad = self.bin_cap if self.de_bin else self.hopper_cap
         ocupacion = len(self.bines) if self.de_bin else len(self.tolvas)
         return {
             'id': self.id,

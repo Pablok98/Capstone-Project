@@ -2,7 +2,8 @@ from .machine import Machine
 from src.params import TASA_DEPRECIACION_COSECHADORA, COSTO_POR_TONELADA_COSECHADORA, VELOCIDAD_COSECHADORA
 
 
-class Harvester(Machine):  # (cosechadora)
+class Harvester(Machine):
+    # TODO: machines
     _id = 0
 
     def __init__(self):

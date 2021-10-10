@@ -9,10 +9,10 @@ import pandas as pd
 from .entities import *
 from .sites import *
 
-from .sim import SimulationObject
-from . import raingen
+from .sim import SimulationObject, Interface
 
-from .interface import Assignations
+from files import read_rain_data
+
 from params import TRUCK_DATA, PLANTS_DATA
 
 
@@ -38,7 +38,7 @@ class Wine(SimulationObject):
         self.status_signal = None
         self.command_signal = None
 
-        self.assign_data = Assignations()
+        self.assign_data = Interface()
 
     @property
     def fin_jornada(self) -> datetime:
@@ -53,7 +53,7 @@ class Wine(SimulationObject):
         return SimulationObject.tiempo_actual.day
 
     def set_rain_data(self) -> None:
-        self.rain_data = raingen.read_data()
+        self.rain_data = read_rain_data()
 
     def set_daily_rain(self) -> None:
         for lot in self.lotes.values():
@@ -255,7 +255,7 @@ class Wine(SimulationObject):
                     self.assign_truck(camion, 'U_2_6_138_123')
 
         for tolva in self.tolvas:
-            if not tolva.tiene_contenido:
+            if not tolva.has_content:
                 if tolva.id == 1:
                     self.lotes['U_1_8_58_118'].tolvas.append(Hopper())
 
