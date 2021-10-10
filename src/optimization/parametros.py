@@ -24,9 +24,8 @@ cap_cuadrillas = 200 # cuantas cuadrillas podremos ocupar
 
 def load_km():
     curr_dir = os.path.dirname(__file__)
-    #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
-    file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
+    file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
     lista = []
     for i in range (290):
         lista.append([file.iloc[i]['km a P1'], file.iloc[i]['km a P2'], file.iloc[i]['km a P3'], 
@@ -37,7 +36,7 @@ def dic_lote():
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
-    file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
+    file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
     lots = {}
     for i in range (290):
         lots[i] = file.iloc[i]['Lote COD']
@@ -47,7 +46,7 @@ def load_DI():
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
-    file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
+    file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
     lista = []
     for i in range (290):
         lista.append(1000*file.iloc[i]['Tn  '])
@@ -92,7 +91,7 @@ def conseguir_cal(actual):
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
-    with open(os.path.join(parent, 'data\simulated_expected_q.json')) as jsonFile:
+    with open(os.path.join(parent, 'data', 'simulated_expected_q.json')) as jsonFile:
         jsonObject = json.load(jsonFile)
         jsonFile.close()
 
@@ -103,7 +102,7 @@ def conseguir_cal(actual):
     #print(len(calidades))
     #print(len(calidades[0]))
 
-    file = pd.read_excel(os.path.join(parent, 'data\datos_entregados.xlsx'), engine='openpyxl')
+    file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
 # print(file.head())
 
     aux = []

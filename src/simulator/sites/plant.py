@@ -48,7 +48,7 @@ class Plant(SimulationObject):
         """
         carga = 0
         for batch in self.uva_actual:
-            carga += batch.kilos
+            carga += batch.kilograms
         return carga
 
     @property
@@ -132,13 +132,13 @@ class Plant(SimulationObject):
         # We process grape until we reach the maximum daily capacity or grape is exhausted
         while processed < self.cap_prod:
             # We must check if the next grape in the queue has been fermented
-            fermented = (SimulationObject.tiempo_actual - self.uva_actual[0].fecha_in).days >= 7
+            fermented = (SimulationObject.tiempo_actual - self.uva_actual[0].date).days >= 7
             if not self.uva_actual or not fermented:
                 break
             batch = self.uva_actual.pop(0)
-            processed += batch.kilos
-            self.uva_procesada += batch.kilos
-            self.vino_total_producido += (batch.kilos * batch.calidad) * 0.55
+            processed += batch.kilograms
+            self.uva_procesada += batch.kilograms
+            self.vino_total_producido += (batch.kilograms * batch.quality) * 0.55
         print(self)
 
     def resolver_evento(self, event: str) -> None:
