@@ -3,7 +3,7 @@ from typing import Union
 from src.params import MAX_DIAS_TRABAJO_JORNALERO
 from ..entities import *
 from ..sim import SimulationObject
-
+from ..utils import event
 
 class Lot(SimulationObject):
     def __init__(self,
@@ -172,6 +172,7 @@ class Lot(SimulationObject):
         time = 60*24*18 / (rate - (rate * 0.3 * self.lloviendo))
         self.tiempo_proximo_cajon = SimulationObject.tiempo_actual + timedelta(minutes=time)
 
+    @event('tiempo_proximo_cajon')
     def cajon_lleno(self) -> None:
         """
         [Event for when a crate is filled]. Generates a new filled crate, which is then loaded into

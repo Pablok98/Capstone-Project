@@ -108,11 +108,11 @@ class Wine(SimulationObject):
                 eventos[lot] = {'event': evento, 'tiempo': tiempo}
 
             for plant in self.plantas.values():
-                planta, evento, tiempo = plant.proximo_evento
+                planta, evento, tiempo = plant.next_event
                 eventos[planta] = {'event': evento, 'tiempo': tiempo}
             prox_lote = min(eventos, key=lambda x: eventos[x]['tiempo'])
             if prox_lote in ['P1', 'P2', 'P3', 'P4', 'P5']:
-                retorno = self.plantas[prox_lote].resolver_evento(eventos[prox_lote]['event'])
+                retorno = self.plantas[prox_lote].resolve_event(eventos[prox_lote]['event'])
             else:
                 retorno = self.lotes[prox_lote].resolver_evento(eventos[prox_lote]['event'])
 
@@ -120,31 +120,31 @@ class Wine(SimulationObject):
                 if type(retorno) == Truck:
                     planta = self.plantas[retorno.planta_asignada]
                     retorno.travel()
-                    planta.llegada_camion(retorno)
+                    planta.truck_arrival(retorno)
 
             if self.ui:
                 self.status_signal.emit(self.estado_lotes_ui())
             else:
                 print(self.estado_lotes_noui())
-            sleep(0.02)
+            sleep(5)
 
         for lote in self.lotes.values():
             for camion in lote.camiones:
                 planta = self.plantas[camion.planta_asignada]
                 camion.travel()
-                planta.llegada_camion(camion)
+                planta.truck_arrival(camion)
         while SimulationObject.tiempo_actual < self.termino_dia:
             eventos = {}
             for plant in self.plantas.values():
-                planta, evento, tiempo = plant.proximo_evento
+                planta, evento, tiempo = plant.next_event
                 eventos[planta] = {'event': evento, 'tiempo': tiempo}
             prox_planta = min(eventos, key=lambda x: eventos[x]['tiempo'])
             if eventos[prox_planta]['tiempo'] == datetime(3000, 1, 1, hour=6, minute=0, second=0):
                 break
-            self.plantas[prox_planta].resolver_evento(eventos[prox_planta]['event'])
+            self.plantas[prox_planta].resolve_event(eventos[prox_planta]['event'])
 
         for planta in self.plantas.values():
-            planta.procesar_dia()
+            planta.process_day()
 
         new_day = SimulationObject.tiempo_actual.day + 1
         try:

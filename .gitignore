@@ -135,3 +135,4 @@ dmypy.json
 # Local repo stuff
 extras
 extras/*
+*.DS_Store
