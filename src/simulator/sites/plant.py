@@ -74,9 +74,9 @@ class Plant(SimulationObject):
         :return: A tuple with the following format (site Name, event name, event time)
         """
         if not self.trucks or self.daily_grape_percentage >= SimulationObject.MAX_DAILY_UNLOAD:
-            return self.name, 'descarga', SimulationObject.neverdate
+            return self.name, 'descarga', SimulationObject.never_date
         if not self.unload_time:
-            self.unload_time = SimulationObject.tiempo_actual + timedelta(minutes=60)
+            self.unload_time = SimulationObject.current_time + timedelta(minutes=60)
         return self.name, 'descarga', self.unload_time
 
     def unload_constraint(self) -> bool:
@@ -98,7 +98,7 @@ class Plant(SimulationObject):
         Unloads grape from the current truck queue. Simulates an hour of unloading.
         """
         # We set the new global time, and reset the next unload event time.
-        SimulationObject.tiempo_actual = self.unload_time
+        SimulationObject.current_time = self.unload_time
         self.unload_time = None
 
         unloaded = 0  # For storing current unloaded grape
@@ -112,7 +112,7 @@ class Plant(SimulationObject):
             # in the plant's storage
             while unloaded < rate and truck.has_content:
                 kg, quality = truck.unload()
-                batch = Batch(kg, quality, SimulationObject.tiempo_actual)
+                batch = Batch(kg, quality, SimulationObject.current_time)
 
                 self.grapes.append(batch)
                 self.daily_grapes += kg
@@ -132,7 +132,7 @@ class Plant(SimulationObject):
         # We process grape until we reach the maximum daily capacity or grape is exhausted
         while processed < self.prod_cap:
             # We must check if the next grape in the queue has been fermented
-            fermented = (SimulationObject.tiempo_actual - self.grapes[0].date).days >= 7
+            fermented = (SimulationObject.current_time - self.grapes[0].date).days >= 7
             if not self.grapes or not fermented:
                 break
             batch = self.grapes.pop(0)

@@ -3,8 +3,8 @@ from random import randint
 
 
 class SimulationObject:
-    tiempo_actual = datetime(2021, 1, 1, hour=6, minute=0, second=0)
-    neverdate = datetime(3000, 1, 1, hour=6, minute=0, second=0)
+    current_time = datetime(2021, 1, 1, hour=6, minute=0, second=0)
+    never_date = datetime(3000, 1, 1, hour=6, minute=0, second=0)
     current_day = 1
     MAX_DAILY_UNLOAD = 0.3
 
@@ -24,7 +24,7 @@ def event(time_var, func=None):
     def event_decorator(event_func):
         def event_wrapper(self, *args, **kwargs):
             time = getattr(self, time_var)
-            SimulationObject.tiempo_actual = time
+            SimulationObject.current_time = time
             setattr(self, time_var, None)
             if func:
                 getattr(self, func)()

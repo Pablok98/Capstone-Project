@@ -14,5 +14,5 @@ class Crate(SimulationObject):
         self.id = Crate._id
 
         self.type = grape
-        self.time_harvested = SimulationObject.tiempo_actual
+        self.time_harvested = SimulationObject.current_time
         self.quality = quality
