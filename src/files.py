@@ -3,6 +3,7 @@ import pandas as pd
 import params as p
 from os.path import join
 
+
 def load_initial_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Reads excel file with initial data for the optimization problem, loading it to a dataframe.
@@ -23,6 +24,7 @@ def write_excel_listed(data: list, target: str) -> None:
 def read_rain_data() -> pd.DataFrame:
     df = pd.read_excel(join('data', 'lluvia_generada.xlsx'))
     return df
+
 
 def read_lot_data() -> dict:
     lot, misc = load_initial_data()

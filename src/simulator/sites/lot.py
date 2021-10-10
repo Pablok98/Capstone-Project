@@ -4,6 +4,8 @@ from src.params import MAX_DIAS_TRABAJO_JORNALERO
 from ..entities import *
 from ..sim import SimulationObject, event
 
+Event = tuple[str, str, datetime]
+
 
 class Lot(SimulationObject):
     def __init__(self,
@@ -118,7 +120,7 @@ class Lot(SimulationObject):
 
     # --------------------------------  Laborer/Crates  ----------------------------------------
     @property
-    def proximo_bin_vacio(self) -> Bin:
+    def next_empty_bin(self) -> Bin:
         """
         Returns the bin which is currently being filled. If there is none, it creates a new one and
         returns it (said bin is stored in the lot bin list). This method is meant to be called when
@@ -159,7 +161,7 @@ class Lot(SimulationObject):
                     self.flag_bin = not self.flag_bin
                     return hopper
         self.flag_bin = not self.flag_bin
-        return self.proximo_bin_vacio
+        return self.next_empty_bin
 
     def timegen_crate(self) -> None:
         """
@@ -217,7 +219,7 @@ class Lot(SimulationObject):
 
     # ---------------------------      Bin Loading      -------------------------------------------
     @property
-    def current_loading_truck(self) -> Union[Truck, None]:
+    def current_loading_truck(self) -> Union['Truck', None]:
         """
         Returns the next truck which has space to load a bin.
 
@@ -255,18 +257,19 @@ class Lot(SimulationObject):
                 return truck
         return None
 
-    def free_lift_truck(self):
+    def free_lift_truck(self) -> None:
         lift_truck = self.working_lift_trucks.pop(0)
         print(f'El montacargas {lift_truck._id} fue desocupado')
 
     def load_bin_event(self) -> None:
         """
-        Se carga el bin al camión y se elimina de la lista de bines. Se actualiza el tiempo.
+        The bin which was being loaded is inserted into the truck, to be deleted from the lot's bins
+        after that. Time is updated
         """
         SimulationObject.current_time = self.loading_bin.load_time
         self.bins.pop(self.bins.index(self.loading_bin))
-        camion = self.current_loading_truck
-        camion.bins.append(self.loading_bin)
+        truck = self.current_loading_truck
+        truck.bins.append(self.loading_bin)
         self.loading_bin = None
         self.free_lift_truck()
 
@@ -280,7 +283,7 @@ class Lot(SimulationObject):
                 return SimulationObject.current_time
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
-    def salida_camion(self) -> Truck:
+    def salida_camion(self) -> 'Truck':
         """
         Se despacha camión y se eliminca de la lista de camiones disp.
         """
@@ -293,8 +296,8 @@ class Lot(SimulationObject):
 
         print(f"{self.name} -Se llenó (automatico) un bin a la hora {SimulationObject.current_time}")
 
-    # ---------------------------------------------------------------------------------------
-    # Enganche de tolva
+    # ----------------------------    Hopper Attachment    -----------------------------------------
+
     @property
     def tiempo_proximo_tolva(self) -> datetime:
         for tolva in self.hoppers:
@@ -320,40 +323,56 @@ class Lot(SimulationObject):
         else:
             print(f"{self.name} - Hay un carro tolva que no se puede enganchar")
             self.attaching_hopper.transport_time = None
-    # ----------------------------------------------------------------------------------------
-    # Manejo de eventos
+    # ------------------------------    Event Handling    ------------------------------------------
+
     @property
-    def proximo_evento(self) -> tuple[str, str, datetime]:
+    def next_event(self) -> Event:
         """
-        Retorna el proximo evento a ocurrir (segun fecha)
+        Calculates which event will occur first in this lot, returning the data of said event
+
+        :return: Tuple with the format (lot name, event name, event time)
         """
-        tiempos = [
+        times = [
             self.t_next_crate,
             self.t_next_binload,
             self.tiempo_proximo_camion,
             self.t_next_autobin,
             self.tiempo_proximo_tolva
         ]
-        tiempo_prox_evento = min(tiempos)
-        eventos = ['llenar_cajon', 'cargar_bin', 'salida_camion', 'bin_lleno', 'enganchar_tolva']
-        return self.name, eventos[tiempos.index(tiempo_prox_evento)], tiempo_prox_evento
+        next_event_time = min(times)
+        events = ['crate_full', 'load_bin', 'truck_dispatch', 'autofill_bin', 'hopper_attach']
+        return self.name, events[times.index(next_event_time)], next_event_time
 
-    def resolver_evento(self, evento: str):# -> Union[Truck, None]:
-        metodos = {
-            'llenar_cajon': self.crate_full_event,
-            'cargar_bin': self.load_bin_event,
-            'salida_camion': self.salida_camion,
-            'bin_lleno': self.autofill_bin_event,
-            'enganchar_tolva': self.enganchar_tolva
+    def resolve_event(self, event_: str) -> Union['Truck', None]:
+        """
+        Calls the method that resolve the event given.
+
+        :param event_: Event to be resolved
+        :return: Returns the truck that exits, if one does so. Otherwise, nothing is returned.
+        """
+        methods = {
+            'crate_full': self.crate_full_event,
+            'load_bin': self.load_bin_event,
+            'truck_dispatch': self.salida_camion,
+            'autofill_bin': self.autofill_bin_event,
+            'hopper_attach': self.enganchar_tolva
         }
-        return metodos[evento]()
+        return methods[event_]()
 
-    def llover(self, lluvia: int) -> None:
-        self.is_raining = lluvia
-        if lluvia:
-            self.penalizar()
+    def rain(self, rain: int) -> None:
+        """
+        Indicates to the lot that it rained that day
 
-    def penalizar(self) -> None:
+        :param rain: 1 if it rained, 0 otherwise
+        """
+        self.is_raining = rain
+        if rain:
+            self.penalize()
+
+    def penalize(self) -> None:
+        """
+        Calculates and applies rain penalization to the lot grape's quality
+        """
         if 0.98 <= self.current_quality <= 1:
             self.penalty += 0.1
         elif 0.95 <= self.current_quality < 0.98:
@@ -363,19 +382,29 @@ class Lot(SimulationObject):
         else:
             self.penalty += 0.03
 
-    def iniciar_dia(self) -> None:
+    def start_day(self) -> None:
+        """
+        Resets all assignations and auxiliary variables of the lot, to start a new simulation day.
+        It also calls all the methods related to generating harvesting event times.
+        """
         self.t_next_crate = None
         self.t_next_autobin = None
         self.attaching_hopper = None
         self.loading_bin = None
         self.flag_bin = True
+
         self.timegen_crate()
         self.timegen_bin_fill()
 
-    def fin_dia(self) -> None:
-        for jornalero in self.laborers:
-            jornalero.days_working += 1
-
+    def end_day(self) -> None:
+        """
+        Resolves all events that correspond to the day's ending.
+        """
+        # TODO: Falta sumarle dia a los conductores?
+        # Add a day of work to laborers
+        for laborer in self.laborers:
+            laborer.days_working += 1
+        # Reset laborer and harvester assignations (harvest timeframe is over)
         self.laborers = []
         self.harvesters = []
 

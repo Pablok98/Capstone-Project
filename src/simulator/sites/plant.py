@@ -41,7 +41,7 @@ class Plant(SimulationObject):
     @property
     def current_load(self) -> int:
         """
-        Iterates through the batches (touples) of grape and counts the total grape currently
+        Iterates through the batches (tuples) of grape and counts the total grape currently
         inside the plant.
 
         :return: Current grape load
@@ -74,10 +74,10 @@ class Plant(SimulationObject):
         :return: A tuple with the following format (site Name, event name, event time)
         """
         if not self.trucks or self.daily_grape_percentage >= SimulationObject.MAX_DAILY_UNLOAD:
-            return self.name, 'descarga', SimulationObject.never_date
+            return self.name, 'unload', SimulationObject.never_date
         if not self.unload_time:
             self.unload_time = SimulationObject.current_time + timedelta(minutes=60)
-        return self.name, 'descarga', self.unload_time
+        return self.name, 'unload', self.unload_time
 
     def unload_constraint(self) -> bool:
         """
@@ -147,7 +147,7 @@ class Plant(SimulationObject):
 
         :param event: Name of the event
         """
-        if event == 'descarga':
+        if event == 'unload':
             self.unload_trucks()
 
     def __str__(self) -> str:
