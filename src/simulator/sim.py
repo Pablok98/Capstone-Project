@@ -20,11 +20,14 @@ class Interface(SimulationObject):
         self.machine_drivers = None
 
 
-def event(time_var):
+def event(time_var, func=None):
     def event_decorator(event_func):
         def event_wrapper(self, *args, **kwargs):
-            print(self)
-            print(getattr(self, time_var))
+            time = getattr(self, time_var)
+            SimulationObject.tiempo_actual = time
+            setattr(self, time_var, None)
+            if func:
+                getattr(self, func)()
             res = event_func(self, *args, **kwargs)
             return res
         return event_wrapper

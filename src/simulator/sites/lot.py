@@ -172,14 +172,12 @@ class Lot(SimulationObject):
         time = 60*24*18 / (rate - (rate * 0.3 * self.lloviendo))
         self.tiempo_proximo_cajon = SimulationObject.tiempo_actual + timedelta(minutes=time)
 
-    @event('tiempo_proximo_cajon')
+    @event('tiempo_proximo_cajon', 'generar_tiempo_cajon')
     def cajon_lleno(self) -> None:
         """
         [Event for when a crate is filled]. Generates a new filled crate, which is then loaded into
         either a hopper or bin, depending on what is currently being loaded.
         """
-        SimulationObject.tiempo_actual = self.tiempo_proximo_cajon
-        self.generar_tiempo_cajon()
         lugar_a_cargar = self.a_cargar
         cajon = Crate(self.tipo_uva, self.calidad_actual)
         lugar_a_cargar.load_crate(cajon)

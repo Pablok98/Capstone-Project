@@ -158,7 +158,7 @@ class Wine(SimulationObject):
     def estado_lotes_ui(self):
         data = {}
         for lote in self.lotes_veraison.values():
-            data[lote.name] = lote.state
+            data[lote.nombre] = lote.estado
         return data
 
     def estado_lotes_noui(self) -> str:
