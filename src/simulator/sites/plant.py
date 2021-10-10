@@ -105,20 +105,20 @@ class Plant(SimulationObject):
         # We only can unload while we comply certain restrictions
         while self.unload_constraint():
             truck = self.trucks[0]  # Truck to unload
-            rate = self.bin_cap if truck.de_bin else self.hopper_cap  # Maximum hourly rate
+            rate = self.bin_cap if truck.loading_bins else self.hopper_cap  # Maximum hourly rate
 
             print(f"Descargando camion {truck.id} en la planta {self.name}")
             # While we still can unload grapes, we take grape batched from the truck and store them
             # in the plant's storage
-            while unloaded < rate and truck.tiene_contenido:
-                kg, quality = truck.descargar()
+            while unloaded < rate and truck.has_content:
+                kg, quality = truck.unload()
                 batch = Batch(kg, quality, SimulationObject.tiempo_actual)
 
                 self.grapes.append(batch)
                 self.daily_grapes += kg
                 unloaded += kg
             # If the truck doesn't have contents, we remove it from the plant
-            if not truck.tiene_contenido:
+            if not truck.has_content:
                 self.trucks.pop(0)
 
     def process_day(self) -> None:

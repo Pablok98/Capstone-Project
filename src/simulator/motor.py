@@ -130,7 +130,7 @@ class Wine(SimulationObject):
 
         for lote in self.lotes.values():
             for camion in lote.camiones:
-                planta = self.plantas[camion.planta_asignada]
+                planta = self.plantas[camion.assigned_plant]
                 camion.travel()
                 planta.truck_arrival(camion)
         while SimulationObject.tiempo_actual < self.termino_dia:
@@ -158,7 +158,7 @@ class Wine(SimulationObject):
     def estado_lotes_ui(self):
         data = {}
         for lote in self.lotes_veraison.values():
-            data[lote.nombre] = lote.estado
+            data[lote.name] = lote.state
         return data
 
     def estado_lotes_noui(self) -> str:
@@ -241,17 +241,17 @@ class Wine(SimulationObject):
                 self.asignar_jornalero(jornalero, 'U_2_6_138_123')
 
         for camion in self.camiones.values():
-            if not camion.tiene_contenido:
+            if not camion.has_content:
                 camion.clean()
                 if camion.id == 1:
                     self.assign_truck(camion, 'U_1_8_58_118')
-                    camion.planta_asignada = 'P1'
-                    camion.de_bin = False
+                    camion.assigned_plant = 'P1'
+                    camion.loading_bins = False
                 elif camion.id == 2:
-                    camion.planta_asignada = 'P1'
+                    camion.assigned_plant = 'P1'
                     self.assign_truck(camion, 'U_1_8_58_118')
                 elif camion.id == 3:
-                    camion.planta_asignada = 'P1'
+                    camion.assigned_plant = 'P1'
                     self.assign_truck(camion, 'U_2_6_138_123')
 
         for tolva in self.tolvas:

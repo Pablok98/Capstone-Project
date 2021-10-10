@@ -142,7 +142,7 @@ class Lot(SimulationObject):
         t_flag = False
         b_flag = False
         for camion in self.camiones:
-            if camion.de_bin:
+            if camion.loading_bins:
                 b_flag = True
             else:
                 t_flag = True
@@ -218,7 +218,7 @@ class Lot(SimulationObject):
         Retorna el proximo camión que tiene espacio para un bin
         """
         for camion in self.camiones:
-            if not camion.lleno and camion.de_bin:
+            if not camion.full and camion.loading_bins:
                 return camion
         #print("No hay camiones con espacio disponible!")
         return None
@@ -261,7 +261,7 @@ class Lot(SimulationObject):
         SimulationObject.tiempo_actual = self.bin_a_cargar.load_time
         self.bines.pop(self.bines.index(self.bin_a_cargar))
         camion = self.proximo_camion_vacio
-        camion.bines.append(self.bin_a_cargar)
+        camion.bins.append(self.bin_a_cargar)
         self.bin_a_cargar = None
         self.free_lifttruck()
 
@@ -271,7 +271,7 @@ class Lot(SimulationObject):
     @property
     def tiempo_proximo_camion(self) -> datetime:
         for camion in self.camiones:
-            if camion.lleno or not self.cantidad_uva:
+            if camion.full or not self.cantidad_uva:
                 return SimulationObject.tiempo_actual
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
@@ -280,7 +280,7 @@ class Lot(SimulationObject):
         Se despacha camión y se eliminca de la lista de camiones disp.
         """
         for i, camion in enumerate(self.camiones):
-            if camion.lleno:
+            if camion.full:
                 print(
                     f"{self.nombre} - Se despachó un camión a la hora {SimulationObject.tiempo_actual}")
                 return self.camiones.pop(i)
@@ -305,10 +305,10 @@ class Lot(SimulationObject):
     def enganchar_tolva(self) -> None:
         SimulationObject.tiempo_actual = self.tolva_a_enganchar.transport_time
         for camion in self.camiones:
-            if not camion.de_bin and camion.espacio_tolva:
+            if not camion.loading_bins and camion.can_attach:
                 print(f"{self.nombre} - Se enganchó el tolva {self.tolva_a_enganchar._id} al camion {camion._id} a las {SimulationObject.tiempo_actual}")
 
-                camion.tolvas.append(self.tolva_a_enganchar)
+                camion.hoppers.append(self.tolva_a_enganchar)
                 self.tolvas.pop(self.tolvas.index(self.tolva_a_enganchar))
                 self.tolva_a_enganchar = None
                 break
@@ -393,7 +393,7 @@ class Lot(SimulationObject):
         ctd_camiones = len(self.camiones)
         camiones = {}
         for camion in self.camiones:
-            camiones[camion.id] = camion.estado()
+            camiones[camion.id] = camion.state()
 
         data = {
             'nombre_lote': self.nombre,
@@ -410,7 +410,7 @@ class Lot(SimulationObject):
 
     @property
     def estado_string(self) -> str:
-        # De aca eliminar y cambiar por sacar el diccionario de estado
+        # De aca eliminar y cambiar por sacar el diccionario de state
         ctd_jornaleros = len(self.jornaleros)
         tasa = 0
         for jornalere in self.jornaleros:
@@ -428,7 +428,7 @@ class Lot(SimulationObject):
         ctd_camiones = len(self.camiones)
         camiones = ""
         for camion in self.camiones:
-            estado = camion.estado()
+            estado = camion.state()
             string_camion = f"""
             * Camion {estado['id']} *
             Tipo:                 {estado['tipo']}
