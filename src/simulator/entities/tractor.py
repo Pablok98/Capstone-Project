@@ -1,4 +1,4 @@
-from machine import Machine
+from .machine import Machine
 from src.params import TASA_DEPRECIACION_TRACTOR, COSTO_POR_TONELADA_TRACTOR
 
 

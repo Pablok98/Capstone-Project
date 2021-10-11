@@ -1,5 +1,4 @@
 from files import load_initial_data, write_excel_listed, read_lot_data
-from simulator import simulate_rain
 import params as p
 from simulator.motor import Wine
 from simulator.ui.ui import GUI

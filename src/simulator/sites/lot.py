@@ -1,120 +1,153 @@
 from datetime import datetime, timedelta
-
+from typing import Union
 from src.params import MAX_DIAS_TRABAJO_JORNALERO
 from ..entities import *
-from ..sim import SimulationObject
-from typing import Union
+from ..sim import SimulationObject, event
+
+Event = tuple[str, str, datetime]
 
 
 class Lot(SimulationObject):
-    def __init__(self, nombre, uva, ctd_uva, dia, rango_calidad, plant_distances):
-        self.nombre = nombre
-        self.tipo_uva = uva
-        self.__cantidad_uva = ctd_uva
-        self.dia_optimo = SimulationObject.tiempo_actual + timedelta(days=dia-1)
+    def __init__(self,
+                 name: str, grape_type: int, grape_qty: int, peak_day: int,
+                 qlty_range: list[float], plant_distances: dict):
+        """
+        Represents a lot site.
 
-        self.rango_calidad = rango_calidad
-        self.penalizacion = 0
-
-        self.lloviendo = 0
-
-        self.fin_jornada = datetime(2021, 1, 1, hour=18, minute=0, second=0)
-
-        self.tiempo_proximo_cajon: Union[datetime, None] = None
-        self.tiempo_proximo_binlleno: Union[datetime, None] = None
-
-        self.tolva_a_enganchar: Union[Hopper, None] = None
-        self.bin_a_cargar: Union[Bin, None] = None
-
-        self.jornaleros: list[Laborer] = []
-        self.cosechadoras: list[Harvester] = []
-        self.bines: list[Bin] = []
-        self.camiones: list[Truck] = []
-        self.tolvas: list[Hopper] = []
-
-        self.flag_bin = True
-
+        :param name: MUST be unique. Name of the lot, which will used by the simulator to both
+                    display and reference.
+        :param grape_type: Type of the grape grown in the lot (represented by a number from 1 to 8).
+        :param grape_qty: Quantity of grape being grown in the lot (in kg).
+        :param peak_day: Day that the grape will be at peak quality (represented by the number of
+                        days from the initial simulated day).
+        :param qlty_range: Range of quality while in the veraison.
+        :param plant_distances: Dictionary of distances from the lot to the processing plants.
+        """
+        self.name = name
+        self.grape = grape_type
+        self.__grape_quantity = grape_qty
+        self.optimal_day = SimulationObject.current_time + timedelta(days=peak_day - 1)
+        self.quality_range = qlty_range
         self.plant_distances = plant_distances
 
-    @property
-    def cantidad_uva(self) -> int:
-        return self.__cantidad_uva
+        # Lists of current entities at the lot.
+        self.laborers: list[Laborer] = []
+        self.harvesters: list[Harvester] = []
+        self.bins: list[Bin] = []
+        self.trucks: list[Truck] = []
+        self.hoppers: list[Hopper] = []
+        self.lift_trucks: list[LiftTruck] = []
 
-    @cantidad_uva.setter
-    def cantidad_uva(self, value: int):
+        # Rain related vars
+        self.penalty = 0  # Current quality level (Mu in math model)
+        self.is_raining = 0  # Binary var, 1 if it's raining, 0 otherwise
+
+        # Time related vars (t_ suffix)
+        self.t_next_crate: Union[datetime, None] = None
+        self.t_next_autobin: Union[datetime, None] = None
+
+        # Entity event related vars
+        self.attaching_hopper: Union[Hopper, None] = None  # Stores hopper being attached, if any.
+        self.loading_bin: Union[Bin, None] = None  # Stores bing being loaded, if any.
+        self.working_lift_trucks: list[LiftTruck] = []  # Todo: what it does
+        self.flag_bin = True
+
+    # -----------------------------------  General methods  ----------------------------------------
+
+    @property
+    def grape_quantity(self) -> int:
+        """
+        :return: Current grape at the site (in kg)
+        """
+        return self.__grape_quantity
+
+    @grape_quantity.setter
+    def grape_quantity(self, value: int) -> None:
         if value <= 0:
             value = 0
-        self.__cantidad_uva = value
+        self.__grape_quantity = value
 
     @property
-    def delta_optimo(self) -> int:
-        delta = SimulationObject.tiempo_actual - self.dia_optimo
+    def current_optimal_delta(self) -> int:
+        """
+        Returns the difference (in days) between the current date and the peak quality date.
+
+        :return: Number of days (absolute)
+        """
+        delta = SimulationObject.current_time - self.optimal_day
         return delta.days
 
     @property
-    def calidad_actual(self) -> float:
-        a = (self.rango_calidad[0] + self.rango_calidad[1] - 2) / 98
-        b = (self.rango_calidad[1] - self.rango_calidad[0]) / 14
-        calidad = a*(self.delta_optimo**2) + b*self.delta_optimo + 1
-        calidad = calidad * (1 - self.penalizacion)
-        if calidad > 1:
-            calidad = 1
-        return calidad
+    def current_quality(self) -> float:
+        """
+        Calculates the current quality of the grape at the site.
 
-    # ----------- ASIGNACIONES ----------------------------------------------
-    def asignar_jornalero(self, jornalero: Laborer) -> None:
-        if jornalero.dias_trabajando < MAX_DIAS_TRABAJO_JORNALERO:
-            self.jornaleros.append(jornalero)
-            print(f"El jornalero {jornalero._id} fue asignado al lote {self.nombre}")
+        :return: Quality of the grape, in point number percentage
+        """
+        # TODO: clean? Move?
+        a = (self.quality_range[0] + self.quality_range[1] - 2) / 98
+        b = (self.quality_range[1] - self.quality_range[0]) / 14
+        quality = a * (self.current_optimal_delta ** 2) + b * self.current_optimal_delta + 1
+        quality = quality * (1 - self.penalty)
+        quality = quality if quality <= 1 else 1
+        return quality
 
+    # --------------------------------  Assignment methods  ----------------------------------------
+
+    def assign_laborer(self, laborer: Laborer) -> None:
+        # Todo: deberia retornar si lo hizo e imprimir en el motor?
+        """
+        Assigns laborer to the lot, ONLY if the laborer wouldn't surpass the weekly work limit.
+
+        :param laborer: Laborer to be assigned to the lot
+        """
+        if laborer.days_working < MAX_DIAS_TRABAJO_JORNALERO:
+            self.laborers.append(laborer)
+            print(f"El jornalero {laborer.id} fue asignado al lote {self.name}")
         else:
-            print(f"El jornalero {jornalero._id} no pudo ser asignado al lote {self.nombre}" +
+            print(f"El jornalero {laborer.id} no pudo ser asignado al lote {self.name}" +
                   "porque excede los dias maximos de trabajo")
 
-    def assign_truck(self, truck: Truck) -> None:
+    def assign_truck(self, truck) -> None:
+        """
+        Assigns truck to the lot.
+
+        :param truck: Truck to be assigned to the lot
+        """
         truck.current_lot = self
-        self.camiones.append(truck)
-        print(f"El camion {truck._id} fue asignado al lote {self.nombre}")
+        self.trucks.append(truck)
+        print(f"El camion {truck.id} fue asignado al lote {self.name}")
 
-
-    # ----------- JORNALEROS Y CAJONES ----------------------------------------------
-    def generar_tiempo_cajon(self) -> None:
-        """
-        Calcula el tiempo en que se llenará el próximo cajon (fecha)
-        """
-        if not self.jornaleros or not self.cantidad_uva:
-            self.tiempo_proximo_cajon = datetime(3000, 1, 1, hour=6, minute=0, second=0)
-            return
-        tasa = 0
-        for jornalere in self.jornaleros:
-            tasa += jornalere.velocidad_cosecha
-        tiempo = 60*24*18 / (tasa - (tasa * 0.3 * self.lloviendo))
-        self.tiempo_proximo_cajon = SimulationObject.tiempo_actual + timedelta(minutes=tiempo)
-
+    # --------------------------------  Laborer/Crates  ----------------------------------------
     @property
-    def proximo_bin_vacio(self) -> Bin:
+    def next_empty_bin(self) -> Bin:
         """
-        Retorna el proximo bin vacío para ocupar, se llama cuando un cajon entra a un bin
+        Returns the bin which is currently being filled. If there is none, it creates a new one and
+        returns it (said bin is stored in the lot bin list). This method is meant to be called when
+        a crate is filled.
+
+        :return: Next bin to be filled (or currently being filled).
         """
-        if not self.bines:
-            self.bines.append(Bin())  # agregar restriccion de bines(?)
-        _bin = self.bines[-1]
-        if _bin.lleno:
+        if not self.bins:
+            self.bins.append(Bin())  # TODO: agregar restriccion de bines(?)
+        _bin = self.bins[-1]
+        if _bin.full:
             print(
-                f"{self.nombre} - Se empezó a llenar un nuevo bin manualmente un bin a la hora {SimulationObject.tiempo_actual}")
+                f"{self.name} - Se empezó a auto_load un nuevo bin manualmente un bin a la hora {SimulationObject.current_time}")
             _bin = Bin()
-            self.bines.append(_bin)
+            self.bins.append(_bin)
         return _bin
 
     @property
-    def a_cargar(self) -> Union[Bin, Hopper, None]:
+    def to_load(self) -> Union[Bin, 'Hopper', None]:
+        # TODO: this shit sucks
         """
         Devuelve si se va a cargar el cajon al bin o a un tolva
         """
         t_flag = False
         b_flag = False
-        for camion in self.camiones:
-            if camion.de_bin:
+        for truck in self.trucks:
+            if truck.loading_bins:
                 b_flag = True
             else:
                 t_flag = True
@@ -122,223 +155,282 @@ class Lot(SimulationObject):
                 break
         else:
             self.flag_bin = b_flag
-        if not self.flag_bin and self.tolvas:
-            for tolva in self.tolvas:
-                if not tolva.lleno:
+        if not self.flag_bin and self.hoppers:
+            for hopper in self.hoppers:
+                if not hopper.full:
                     self.flag_bin = not self.flag_bin
-                    return tolva
+                    return hopper
         self.flag_bin = not self.flag_bin
-        return self.proximo_bin_vacio
+        return self.next_empty_bin
 
-    def cajon_lleno(self) -> None:
+    def timegen_crate(self) -> None:
         """
-        EVENTO CUANDO SE LLENA UN CAJON
-        Se ocupa al llenar un cajon, se genera el próximo tiempo de cajon y se carga el bin
+        Calculates the time the next crate will be filled, given the current workers at the lot and
+        their rate of harvest. The result is then stored for use.
         """
-        SimulationObject.tiempo_actual = self.tiempo_proximo_cajon
-        self.generar_tiempo_cajon()
-        lugar_a_cargar = self.a_cargar
-        cajon = Crate(self.tipo_uva, self.calidad_actual)
-        lugar_a_cargar.cargar_cajon(cajon)
-        self.cantidad_uva -= 18
-
-        print(f"{self.nombre} - Se lleno un nuevo cajon a la hora {SimulationObject.tiempo_actual}")
-
-    # -----------------------------------------------------------------------------------------
-    # COSECHA AUTOMATICA
-
-    def generar_tiempo_bin(self) -> None:
-        if not self.cosechadoras or not self.cantidad_uva:
-            self.tiempo_proximo_binlleno = datetime(3000, 1, 1, hour=6, minute=0, second=0)
+        if not self.laborers or not self.grape_quantity:
+            self.t_next_crate = SimulationObject.never_date
             return
-        tasa = 0
-        for cosechadore in self.cosechadoras:
-            tasa += cosechadore.velocidad_cosecha
-        tiempo = 60*486 / (tasa - (tasa * 0.6 * self.lloviendo))
-        self.tiempo_proximo_binlleno = SimulationObject.tiempo_actual + timedelta(minutes=tiempo)
+        rate = 0
+        for laborer in self.laborers:
+            rate += laborer.harvest_rate
+        time = 60*24*18 / (rate - (rate * 0.3 * self.is_raining))
+        self.t_next_crate = SimulationObject.current_time + timedelta(minutes=time)
 
-    def llenar_bin(self) -> None:
+    @event('t_next_crate', 'timegen_crate')
+    def crate_full_event(self) -> None:
         """
-        EVENTO COSECHADORA LLENA UN BIN
+        [Event for when a crate is filled]. Generates a new filled crate, which is then loaded into
+        either a hopper or bin, depending on what is currently being loaded.
         """
-        SimulationObject.tiempo_actual = self.tiempo_proximo_binlleno
-        self.generar_tiempo_bin()
+        container = self.to_load
+        crate = Crate(self.grape, self.current_quality)
+        container.load_crate(crate)
+        self.grape_quantity -= 18
+
+        print(f"{self.name} - Se llenó un nuevo cajon a la hora {SimulationObject.current_time}")
+
+    # --------------------------------  Automatic Harvester  ---------------------------------------
+    def timegen_bin_fill(self) -> None:
+        """
+        Calculates the time the next bin will be auto filled, given the current harvester at the lot
+        and their rate of harvest. The result is then stored for use.
+        """
+        if not self.harvesters or not self.grape_quantity:
+            self.t_next_autobin = datetime(3000, 1, 1, hour=6, minute=0, second=0)
+            return
+        rate = 0
+        for harvester in self.harvesters:
+            rate += harvester.velocidad_cosecha
+        time = 60*486 / (rate - (rate * 0.6 * self.is_raining))
+        self.t_next_autobin = SimulationObject.current_time + timedelta(minutes=time)
+
+    @event('t_next_autobin', 'timegen_bin_fill')
+    def autofill_bin_event(self) -> None:
+        """
+        [Event for when a bin is filled by a harvester]. Generates a new filled bin, which is added
+        to the lot's bins
+        """
         _bin = Bin()
-        _bin.llenar(self.tipo_uva, self.calidad_actual)
-        self.bines.insert(0, _bin)
-        self.cantidad_uva -= 18*27
-        print(f"{self.nombre} - Se llenó un bin automático a la hora {SimulationObject.tiempo_actual}")
+        _bin.auto_load(self.grape, self.current_quality)
+        self.bins.insert(0, _bin)
+        self.grape_quantity -= 18 * 27
+        print(f"{self.name} - Se llenó un bin automático a la hora {SimulationObject.current_time}")
 
-    # --------------------------------------------------------------------------------------
-    # Carga de bines a camiones
+    # ---------------------------      Bin Loading      -------------------------------------------
     @property
-    def proximo_camion_vacio(self) -> Union[Truck, None]:
+    def current_loading_truck(self) -> Union['Truck', None]:
         """
-        Retorna el proximo camión que tiene espacio para un bin
+        Returns the next truck which has space to load a bin.
+
+        :return: Truck which has to be loaded.
         """
-        for camion in self.camiones:
-            if not camion.lleno and camion.de_bin:
-                return camion
-        #print("No hay camiones con espacio disponible!")
+        for truck in self.trucks:
+            if not truck.full and truck.loading_bins:
+                return truck
+        # We return None if no trucks at the site can be loaded.
         return None
 
     @property
-    def tiempo_proximo_bin(self) -> datetime:
+    def t_next_binload(self) -> datetime:
         """
-        Retorna el tiempo en que se carga el próximo bin (fecha)
+        :return: Time which the next bin would be loaded to a truck.
         """
-        # Si es que hay bines y el último está lleno (si no, nada se va a descargar)
-        if self.bines and self.bines[0].lleno:
-            if not self.proximo_camion_vacio:
-                return datetime(3000, 1, 1, hour=6, minute=0, second=0)
-            if not self.bin_a_cargar:
-                self.bin_a_cargar = self.bines[0]
-                self.bin_a_cargar.tiempo_carga = SimulationObject.tiempo_actual + timedelta(minutes=10)
-            return self.bin_a_cargar.tiempo_carga
-        return datetime(3000, 1, 1, hour=6, minute=0, second=0)
+        # We need to check if there's a lift truck to load the bin
+        lift_truck = self.available_lift_truck()
+        if not lift_truck:
+            return SimulationObject.never_date
 
-    def carga_bin(self) -> None:
-        """
-        Se carga el bin al camión y se elimina de la lista de bines. Se actualiza el tiempo.
-        """
-        SimulationObject.tiempo_actual = self.bin_a_cargar.tiempo_carga
-        self.bines.pop(self.bines.index(self.bin_a_cargar))
-        camion = self.proximo_camion_vacio
-        camion.bines.append(self.bin_a_cargar)
-        self.bin_a_cargar = None
+        if self.bins and self.bins[0].full:
+            if not self.current_loading_truck:
+                return SimulationObject.never_date
+            if not self.loading_bin:
+                self.loading_bin = self.bins[0]
+                self.loading_bin.load_time = SimulationObject.current_time + timedelta(minutes=10)
+                self.working_lift_trucks.append(lift_truck)
+                lift_truck.working = True
+            return self.loading_bin.load_time
 
-        print(f"{self.nombre} -Se cargó un bin a la hora {SimulationObject.tiempo_actual}")
-    # ------------------------------------------------------------------------------------------
-    # Despacho de camiones
+    def available_lift_truck(self) -> Union['LiftTruck', None]:
+        for truck in self.lift_trucks:
+            if truck.available:
+                return truck
+        return None
+
+    def free_lift_truck(self) -> None:
+        lift_truck = self.working_lift_trucks.pop(0)
+        print(f'El montacargas {lift_truck._id} fue desocupado')
+
+    def load_bin_event(self) -> None:
+        """
+        The bin which was being loaded is inserted into the truck, to be deleted from the lot's bins
+        after that. Time is updated
+        """
+        SimulationObject.current_time = self.loading_bin.load_time
+        self.bins.pop(self.bins.index(self.loading_bin))
+        truck = self.current_loading_truck
+        truck.bins.append(self.loading_bin)
+        self.loading_bin = None
+        self.free_lift_truck()
+
+        print(f"{self.name} -Se cargó un bin a la hora {SimulationObject.current_time}")
+
+    # ----------------------------    Truck dispatch      -----------------------------------------
     @property
     def tiempo_proximo_camion(self) -> datetime:
-        for camion in self.camiones:
-            if camion.lleno or not self.cantidad_uva:
-                return SimulationObject.tiempo_actual
+        for camion in self.trucks:
+            if camion.full or not self.grape_quantity:
+                return SimulationObject.current_time
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
-    def salida_camion(self) -> Truck:
+    def salida_camion(self) -> 'Truck':
         """
         Se despacha camión y se eliminca de la lista de camiones disp.
         """
-        for i, camion in enumerate(self.camiones):
-            if camion.lleno:
+        for i, camion in enumerate(self.trucks):
+            if camion.full:
                 print(
-                    f"{self.nombre} - Se despachó un camión a la hora {SimulationObject.tiempo_actual}")
-                return self.camiones.pop(i)
+                    f"{self.name} - Se despachó un camión a la hora {SimulationObject.current_time}")
+                return self.trucks.pop(i)
 
 
-        print(f"{self.nombre} -Se llenó (automatico) un bin a la hora {SimulationObject.tiempo_actual}")
+        print(f"{self.name} -Se llenó (automatico) un bin a la hora {SimulationObject.current_time}")
 
-    # ---------------------------------------------------------------------------------------
-    # Enganche de tolva
+    # ----------------------------    Hopper Attachment    -----------------------------------------
+
     @property
     def tiempo_proximo_tolva(self) -> datetime:
-        for tolva in self.tolvas:
-            if tolva.lleno:
-                hora = tolva.tiempo_transporte
-                self.tolva_a_enganchar = tolva
+        for tolva in self.hoppers:
+            if tolva.full:
+                hora = tolva.transport_time
+                self.attaching_hopper = tolva
                 if hora:
                     return hora
-                tolva.tiempo_transporte = SimulationObject.tiempo_actual + timedelta(minutes=15)
-                return tolva.tiempo_transporte
+                tolva.transport_time = SimulationObject.current_time + timedelta(minutes=15)
+                return tolva.transport_time
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
     def enganchar_tolva(self) -> None:
-        SimulationObject.tiempo_actual = self.tolva_a_enganchar.tiempo_transporte
-        for camion in self.camiones:
-            if not camion.de_bin and camion.espacio_tolva:
-                print(f"{self.nombre} - Se enganchó el tolva {self.tolva_a_enganchar._id} al camion {camion._id} a las {SimulationObject.tiempo_actual}")
+        SimulationObject.current_time = self.attaching_hopper.transport_time
+        for camion in self.trucks:
+            if not camion.loading_bins and camion.can_attach:
+                print(f"{self.name} - Se enganchó el tolva {self.attaching_hopper._id} al camion {camion._id} a las {SimulationObject.current_time}")
 
-                camion.tolvas.append(self.tolva_a_enganchar)
-                self.tolvas.pop(self.tolvas.index(self.tolva_a_enganchar))
-                self.tolva_a_enganchar = None
+                camion.hoppers.append(self.attaching_hopper)
+                self.hoppers.pop(self.hoppers.index(self.attaching_hopper))
+                self.attaching_hopper = None
                 break
         else:
-            print(f"{self.nombre} - Hay un carro tolva que no se puede enganchar")
-            self.tolva_a_enganchar.tiempo_transporte = None
-    # ----------------------------------------------------------------------------------------
-    # Manejo de eventos
+            print(f"{self.name} - Hay un carro tolva que no se puede enganchar")
+            self.attaching_hopper.transport_time = None
+    # ------------------------------    Event Handling    ------------------------------------------
+
     @property
-    def proximo_evento(self) -> tuple[str, str, datetime]:
+    def next_event(self) -> Event:
         """
-        Retorna el proximo evento a ocurrir (segun fecha)
+        Calculates which event will occur first in this lot, returning the data of said event
+
+        :return: Tuple with the format (lot name, event name, event time)
         """
-        tiempos = [
-            self.tiempo_proximo_cajon,
-            self.tiempo_proximo_bin,
+        times = [
+            self.t_next_crate,
+            self.t_next_binload,
             self.tiempo_proximo_camion,
-            self.tiempo_proximo_binlleno,
+            self.t_next_autobin,
             self.tiempo_proximo_tolva
         ]
-        tiempo_prox_evento = min(tiempos)
-        eventos = ['llenar_cajon', 'cargar_bin', 'salida_camion', 'bin_lleno', 'enganchar_tolva']
-        return self.nombre, eventos[tiempos.index(tiempo_prox_evento)], tiempo_prox_evento
+        next_event_time = min(times)
+        events = ['crate_full', 'load_bin', 'truck_dispatch', 'autofill_bin', 'hopper_attach']
+        return self.name, events[times.index(next_event_time)], next_event_time
 
-    def resolver_evento(self, evento: str) -> Union[Truck, None]:
-        metodos = {
-            'llenar_cajon': self.cajon_lleno,
-            'cargar_bin': self.carga_bin,
-            'salida_camion': self.salida_camion,
-            'bin_lleno': self.llenar_bin,
-            'enganchar_tolva': self.enganchar_tolva
+    def resolve_event(self, event_: str) -> Union['Truck', None]:
+        """
+        Calls the method that resolve the event given.
+
+        :param event_: Event to be resolved
+        :return: Returns the truck that exits, if one does so. Otherwise, nothing is returned.
+        """
+        methods = {
+            'crate_full': self.crate_full_event,
+            'load_bin': self.load_bin_event,
+            'truck_dispatch': self.salida_camion,
+            'autofill_bin': self.autofill_bin_event,
+            'hopper_attach': self.enganchar_tolva
         }
-        return metodos[evento]()
+        return methods[event_]()
 
-    def llover(self, lluvia: int) -> None:
-        self.lloviendo = lluvia
-        if lluvia:
-            self.penalizar()
+    def rain(self, rain: int) -> None:
+        """
+        Indicates to the lot that it rained that day
 
-    def penalizar(self) -> None:
-        if 0.98 <= self.calidad_actual <= 1:
-            self.penalizacion += 0.1
-        elif 0.95 <= self.calidad_actual < 0.98:
-            self.penalizacion += 0.07
-        elif 0.90 <= self.calidad_actual < 0.95:
-            self.penalizacion += 0.05
+        :param rain: 1 if it rained, 0 otherwise
+        """
+        self.is_raining = rain
+        if rain:
+            self.penalize()
+
+    def penalize(self) -> None:
+        """
+        Calculates and applies rain penalization to the lot grape's quality
+        """
+        if 0.98 <= self.current_quality <= 1:
+            self.penalty += 0.1
+        elif 0.95 <= self.current_quality < 0.98:
+            self.penalty += 0.07
+        elif 0.90 <= self.current_quality < 0.95:
+            self.penalty += 0.05
         else:
-            self.penalizacion += 0.03
+            self.penalty += 0.03
 
-    def iniciar_dia(self) -> None:
-        self.tiempo_proximo_cajon = None
-        self.tiempo_proximo_binlleno = None
-        self.tolva_a_enganchar = None
-        self.bin_a_cargar = None
+    def start_day(self) -> None:
+        """
+        Resets all assignations and auxiliary variables of the lot, to start a new simulation day.
+        It also calls all the methods related to generating harvesting event times.
+        """
+        self.t_next_crate = None
+        self.t_next_autobin = None
+        self.attaching_hopper = None
+        self.loading_bin = None
         self.flag_bin = True
-        self.generar_tiempo_cajon()
-        self.generar_tiempo_bin()
 
-    def fin_dia(self) -> None:
-        for jornalero in self.jornaleros:
-            jornalero.dias_trabajando += 1
+        self.timegen_crate()
+        self.timegen_bin_fill()
 
-        self.jornaleros = []
-        self.cosechadoras = []
+    def end_day(self) -> None:
+        """
+        Resolves all events that correspond to the day's ending.
+        """
+        # TODO: Falta sumarle dia a los conductores?
+        # Add a day of work to laborers
+        for laborer in self.laborers:
+            laborer.days_working += 1
+        # Reset laborer and harvester assignations (harvest timeframe is over)
+        self.laborers = []
+        self.harvesters = []
 
     @property
     def estado(self) -> dict:
-        ctd_jornaleros = len(self.jornaleros)
+        ctd_jornaleros = len(self.laborers)
         tasa = 0
-        for jornalere in self.jornaleros:
-            tasa += jornalere.velocidad_cosecha
-        tasa_jornaleros = (tasa - (tasa * 0.3 * self.lloviendo)) / 60*24
+        for jornalere in self.laborers:
+            tasa += jornalere.harvest_rate
+        tasa_jornaleros = (tasa - (tasa * 0.3 * self.is_raining)) / 60 * 24
 
-        ctd_cosechadoras = len(self.cosechadoras)
+        ctd_cosechadoras = len(self.harvesters)
         tasa = 0
-        for cosechadere in self.cosechadoras:
+        for cosechadere in self.harvesters:
             tasa += cosechadere.velocidad_cosecha
-        tasa_cosechadoras = (tasa - (tasa * 0.6 * self.lloviendo)) / 60
+        tasa_cosechadoras = (tasa - (tasa * 0.6 * self.is_raining)) / 60
 
-        ctd_bines = len(self.bines)
-        ctd_tolvas = len(self.tolvas)
-        ctd_camiones = len(self.camiones)
+        ctd_bines = len(self.bins)
+        ctd_tolvas = len(self.hoppers)
+        ctd_camiones = len(self.trucks)
         camiones = {}
-        for camion in self.camiones:
-            camiones[camion.id] = camion.estado()
+        for camion in self.trucks:
+            camiones[camion.id] = camion.state()
 
         data = {
-            'nombre_lote': self.nombre,
+            'nombre_lote': self.name,
             'ctd_jornaleros': ctd_jornaleros,
             'tasa_jornaleros': tasa_jornaleros,
             'ctd_cosechadoras': ctd_cosechadoras,
@@ -352,25 +444,25 @@ class Lot(SimulationObject):
 
     @property
     def estado_string(self) -> str:
-        # De aca eliminar y cambiar por sacar el diccionario de estado
-        ctd_jornaleros = len(self.jornaleros)
+        # De aca eliminar y cambiar por sacar el diccionario de state
+        ctd_jornaleros = len(self.laborers)
         tasa = 0
-        for jornalere in self.jornaleros:
-            tasa += jornalere.velocidad_cosecha
-        tasa_jornaleros = (tasa - (tasa * 0.3 * self.lloviendo)) / 60*24
+        for jornalere in self.laborers:
+            tasa += jornalere.harvest_rate
+        tasa_jornaleros = (tasa - (tasa * 0.3 * self.is_raining)) / 60 * 24
 
-        ctd_cosechadoras = len(self.cosechadoras)
+        ctd_cosechadoras = len(self.harvesters)
         tasa = 0
-        for cosechadere in self.cosechadoras:
+        for cosechadere in self.harvesters:
             tasa += cosechadere.velocidad_cosecha
-        tasa_cosechadoras = (tasa - (tasa * 0.6 * self.lloviendo)) / 60
+        tasa_cosechadoras = (tasa - (tasa * 0.6 * self.is_raining)) / 60
 
-        ctd_bines = len(self.bines)
-        ctd_tolvas = len(self.tolvas)
-        ctd_camiones = len(self.camiones)
+        ctd_bines = len(self.bins)
+        ctd_tolvas = len(self.hoppers)
+        ctd_camiones = len(self.trucks)
         camiones = ""
-        for camion in self.camiones:
-            estado = camion.estado()
+        for camion in self.trucks:
+            estado = camion.state()
             string_camion = f"""
             * Camion {estado['id']} *
             Tipo:                 {estado['tipo']}
@@ -381,7 +473,7 @@ class Lot(SimulationObject):
         # Hasta aca
         string = f"""
         _____________________________________________
-        //          Lote: {self.nombre}            //
+        //          Lote: {self.name}            //
         ---------------------------------------------
         ***************   General  ******************
         Jornaleros trabajando:       {ctd_jornaleros}

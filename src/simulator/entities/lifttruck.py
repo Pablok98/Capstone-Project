@@ -1,8 +1,8 @@
-from machine import Machine
+from .machine import Machine
 from src.params import TASA_DEPRECIACION_MONTACARGAS, COSTO_POR_TONELADA_MONTACARGAS
 
 
-class LiftTruck(Machine):  # (cosechadora)
+class LiftTruck(Machine):
     _id = 0
 
     def __init__(self):
