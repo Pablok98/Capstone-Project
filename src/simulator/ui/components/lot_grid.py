@@ -34,4 +34,7 @@ class LotGrid(QWidget):
 
     def actualizar(self, data):
         for name, info in data.items():
-            self.lots[name].update_info(info)
+            try:
+                self.lots[name].update_info(info)
+            except KeyError as error:
+                continue

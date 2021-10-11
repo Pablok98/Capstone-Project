@@ -50,6 +50,8 @@ class Wine(SimulationObject):
 
     @property
     def dia(self) -> int:
+        # TODO: ESTO ES UN PARCHE
+        return SimulationObject.current_day
         return SimulationObject.current_time.day
 
     def set_rain_data(self) -> None:
@@ -58,7 +60,8 @@ class Wine(SimulationObject):
     def set_daily_rain(self) -> None:
         for lot in self.lotes.values():
             mask = self.rain_data['Lote COD'] == lot.name
-            lluvia = int(self.rain_data[mask][f'day {self.dia}'])
+            # TODO: ESTO ES UN PARCHE PA LA SIM FAKE
+            lluvia = int(self.rain_data[mask][f'day {self.dia - 79}'])
             lot.rain(lluvia)
 
     def asignar_jornalero(self, jornalero: Laborer, lote: str) -> None:
@@ -76,7 +79,7 @@ class Wine(SimulationObject):
         machine.assign_driver(driver)
 
     @property
-    def lotes_veraison(self) -> dict:
+    def lotes_veraison(self) -> dict[str, Lot]:
         results = {}
         for llabe, lote in self.lotes.items():
             dia_optimo = lote.optimal_day
@@ -88,10 +91,14 @@ class Wine(SimulationObject):
         self.instanciar_lotes(self.lot_data)
         self._test_instancing()
         self.set_rain_data()
-        self.set_daily_rain()
 
-        while SimulationObject.current_time.day <= 7:
-            self._test_assing()
+        SimulationObject.current_day = 80
+        SimulationObject.current_time += timedelta(days=80)
+        # TODO: parche para el current day todo esto
+        while SimulationObject.current_day <= 86:
+            #self._test_assing()
+            self.assign()
+            self.set_daily_rain()
             self.simular_dia()
 
     def simular_dia(self) -> None:
@@ -121,12 +128,11 @@ class Wine(SimulationObject):
                     planta = self.plantas[retorno.planta_asignada]
                     retorno.travel()
                     planta.truck_arrival(retorno)
-
+            sleep(0.1)
             if self.ui:
                 self.status_signal.emit(self.estado_lotes_ui())
             else:
                 print(self.estado_lotes_noui())
-            sleep(5)
 
         for lote in self.lotes.values():
             for camion in lote.trucks:
@@ -196,6 +202,8 @@ class Wine(SimulationObject):
                 truck_i = Truck(c_type, truck['hopper_cap'], truck['bin_cap'])
                 self.camiones[truck_i.id] = truck_i
 
+        # TODO: Special day set
+
     def week_assignments(self):
         # Clean state
         for truck in self.camiones.values():
@@ -232,6 +240,31 @@ class Wine(SimulationObject):
 
         # Harvester instancing
         self.cosechadoras.append(Harvester())
+
+    def assign(self):
+        # TODO: day fix
+        day_str = f'dia {SimulationObject.current_day - 80}'
+        for laborer, assignation in self.assign_data.laborers.items():
+            if day_str in assignation:
+                self.lotes[assignation[day_str]].laborers.append(Laborer())
+
+        for id_, camion in self.camiones.items():
+            camion.clean()
+            if day_str in self.assign_data.trucks[str(id_)]:
+                self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
+                camion.assigned_plant = 'P1'
+
+        for lot, assignation in self.assign_data.hoppers.items():
+            for _ in range(int(assignation[day_str])):
+                self.lotes[lot].hoppers.append(Hopper())
+
+        for lot, assignation in self.assign_data.harvesters.items():
+            for _ in range(int(assignation[day_str])):
+                self.lotes[lot].hoppers.append(Hopper())
+
+        for lot, assignation in self.assign_data.lift_trucks.items():
+            for _ in range(int(assignation[day_str])):
+                self.lotes[lot].hoppers.append(Hopper())
 
     def _test_assing(self) -> None:
         for i, jornalero in enumerate(self.jornaleros):
