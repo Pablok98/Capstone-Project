@@ -1,6 +1,7 @@
 from __future__ import annotations
 import pandas as pd
 import params as p
+from os.path import join
 
 
 def load_initial_data() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -13,6 +14,16 @@ def load_initial_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     misc_df = pd.read_excel(p.GIVEN_DATA_PATH, sheet_name=p.MISC_SHEET)
 
     return lot_df, misc_df
+
+
+def write_excel_listed(data: list, target: str) -> None:
+    df = pd.DataFrame(data)
+    df.to_excel(target, index=False)
+
+
+def read_rain_data() -> pd.DataFrame:
+    df = pd.read_excel(join('data', 'lluvia_generada.xlsx'))
+    return df
 
 
 def read_lot_data() -> dict:
@@ -45,14 +56,5 @@ def read_lot_data() -> dict:
     return info
 
 
-def write_excel_listed(data: list, target: str) -> None:
-    df = pd.DataFrame(data)
-    df.to_excel(target, index=False)
 
 
-if __name__ == "__main__":
-    for name, info in read_lot_data().items():
-        print(name)
-        print(info)
-        break
-    print(read_lot_data())

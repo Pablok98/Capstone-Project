@@ -5,95 +5,130 @@ from ..sites import *
 from .machine import Machine
 
 
+Load = Union[tuple[int, float], None]
+
+
 class Truck(Machine):
     _id = 0
 
-    def __init__(self, tipo: str, tolva: int, bines: int):
+    def __init__(self, type_: str, hopper: int, bins: int):
         super().__init__(p.TASA_DEPRECIACION_TRACTOR, p.COSTO_POR_TONELADA_TRACTOR)
         Truck._id += 1
         self.id = Truck._id
-        self.nombre = 'camion'
-        self.tipo = tipo
-        self.cap_tolva = tolva
-        self.cap_bines = bines
 
-        self.planta_asignada: Union[str, None] = None
+        self.name = 'Truck'
+        self.t_type = type_
+        self.hopper_cap = hopper
+        self.bin_cap = bins
 
-        self.de_bin = True
+        self.hoppers: list[Hopper] = []
+        self.bins: list[Bin] = []
 
-        self.tolvas: list[Hopper] = []
-        self.bines: list[Bin] = []
-
-        self.driver: Union[TruckDriver, None] = None
+        self.driver: Union[TruckDriver, None] = None  # Current driver assigned to the truck
+        self.assigned_plant: Union[str, None] = None  # Current plant assigned to the truck
+        self.current_lot: Union[Lot, None] = None  # Lot where the truck is located
 
         self.distance_travelled = 0
+        self.loading_bins = True  # True if the truck currently is loading bins (and not hopper)
 
-        self.current_lot: Union[Lot, None] = None
-
-    def clean(self):
-        self.tolvas = []
-        self.de_bin = True
+    def clean(self) -> None:
+        """
+        Clears the Truck of any events or assignments it had during a day. Used when reassigned.
+        """
+        self.hoppers = []
+        self.loading_bins = True
         self.driver = None
         self.current_lot = None
-        self.planta_asignada = None
+        self.assigned_plant = None
 
     def assign_driver(self, driver: 'TruckDriver') -> None:
-        if driver.dias_trabajando < p.MAX_DIAS_TRABAJO_CONDUCTORES:
+        """
+        Assigns a driver to this truck. The truck can only function if it has a driver.
+
+        :param driver: Driver to be assigned (can ONLY be a truck driver)
+        """
+        if driver.weekly_days < p.MAX_DIAS_TRABAJO_CONDUCTORES or self.driver:
             self.driver = driver
             driver.assign_truck(self)
-            print(f'El conductor {driver._id} fue asignado al camion {self._id}')
-
+            print(f'El conductor {driver.id} fue asignado al camion {self._id}')
         else:
-            print(f"El conductor {driver._id} no pudo ser asignado al camion {self.id}" +
+            print(f"El conductor {driver.id} no pudo ser asignado al camion {self.id}" +
                   "porque excede los dias maximos de trabajo")
 
     @property
-    def lleno(self) -> bool:
-        if self.de_bin:
-            return not len(self.bines) < self.cap_bines
-        return not len(self.tolvas) < self.cap_tolva
+    def full(self) -> bool:
+        """
+        :return: True if the truck cannot load more bins or attach more hoppers, depending on the
+                current load type.
+        """
+        if self.loading_bins:
+            return not len(self.bins) < self.bin_cap
+        return not len(self.hoppers) < self.hopper_cap
 
     @property
-    def tiene_contenido(self) -> bool:
-        if self.de_bin:
-            return self.bines != []
-        for tolva in self.tolvas:
-            if tolva.tiene_contenido:
+    def has_content(self) -> bool:
+        """
+        Checks if either has any bins loaded, or current attached hoppers have content.
+
+        :return: True if there's any grapes to unload, False otherwise
+        """
+        # Check for bin load
+        if self.loading_bins:
+            return self.bins != []
+
+        # Check for hopper load
+        for hopper in self.hoppers:
+            if hopper.has_content:
                 return True
+
+        # If neither condition is met, then there's no load
         return False
 
     @property
-    def espacio_tolva(self) -> bool:
-        return len(self.tolvas) < self.cap_tolva
+    def can_attach(self) -> bool:
+        """
+        :return: True if the truck can attach a new hopper, False otherwise.
+        """
+        return len(self.hoppers) < self.hopper_cap
 
-    def descargar(self) -> Union[tuple[int, float], None]:
-        if self.tiene_contenido:
-            if self.de_bin:
-                bin_ = self.bines.pop(0)
-                return bin_.descargar()
-            else:
-                for tolva in self.tolvas:
-                    if tolva.tiene_contenido:
-                        return tolva.descargar()
+    def unload(self) -> Load:
+        """
+        :return: Batch of unloaded contents from the truck (if there's no content, then None
+                is returned)
+        """
+        if not self.has_content:
+            return
 
-    def assign_driver(self, driver: 'TruckDriver') -> None:
-        if self.driver:
-            print(f'Truck {self._id} already has a driver')
+        # Bin unload process
+        if self.loading_bins:
+            bin_ = self.bins.pop()
+            return bin_.unload()
 
-        else:
-            self.driver = driver
+        # Hopper unload process
+        for hopper in self.hoppers:
+            if hopper.has_content:
+                return hopper.unload()
 
     def travel(self) -> None:
-        distance = self.current_lot.plant_distances[self.planta_asignada]
+        """
+        Must be called when the truck travels to his assigned plant. This method will calculate
+        the distance traveled and stores it.
+        """
+        distance = self.current_lot.plant_distances[self.assigned_plant]
         self.distance_travelled += distance
 
-    def estado(self) -> dict:
-        tipo = 'Bines' if self.de_bin else 'Tolva'
-        capacidad = self.cap_bines if self.de_bin else self.cap_tolva
-        ocupacion = len(self.bines) if self.de_bin else len(self.tolvas)
+    def state(self) -> dict:
+        """
+        Used for visualizing the current state of the truck.
+
+        :return: Dictionary with structured info.
+        """
+        type_ = 'Bines' if self.loading_bins else 'Tolva'
+        capacity = self.bin_cap if self.loading_bins else self.hopper_cap
+        load = len(self.bins) if self.loading_bins else len(self.hoppers)
         return {
             'id': self.id,
-            'tipo': tipo,
-            'capacidad': capacidad,
-            'ocupacion': ocupacion
+            'tipo': type_,
+            'capacidad': capacity,
+            'ocupacion': load
         }
