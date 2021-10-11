@@ -18,7 +18,7 @@ m = Model()
 c_cosecha = m.addVars(len(L),len(T),vtype=GRB.BINARY, name='cosecha')
 c_auto = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name ='auto')
 c_manual = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='manual')
-c_tolva = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='tolva')
+c_tolva = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='numtolva')
 c_bines = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='bines')
 c_cuad = m.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='cuadrillas')
 c_man_bin = m.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='asigbin')
@@ -31,8 +31,8 @@ c_disponibilidad = m.addVars(len(L),len(T), vtype=GRB.CONTINUOUS, name='disponib
 #Variables Transporte
 t_ruta = m.addVars(len(L),len(P),len(T), vtype=GRB.BINARY, name='ruta')
 t_camion = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camion')
-t_camion_bin = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camionbin')
-t_camion_tolva = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camiontolva')
+t_camion_bin = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='cambin')
+t_camion_tolva = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camtolva')
 camion_tercero_b = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='ctercerob')
 camion_tercero_t = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='ctercerot')
 
@@ -113,15 +113,26 @@ m.optimize()
 # with open('archivo.obj', 'w') as file:
 #     pickle.dump(m, file)
 # print(m.objVal)
+numtolot = {}
 lot_names = list(read_lot_data().keys())
+contador = 0
+for i in lot_names:
+    numtolot[contador] = i
+    contador += 1    
+lot_names = lot_names[:100]
+truck_names = [i for i in range (25)]
+cuad_names = [i for i in range(100)]
 
-camiones = {}
-tolva = {}
-cosechadora = {}
-cuadrillas = {}
+
+
 monta = {}
 
 lot_harvest = {lot_names[i]: {} for i in range(len(lot_names))}
+lot_trucks = {truck_names[i]: {} for i in range(len(truck_names))}
+lot_cuad = {cuad_names[i]: {} for i in range(len(cuad_names))}
+lot_tolvas = {lot_names[i]: {} for i in range(len(lot_names))}
+lot_cosechadoras = {lot_names[i]: {} for i in range(len(lot_names))}
+lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
 
 
 # v = m.getVarByName('cosecha')
@@ -143,11 +154,75 @@ for v in m.getVars():
 
         lot_harvest[lot_names[l]][f'dia {t}'] = bool(v.x)
 
+    if 'camion' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        c, l, t = [int(n) for n in i.split(',')]
+        try:
+            lot_trucks[truck_names[c]]
 
-        # print('%s %g' % (v.varName, v.x))
-    # if 'cantidad' in v.varName or 'aux' in v.varName:
-    #     print('%s %g' % (v.varName, v.x))
+        except KeyError:
+            lot_trucks[truck_names[c]] = {}
 
+        if bool(v.x):
+            lot_trucks[truck_names[c]][f'dia {t}'] = numtolot[l]
 
+    if 'cuadrillas' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        k, l, t = [int(n) for n in i.split(',')]
+        try:
+            lot_cuad[cuad_names[k]]
 
-print(lot_harvest)
+        except KeyError:
+            lot_cuad[cuad_names[k]] = {}
+
+        if bool(v.x):
+            lot_cuad[cuad_names[k]][f'dia {t}'] = numtolot[l]
+
+    if 'numtolva' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+        if v.x != 0 or v.x != -0:
+            print(l, t, v.x)
+
+        try:
+            lot_tolvas[lot_names[l]]
+
+        except KeyError:
+            lot_tolvas[lot_names[l]] = {}
+
+        lot_tolvas[lot_names[l]][f'dia {t}'] = v.x
+
+    if 'auto' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+        if v.x != 0 or v.x != -0:
+            print(l, t, v.x)
+
+        try:
+            lot_cosechadoras[lot_names[l]]
+
+        except KeyError:
+            lot_cosechadoras[lot_names[l]] = {}
+
+        lot_cosechadoras[lot_names[l]][f'dia {t}'] = v.x
+
+    if 'montacargas' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+        if v.x != 0 or v.x != -0:
+            print(l, t, v.x)
+
+        try:
+            lot_montas[lot_names[l]]
+
+        except KeyError:
+            lot_montas[lot_names[l]] = {}
+
+        lot_montas[lot_names[l]][f'dia {t}'] = v.x
+
+#print(lot_montas)

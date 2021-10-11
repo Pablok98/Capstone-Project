@@ -10,8 +10,11 @@ def load_initial_data() -> tuple[pd.DataFrame, pd.DataFrame]:
 
     :return: Tuple of dataframes, first lot info then miscellaneous
     """
-    lot_df = pd.read_excel(p.GIVEN_DATA_PATH, sheet_name=p.LOT_SHEET)
-    misc_df = pd.read_excel(p.GIVEN_DATA_PATH, sheet_name=p.MISC_SHEET)
+    #lot_df = pd.read_excel(p.GIVEN_DATA_PATH, sheet_name=p.LOT_SHEET, engine='openpyxl')
+    #misc_df = pd.read_excel(p.GIVEN_DATA_PATH, sheet_name=p.MISC_SHEET, engine='openpyxl')
+
+    lot_df = pd.read_excel('data/datos_entregados.xlsx', sheet_name='lotes',  engine='openpyxl')
+    misc_df = pd.read_excel('data/datos_entregados.xlsx', sheet_name='otros', engine='openpyxl')
 
     return lot_df, misc_df
 
