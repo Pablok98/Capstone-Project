@@ -38,6 +38,8 @@ class Wine(SimulationObject):
         self.status_signal = None
         self.command_signal = None
 
+        self.week_number = 0
+
         self.assign_data = Interface()
 
     @property
@@ -48,21 +50,35 @@ class Wine(SimulationObject):
     def termino_dia(self) -> datetime:
         return SimulationObject.current_time.replace(hour=22, minute=0, second=0)
 
-    @property
-    def dia(self) -> int:
-        # TODO: ESTO ES UN PARCHE
-        return SimulationObject.current_day
-        return SimulationObject.current_time.day
-
     def set_rain_data(self) -> None:
         self.rain_data = read_rain_data()
 
     def set_daily_rain(self) -> None:
         for lot in self.lotes.values():
             mask = self.rain_data['Lote COD'] == lot.name
-            # TODO: ESTO ES UN PARCHE PA LA SIM FAKE
-            lluvia = int(self.rain_data[mask][f'day {self.dia - 79}'])
+            lluvia = int(self.rain_data[mask][f'day {self.week_day}'])
             lot.rain(lluvia)
+
+    @property
+    def week_day(self) -> int:
+        day = SimulationObject.current_day - self.week_number * 7
+        return day
+
+    def pass_day(self):
+        SimulationObject.current_time += timedelta(days=1)
+        SimulationObject.current_day += 1
+        if (SimulationObject.current_day + 1) % 7 == 0:
+            self.week_number += 1
+        SimulationObject.current_time.replace(hour=6, minute=0, second=0)
+
+    def set_initial_day(self, day):
+        if day % 7 != 0:
+            print("No es el inicio de la semana!")
+            return
+        SimulationObject.current_day = day
+        SimulationObject.current_time += timedelta(days=day)
+        self.week_number = int(day/7)
+        print(SimulationObject.current_time)
 
     def asignar_jornalero(self, jornalero: Laborer, lote: str) -> None:
         self.lotes[lote].assign_laborer(jornalero)
@@ -89,12 +105,11 @@ class Wine(SimulationObject):
 
     def run(self):
         self.instanciar_lotes(self.lot_data)
-        self._test_instancing()
+        self.set_initial_day(77)
+        #self._test_instancing()
+        self.initial_instancing()
         self.set_rain_data()
 
-        SimulationObject.current_day = 80
-        SimulationObject.current_time += timedelta(days=80)
-        # TODO: parche para el current day todo esto
         while SimulationObject.current_day <= 86:
             #self._test_assing()
             self.assign()
@@ -152,14 +167,7 @@ class Wine(SimulationObject):
         for planta in self.plantas.values():
             planta.process_day()
 
-        new_day = SimulationObject.current_time.day + 1
-        try:
-            new_time = SimulationObject.current_time.replace(day=new_day, hour=6, minute=0, second=0)
-        except ValueError as error:
-            new_month = SimulationObject.current_time.month + 1
-            new_time = SimulationObject.current_time.replace(month=new_month, day=0, hour=6, minute=0, second=0)
-        SimulationObject.current_time = new_time
-        SimulationObject.current_day += 1  # Todo: unhardcode, property tiempo actual
+        self.pass_day()
 
     def estado_lotes_ui(self):
         data = {}
@@ -197,7 +205,7 @@ class Wine(SimulationObject):
                 plant['hopper_cap']*1000,
                 plant['bin_cap']*1000
             )
-        for c_type, truck in TRUCK_DATA:
+        for c_type, truck in TRUCK_DATA.items():
             for _ in range(truck['avail_units']):
                 truck_i = Truck(c_type, truck['hopper_cap'], truck['bin_cap'])
                 self.camiones[truck_i.id] = truck_i
@@ -242,8 +250,7 @@ class Wine(SimulationObject):
         self.cosechadoras.append(Harvester())
 
     def assign(self):
-        # TODO: day fix
-        day_str = f'dia {SimulationObject.current_day - 80}'
+        day_str = f'dia {self.week_day}'
         for laborer, assignation in self.assign_data.laborers.items():
             if day_str in assignation:
                 self.lotes[assignation[day_str]].laborers.append(Laborer())
