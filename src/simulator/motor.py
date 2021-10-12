@@ -99,7 +99,9 @@ class Wine(SimulationObject):
         results = {}
         for llabe, lote in self.lotes.items():
             dia_optimo = lote.optimal_day
-            if abs((dia_optimo - SimulationObject.current_time).days) <= 7:
+            dia1 = dia_optimo.replace(hour=10, minute=10, second=10, microsecond=10)
+            dia2 = SimulationObject.current_time.replace(hour=10, minute=10, second=10, microsecond=10)
+            if abs((dia1 - dia2).days) <= 7:
                 results[llabe] = lote
         return results
 
@@ -124,11 +126,11 @@ class Wine(SimulationObject):
             self.command_signal.emit('lotes_inicial', self.lotes_veraison)
 
         while SimulationObject.current_time < self.fin_jornada:
+            print(len(self.lotes_veraison))
             eventos = {}
             for lote in self.lotes.values():
                 lot, evento, tiempo = lote.next_event
                 eventos[lot] = {'event': evento, 'tiempo': tiempo}
-
             for plant in self.plantas.values():
                 planta, evento, tiempo = plant.next_event
                 eventos[planta] = {'event': evento, 'tiempo': tiempo}
@@ -137,13 +139,13 @@ class Wine(SimulationObject):
                 retorno = self.plantas[prox_lote].resolve_event(eventos[prox_lote]['event'])
             else:
                 retorno = self.lotes[prox_lote].resolve_event(eventos[prox_lote]['event'])
-
+            print(len(self.lotes_veraison))
             if retorno:
                 if type(retorno) == Truck:
                     planta = self.plantas[retorno.planta_asignada]
                     retorno.travel()
                     planta.truck_arrival(retorno)
-            sleep(0.1)
+            sleep(0.5)
             if self.ui:
                 self.status_signal.emit(self.estado_lotes_ui())
             else:
