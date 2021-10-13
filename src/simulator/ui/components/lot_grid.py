@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout
 from PyQt5.QtCore import pyqtSignal, QTimer, QObject, Qt
 from PyQt5.QtGui import QFont, QColor
 
-from .lot_square import LotSqare
+from .lot_square import LotSquare
 
 
 class LotGrid(QWidget):
@@ -20,7 +20,7 @@ class LotGrid(QWidget):
     def set_lots(self, data):
         i, j = 0, 0
         for lot_name in data.keys():
-            lot = LotSqare()
+            lot = LotSquare()
             self.lots[lot_name] = lot
             self.grid.addWidget(lot, i, j)
 
@@ -31,7 +31,12 @@ class LotGrid(QWidget):
 
     def init_gui(self):
         self.grid = QGridLayout(self)
+        self.grid.setContentsMargins(0, 0, 0, 0)
+        self.grid.setSpacing(10)
 
     def actualizar(self, data):
         for name, info in data.items():
-            self.lots[name].update_info(info)
+            try:
+                self.lots[name].update_info(info)
+            except KeyError as error:
+                continue

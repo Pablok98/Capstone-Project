@@ -9,7 +9,7 @@ Load = Union[tuple[int, float], None]
 
 
 class Truck(Machine):
-    _id = 0
+    _id = -1
 
     def __init__(self, type_: str, hopper: int, bins: int):
         super().__init__(p.TASA_DEPRECIACION_TRACTOR, p.COSTO_POR_TONELADA_TRACTOR)

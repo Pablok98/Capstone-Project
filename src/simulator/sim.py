@@ -19,6 +19,9 @@ class Interface(SimulationObject):
         self.truck_drivers = None
         self.machine_drivers = None
 
+    def load_data(self, name, data):
+        setattr(self, name, data)
+
 
 def event(time_var, func=None):
     def event_decorator(event_func):
