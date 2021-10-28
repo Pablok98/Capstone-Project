@@ -7,7 +7,9 @@ from files import read_lot_data
 import pickle
 
 ###############RELLENAR DIA EN EL QUE SE ESTA ACA PARA LA CALIDAD DE CADA LOTE########## 
-cal = conseguir_cal(80)
+dia = 80
+cal = conseguir_cal(dia)
+SimDisponible = 100
 
 
 m = Model()
@@ -84,8 +86,13 @@ m.addConstrs((p_fermentando[p,t] == p_rec[p,t] + p_fermentando[p,t-1] - p_proc[p
 m.addConstrs((p_fermentando[p,0] == 0 for p in P))
 m.addConstrs((p_proc[p,t] <= cap_proc[p] for p in P for t in T))
 m.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
-m.addConstrs((p_disp[p,t] == p_disp[p,t-1] + p_rec[p,t-7] - p_proc[p,t-1] for p in P for t in T if t >= 7))
-m.addConstrs((p_disp[p,t] == 0 for p in P for t in T if t < 7))
+
+if dia >= 7:
+    m.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][dia + t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
+else:
+    m.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
+m.addConstrs((p_disp[p,t] == SimDisponible for p in P for t in T if t == 0))
+
 m.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(c_cant_uva[l,t]*t_ruta[l,p,t] for l in L) for p in P for t in T))
 m.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(c_cant_uva[l,t] for l in L) for p in P for t in T))
 m.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3 for p in P for t in T))
@@ -185,7 +192,8 @@ for v in m.getVars():
         i = i[:-1]
         l, t = [int(n) for n in i.split(',')]
         if v.x != 0 or v.x != -0:
-            print(l, t, v.x)
+            pass
+            #print(l, t, v.x)
 
         try:
             lot_tolvas[lot_names[l]]
@@ -200,7 +208,8 @@ for v in m.getVars():
         i = i[:-1]
         l, t = [int(n) for n in i.split(',')]
         if v.x != 0 or v.x != -0:
-            print(l, t, v.x)
+            pass
+            #print(l, t, v.x)
 
         try:
             lot_cosechadoras[lot_names[l]]
@@ -215,7 +224,8 @@ for v in m.getVars():
         i = i[:-1]
         l, t = [int(n) for n in i.split(',')]
         if v.x != 0 or v.x != -0:
-            print(l, t, v.x)
+            pass
+            #print(l, t, v.x)
 
         try:
             lot_montas[lot_names[l]]
@@ -225,4 +235,14 @@ for v in m.getVars():
 
         lot_montas[lot_names[l]][f'dia {t}'] = v.x
 
+    if 'recepcionado' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        p, t = [int(n) for n in i.split(',')]
+        if v.x != 0 or v.x != -0:
+            recepcionado[p][dia + t] = v.x
+            print(p, t, v.x)
+
 #print(lot_montas)
+print()
+print(recepcionado[0])
