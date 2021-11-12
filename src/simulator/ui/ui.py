@@ -31,7 +31,7 @@ class GUI(QMainWindow):
     def init_gui(self):
         self.setCentralWidget(self.lot_grid)
 
-        self.show()
+        self.showMaximized()
 
     def parse_command(self, command, data):
         if command == 'lotes_inicial':

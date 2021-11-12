@@ -52,6 +52,7 @@ class Lot(SimulationObject):
         self.working_lift_trucks: list[LiftTruck] = []  # Todo: what it does
         self.flag_bin = True
 
+
     # -----------------------------------  General methods  ----------------------------------------
 
     @property

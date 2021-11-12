@@ -5,7 +5,9 @@ from optimization.parametros import *
 from optimization.parametros import conseguir_cal
 from files import read_lot_data
 import pickle
-
+from os.path import join, isfile
+from os import remove
+import json
 ###############RELLENAR DIA EN EL QUE SE ESTA ACA PARA LA CALIDAD DE CADA LOTE########## 
 dia = 80
 cal = conseguir_cal(dia)
@@ -125,7 +127,7 @@ lot_names = list(read_lot_data().keys())
 contador = 0
 for i in lot_names:
     numtolot[contador] = i
-    contador += 1    
+    contador += 1
 lot_names = lot_names[:100]
 truck_names = [i for i in range (25)]
 cuad_names = [i for i in range(100)]
@@ -180,7 +182,7 @@ for v in m.getVars():
         k, l, t = [int(n) for n in i.split(',')]
         try:
             lot_cuad[cuad_names[k]]
-
+            
         except KeyError:
             lot_cuad[cuad_names[k]] = {}
 
@@ -192,8 +194,7 @@ for v in m.getVars():
         i = i[:-1]
         l, t = [int(n) for n in i.split(',')]
         if v.x != 0 or v.x != -0:
-            pass
-            #print(l, t, v.x)
+            print(l, t, v.x)
 
         try:
             lot_tolvas[lot_names[l]]
@@ -208,8 +209,7 @@ for v in m.getVars():
         i = i[:-1]
         l, t = [int(n) for n in i.split(',')]
         if v.x != 0 or v.x != -0:
-            pass
-            #print(l, t, v.x)
+            print(l, t, v.x)
 
         try:
             lot_cosechadoras[lot_names[l]]
@@ -224,8 +224,7 @@ for v in m.getVars():
         i = i[:-1]
         l, t = [int(n) for n in i.split(',')]
         if v.x != 0 or v.x != -0:
-            pass
-            #print(l, t, v.x)
+            print(l, t, v.x)
 
         try:
             lot_montas[lot_names[l]]
@@ -234,15 +233,54 @@ for v in m.getVars():
             lot_montas[lot_names[l]] = {}
 
         lot_montas[lot_names[l]][f'dia {t}'] = v.x
+     if 'numtolva' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            l, t = [int(n) for n in i.split(',')]
+            if v.x != 0 or v.x != -0:
+                pass
+                #print(l, t, v.x)
 
-    if 'recepcionado' in v.varName:
-        _, i = v.varName.split('[')
-        i = i[:-1]
-        p, t = [int(n) for n in i.split(',')]
-        if v.x != 0 or v.x != -0:
-            recepcionado[p][dia + t] = v.x
-            print(p, t, v.x)
+            try:
+                lot_tolvas[lot_names[l]]
+
+            except KeyError:
+                lot_tolvas[lot_names[l]] = {}
+
+            lot_tolvas[lot_names[l]][f'dia {t}'] = v.x
+
+
+
+      if 'recepcionado' in v.varName:
+          _, i = v.varName.split('[')
+          i = i[:-1]
+          p, t = [int(n) for n in i.split(',')]
+          if v.x != 0 or v.x != -0:
+              recepcionado[p][dia + t] = v.x
+              print(p, t, v.x)
+        
+        
+dict_paths = {
+    join('data', 'results', 'lots.json'): lot_harvest,
+    join('data', 'results', 'trucks.json'): lot_trucks,
+    join('data', 'results', 'cuads.json'): lot_cuad,
+    join('data', 'results', 'hoppers.json'): lot_tolvas,
+    join('data', 'results', 'harvesters.json'): lot_cosechadoras,
+    join('data', 'results', 'lift.json'): lot_montas,
+}
+for path, data in dict_paths.items():
+    if isfile(path):
+        remove(path)
+    with open(path, 'w') as archivo:
+        json.dump(data, archivo, indent=4)
+
+        if bool(v.x):
+            lot_cuad[cuad_names[k]][f'dia {t}'] = numtolot[l]
+
+   
 
 #print(lot_montas)
 print()
 print(recepcionado[0])
+
+#print(lot_montas)
