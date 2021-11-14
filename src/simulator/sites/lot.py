@@ -3,6 +3,7 @@ from typing import Union
 from src.params import MAX_DIAS_TRABAJO_JORNALERO
 from ..entities import *
 from ..sim import SimulationObject, event
+import logging
 
 Event = tuple[str, str, datetime]
 
@@ -102,12 +103,14 @@ class Lot(SimulationObject):
 
         :param laborer: Laborer to be assigned to the lot
         """
+        msg = f"{SimulationObject.current_time} -> "
         if laborer.days_working < MAX_DIAS_TRABAJO_JORNALERO:
             self.laborers.append(laborer)
-            print(f"El jornalero {laborer.id} fue asignado al lote {self.name}")
+            msg += f"El jornalero {laborer.id} fue asignado al lote {self.name}"
         else:
-            print(f"El jornalero {laborer.id} no pudo ser asignado al lote {self.name}" +
-                  "porque excede los dias maximos de trabajo")
+            msg += f"El jornalero {laborer.id} no pudo ser asignado al lote {self.name}" + \
+                  "porque excede los dias maximos de trabajo"
+        logging.info(msg)
 
     def assign_truck(self, truck) -> None:
         """
@@ -117,7 +120,8 @@ class Lot(SimulationObject):
         """
         truck.current_lot = self
         self.trucks.append(truck)
-        print(f"El camion {truck.id} fue asignado al lote {self.name}")
+        msg = f"{SimulationObject.current_time} -> El camion {truck.id} fue asignado al lote {self.name}"
+        logging.info(msg)
 
     # --------------------------------  Laborer/Crates  ----------------------------------------
     @property
@@ -133,8 +137,9 @@ class Lot(SimulationObject):
             self.bins.append(Bin())  # TODO: agregar restriccion de bines(?)
         _bin = self.bins[-1]
         if _bin.full:
-            print(
-                f"{self.name} - Se empezó a auto_load un nuevo bin manualmente un bin a la hora {SimulationObject.current_time}")
+            msg = f'{SimulationObject.current_time} - Se empezo a cargar un nuevo bin manualmente'
+            msg += f' [{self.name}]'
+            logging.info(msg)
             _bin = Bin()
             self.bins.append(_bin)
         return _bin
@@ -189,7 +194,9 @@ class Lot(SimulationObject):
         container.load_crate(crate)
         self.grape_quantity -= 18
 
-        print(f"{self.name} - Se llenó un nuevo cajon a la hora {SimulationObject.current_time}")
+        msg = f'{SimulationObject.current_time} - Se lleno un nuevo cajon'
+        msg += f' [{self.name}]'
+        logging.info(msg)
 
     # --------------------------------  Automatic Harvester  ---------------------------------------
     def timegen_bin_fill(self) -> None:
@@ -216,7 +223,10 @@ class Lot(SimulationObject):
         _bin.auto_load(self.grape, self.current_quality)
         self.bins.insert(0, _bin)
         self.grape_quantity -= 18 * 27
-        print(f"{self.name} - Se llenó un bin automático a la hora {SimulationObject.current_time}")
+
+        msg = f'{SimulationObject.current_time} - Se lleno un bin automatico'
+        msg += f' [{self.name}]'
+        logging.info(msg)
 
     # ---------------------------      Bin Loading      -------------------------------------------
     @property
@@ -260,7 +270,7 @@ class Lot(SimulationObject):
 
     def free_lift_truck(self) -> None:
         lift_truck = self.working_lift_trucks.pop(0)
-        print(f'El montacargas {lift_truck._id} fue desocupado')
+        logging.info(f'{SimulationObject.current_time} -> El montacargas {lift_truck.id} fue desocupado')
 
     def load_bin_event(self) -> None:
         """
@@ -274,7 +284,9 @@ class Lot(SimulationObject):
         self.loading_bin = None
         self.free_lift_truck()
 
-        print(f"{self.name} -Se cargó un bin a la hora {SimulationObject.current_time}")
+        msg = f'{SimulationObject.current_time} - Se cargo un bin a camion'
+        msg += f' [{self.name}]'
+        logging.info(msg)
 
     # ----------------------------    Truck dispatch      -----------------------------------------
     @property
@@ -290,12 +302,11 @@ class Lot(SimulationObject):
         """
         for i, camion in enumerate(self.trucks):
             if camion.full:
-                print(
-                    f"{self.name} - Se despachó un camión a la hora {SimulationObject.current_time}")
+                msg = f'{SimulationObject.current_time} -> Se despacho un camión'
+                msg += f' [{self.name}]'
+                logging.info(msg)
+
                 return self.trucks.pop(i)
-
-
-        print(f"{self.name} -Se llenó (automatico) un bin a la hora {SimulationObject.current_time}")
 
     # ----------------------------    Hopper Attachment    -----------------------------------------
 
@@ -315,14 +326,19 @@ class Lot(SimulationObject):
         SimulationObject.current_time = self.attaching_hopper.transport_time
         for camion in self.trucks:
             if not camion.loading_bins and camion.can_attach:
-                print(f"{self.name} - Se enganchó el tolva {self.attaching_hopper._id} al camion {camion._id} a las {SimulationObject.current_time}")
+                msg = f'{SimulationObject.current_time} -> Se enganchó el tolva {self.attaching_hopper.id} al camion {camion.id}'
+                msg += f' [{self.name}]'
+                logging.info(msg)
 
                 camion.hoppers.append(self.attaching_hopper)
                 self.hoppers.pop(self.hoppers.index(self.attaching_hopper))
                 self.attaching_hopper = None
                 break
         else:
-            print(f"{self.name} - Hay un carro tolva que no se puede enganchar")
+            msg = f'{SimulationObject.current_time} -> Hay un carro tolva que no se puede enganchar'
+            msg += f' [{self.name}]'
+            logging.warning(msg)
+
             self.attaching_hopper.transport_time = None
     # ------------------------------    Event Handling    ------------------------------------------
 

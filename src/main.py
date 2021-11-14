@@ -8,11 +8,6 @@ import threading
 import sys
 from os.path import join
 from simulator.sim import SimulationObject
-"""
-dfs = load_initial_data()
-rain_data = simulate_rain(dfs[0], p.TIME_RANGE)
-write_excel_listed(rain_data, p.RAIN_DATA_PATH)
-"""
 
 ui = True
 lot_data = read_lot_data()
@@ -35,8 +30,9 @@ for path, name in paths.items():
         winifera.assign_data.load_data(name, data)
 
 # -----------------------------
+import logging
 
-
+logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
 if ui:
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)

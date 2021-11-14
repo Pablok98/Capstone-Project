@@ -50,3 +50,7 @@ def simulate_rain(lot_frame, time_range):
             resultado = 1 if (randint(0, 100)/100 < rain_prob) else 0
             rain_data[index][f'day {day + 1}'] = resultado
     return rain_data
+
+
+def snapshot(motor) -> dict:
+    pass

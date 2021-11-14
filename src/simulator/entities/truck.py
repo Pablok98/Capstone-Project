@@ -1,9 +1,11 @@
+import logging
+
 import params as p
 from typing import Union
 from ..entities import *
 from ..sites import *
 from .machine import Machine
-
+from ..sim import SimulationObject
 
 Load = Union[tuple[int, float], None]
 
@@ -47,13 +49,16 @@ class Truck(Machine):
 
         :param driver: Driver to be assigned (can ONLY be a truck driver)
         """
+        msg = f'{SimulationObject.current_time} -> '
         if driver.weekly_days < p.MAX_DIAS_TRABAJO_CONDUCTORES or self.driver:
             self.driver = driver
             driver.assign_truck(self)
-            print(f'El conductor {driver.id} fue asignado al camion {self._id}')
+            msg += f'El conductor {driver.id} fue asignado al camion {self.id}'
+            logging.info(msg)
         else:
-            print(f"El conductor {driver.id} no pudo ser asignado al camion {self.id}" +
-                  "porque excede los dias maximos de trabajo")
+            msg +=f"El conductor {driver.id} no pudo ser asignado al camion {self.id}" + \
+                  "porque excede los dias maximos de trabajo"
+            logging.warning(msg)
 
     @property
     def full(self) -> bool:
