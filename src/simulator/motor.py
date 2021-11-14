@@ -16,6 +16,7 @@ from files import read_rain_data
 from params import TRUCK_DATA, PLANTS_DATA
 import logging
 
+dia_inicial = 77
 
 class Wine(SimulationObject):
     def __init__(self, lot_data: dict, ui=False):
@@ -107,7 +108,7 @@ class Wine(SimulationObject):
 
     def run(self):
         self.instanciar_lotes(self.lot_data)
-        self.set_initial_day(77)
+        self.set_initial_day(dia_inicial)
         #self._test_instancing()
         self.initial_instancing()
         self.set_rain_data()
@@ -127,7 +128,6 @@ class Wine(SimulationObject):
         sleep(0.5)
         logging.info(f'{SimulationObject.current_time} - Inicia el dia')
         while SimulationObject.current_time < self.fin_jornada:
-
             eventos = {}
             for lote in self.lotes.values():
                 lot, evento, tiempo = lote.next_event
@@ -148,7 +148,7 @@ class Wine(SimulationObject):
             # sleep(0.01)
             if self.ui:
                 pass
-                #self.status_signal.emit(self.estado_lotes_ui())
+                self.status_signal.emit(self.estado_lotes_ui())
             else:
                 print(self.estado_lotes_noui())
 
@@ -157,6 +157,7 @@ class Wine(SimulationObject):
                 planta = self.plantas[camion.assigned_plant]
                 camion.travel()
                 planta.truck_arrival(camion)
+            lote.end_day()
 
         while SimulationObject.current_time < self.termino_dia:
             eventos = {}

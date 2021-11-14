@@ -130,10 +130,10 @@ class Plant(SimulationObject):
 
         processed = 0
         # We process grape until we reach the maximum daily capacity or grape is exhausted
-        while processed < self.prod_cap:
+        while processed < self.prod_cap and self.grapes:
             # We must check if the next grape in the queue has been fermented
             fermented = (SimulationObject.current_time - self.grapes[0].date).days >= 7
-            if not self.grapes or not fermented:
+            if not fermented:
                 break
             batch = self.grapes.pop(0)
             processed += batch.kilograms

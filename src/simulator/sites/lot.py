@@ -424,6 +424,7 @@ class Lot(SimulationObject):
         # Reset laborer and harvester assignations (harvest timeframe is over)
         self.laborers = []
         self.harvesters = []
+        self.trucks = []
 
     @property
     def estado(self) -> dict:
