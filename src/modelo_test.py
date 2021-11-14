@@ -14,110 +14,206 @@ cal = conseguir_cal(dia)
 SimDisponible = 100
 
 
-m = Model()
+
+
+m1 = Model()
 # m.Params.OutputFlag = 0
 # m.Params.LogToConsole = 0
 
 #Variables Cosecha
-c_cosecha = m.addVars(len(L),len(T),vtype=GRB.BINARY, name='cosecha')
-c_auto = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name ='auto')
-c_manual = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='manual')
-c_tolva = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='numtolva')
-c_bines = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='bines')
-c_cuad = m.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='cuadrillas')
-c_man_bin = m.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='asigbin')
-c_man_tolva = m.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='asigtolva')
-c_cant_uva = m.addVars(len(L),len(T), vtype=GRB.CONTINUOUS, name='cantidad')
-c_monta = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='montacargas')
-c_disponibilidad = m.addVars(len(L),len(T), vtype=GRB.CONTINUOUS, name='disponibilidad')
+c_cosecha = m1.addVars(len(L),len(T),vtype=GRB.BINARY, name='cosecha')
+c_auto = m1.addVars(len(L),len(T), vtype=GRB.INTEGER, name ='auto')
+c_manual = m1.addVars(len(L),len(T), vtype=GRB.INTEGER, name='manual')
+c_tolva = m1.addVars(len(L),len(T), vtype=GRB.INTEGER, name='numtolva')
+c_bines = m1.addVars(len(L),len(T), vtype=GRB.INTEGER, name='bines')
+c_cuad = m1.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='cuadrillas')
+c_man_bin = m1.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='asigbin')
+c_man_tolva = m1.addVars(len(K),len(L),len(T), vtype=GRB.BINARY, name='asigtolva')
+c_cant_uva = m1.addVars(len(L),len(T), vtype=GRB.CONTINUOUS, name='cantidad')
+c_monta = m1.addVars(len(L),len(T), vtype=GRB.INTEGER, name='montacargas')
+c_disponibilidad = m1.addVars(len(L),len(T), vtype=GRB.CONTINUOUS, name='disponibilidad')
 #c_cajones
 
-#Variables Transporte
-t_ruta = m.addVars(len(L),len(P),len(T), vtype=GRB.BINARY, name='ruta')
-t_camion = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camion')
-t_camion_bin = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='cambin')
-t_camion_tolva = m.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camtolva')
-camion_tercero_b = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='ctercerob')
-camion_tercero_t = m.addVars(len(L),len(T), vtype=GRB.INTEGER, name='ctercerot')
+# #Variable Auxiliar
+# auxiliar = m.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
 
-#Variables Planta
-p_proc = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='procesado')
-p_fermentando = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='fermentando')
-p_disp = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='disp')
-p_rec = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='recepcionado')
-p_terceros = m.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='terceros')
-
-#Variable Auxiliar
-auxiliar = m.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
-
-m.update()
+m1.update()
 
 
 #Restricciones Cosecha
-m.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
-m.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
-m.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
-m.addConstrs((c_cant_uva[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
-m.addConstrs((c_cosecha[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
-m.addConstrs((c_cosecha[l,t] <= c_auto[l,t] + c_manual[l,t] for l in L for t in T))
-m.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M for l in L for t in T)) #aca talvez para mejorar rendimiento se puede poner distintos M
-m.addConstrs((c_manual[l,t] <=c_cosecha[l,t] * M for l in L for t in T))
-m.addConstrs((sum(c_auto[l,t] for l in L) <= 5 for t in T))
-m.addConstrs((quicksum(c_manual[l,t] for l in L) <= 200 for t in T))
-m.addConstrs((sum(c_cuad[k,l,t] for k in K) == c_manual[l,t] for l in L for t in T))
-m.addConstrs((c_bines[l,t] >= ((ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * sum(c_man_bin[k,l,t] for k in K))/kg_bin) for l in L for t in T))
-m.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * sum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))
-m.addConstrs((sum(c_bines[l,t] for l in L) <= 800 for t in T))
-m.addConstrs((sum(c_tolva[l,t] for l in L) <= cantidad_tolvas for t in T))
-m.addConstrs((sum(c_monta[l,t] for l in L)  <= cap_montacargas for t in T))
-m.addConstrs((c_monta[l,t] >= sum(t_camion_bin[c,l,t] for c in C) for l in L for t in T))
-m.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
-m.addConstrs((c_disponibilidad[l,0] == DI[l] for l in L))
+m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
+m1.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
+m1.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
+m1.addConstrs((c_cant_uva[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
+m1.addConstrs((c_cosecha[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
+m1.addConstrs((c_cosecha[l,t] <= c_auto[l,t] + c_manual[l,t] for l in L for t in T))
+m1.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M for l in L for t in T)) #aca talvez para mejorar rendimiento se puede poner distintos M
+m1.addConstrs((c_manual[l,t] <=c_cosecha[l,t] * M for l in L for t in T))
+m1.addConstrs((sum(c_auto[l,t] for l in L) <= 5 for t in T))
+m1.addConstrs((quicksum(c_manual[l,t] for l in L) <= 100 for t in T)) #aca es el limite de cuadrillas, podria no necesitarse
+m1.addConstrs((sum(c_cuad[k,l,t] for k in K) == c_manual[l,t] for l in L for t in T))
+m1.addConstrs((c_bines[l,t] >= ((ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * sum(c_man_bin[k,l,t] for k in K))/kg_bin) for l in L for t in T))
+m1.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * sum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))
+m1.addConstrs((sum(c_bines[l,t] for l in L) <= 800 for t in T))
+m1.addConstrs((sum(c_tolva[l,t] for l in L) <= cantidad_tolvas for t in T))
+m1.addConstrs((sum(c_monta[l,t] for l in L)  <= cap_montacargas for t in T))
+m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
+m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
+m1.addConstrs((c_disponibilidad[l,0] == DI[l] for l in L))
 #restriccion carros tolva 17
 #restriccion cajones??
 
-#Restricciones Transporte
-m.addConstrs((sum(t_ruta[l,p,t] for p in P) == c_cosecha[l,t] for l in L for t in T))
-m.addConstrs((camion_tercero_b[l,t] + sum(t_camion_bin[c,l,t] * cap_bines[c] for c in C) >= c_bines[l,t] for l in L for t in T))
-m.addConstrs((camion_tercero_t[l,t] + sum(t_camion_tolva[c,l,t] * cap_tolva[c] for c in C) >= c_tolva[l,t] for l in L for t in T))
-m.addConstrs((t_camion_tolva[c,l,t] + t_camion_bin[c,l,t] == t_camion[c,l,t] for c in C for l in L for t in T))
-m.addConstrs((quicksum(t_camion[c,l,t] for c in C for l in L) <= 25 for t in T))
+###################
 
-#Restricciones Planta
-m.addConstrs((p_fermentando[p,t] == p_rec[p,t] + p_fermentando[p,t-1] - p_proc[p,t-1] for p in P for t in T if t >=1))
-m.addConstrs((p_fermentando[p,0] == 0 for p in P))
-m.addConstrs((p_proc[p,t] <= cap_proc[p] for p in P for t in T))
-m.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
+m2 = Model()
+
+# Variables Transporte
+t_ruta = m2.addVars(len(L),len(P),len(T), vtype=GRB.BINARY, name='ruta')
+t_camion = m2.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camion')
+t_camion_bin = m2.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='cambin')
+t_camion_tolva = m2.addVars(len(C),len(L),len(T), vtype=GRB.BINARY, name='camtolva')
+camion_tercero_b = m2.addVars(len(L),len(T), vtype=GRB.INTEGER, name='ctercerob')
+camion_tercero_t = m2.addVars(len(L),len(T), vtype=GRB.INTEGER, name='ctercerot')
+
+
+# #Restricciones Transporte
+# m2.addConstrs((sum(t_ruta[l,p,t] for p in P) == c_cosecha[l,t] for l in L for t in T))
+# # m2.addConstrs((sum(t_ruta[l,p,t] for p in P) == 0 for l in L for t in T))
+# m2.addConstrs((camion_tercero_b[l,t] + sum(t_camion_bin[c,l,t] * cap_bines[c] for c in C) >= c_bines[l,t] for l in L for t in T))
+# m2.addConstrs((camion_tercero_t[l,t] + sum(t_camion_tolva[c,l,t] * cap_tolva[c] for c in C) >= c_tolva[l,t] for l in L for t in T))
+# m2.addConstrs((t_camion_tolva[c,l,t] + t_camion_bin[c,l,t] == t_camion[c,l,t] for c in C for l in L for t in T))
+# m2.addConstrs((quicksum(t_camion[c,l,t] for c in C for l in L) <= 25 for t in T))
+
+#######################
+
+m3 = Model()
+
+# #Variables Planta
+p_proc = m3.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='procesado')
+p_fermentando = m3.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='fermentando')
+p_disp = m3.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='disp')
+p_rec = m3.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='recepcionado')
+p_terceros = m3.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='terceros')
+
+
+########################
+
+# #Funcion Objetivo
+# costo_terceros = quicksum(1.12*80*p_terceros[p,t] for p in P for t in T) \
+#                  + quicksum((camion_tercero_t[l,t] + camion_tercero_b[l,t])*1.15*100 for t in T for l in L)
+# sobrecosto_ocupacion = quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[p])) for p in P for t in T)
+# promedio = quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)
+
+m1.setObjective(quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10)
+
+m1.update()
+m1.optimize()
+
+
+cosecha = [[0 for t in T] for l in L]
+bines = [[0 for t in T] for l in L]
+tolva = [[0 for t in T] for l in L]
+cantidad = [[0 for t in T] for l in L]
+for v in m1.getVars():
+
+    if 'cosecha' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+
+        try:
+            cosecha[l][t] = v.x
+
+        except KeyError:
+            print("Hubo un error")
+
+    elif 'bines' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+
+        try:
+            bines[l][t] = v.x
+
+        except KeyError:
+            print("Hubo un error")
+
+    elif 'numtolva' in v.varName:
+
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+        try:
+            tolva[l][t] = v.x
+
+        except KeyError:
+            print("Hubo un error")
+
+    elif 'cantidad' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+
+        try:
+            cantidad[l][t] = v.x
+
+        except KeyError:
+            print("Hubo un error")
+
+
+
+#Restricciones Transporte
+m2.addConstrs((quicksum(t_ruta[l,p,t] for p in P) == cosecha[l][t] for l in L for t in T))
+m2.addConstrs((camion_tercero_b[l,t] + quicksum(t_camion_bin[c,l,t] * cap_bines[c] for c in C) >= bines[l][t] for l in L for t in T))
+m2.addConstrs((camion_tercero_t[l,t] + quicksum(t_camion_tolva[c,l,t] * cap_tolva[c] for c in C) >= tolva[l][t] for l in L for t in T))
+m2.addConstrs((t_camion_tolva[c,l,t] + t_camion_bin[c,l,t] == t_camion[c,l,t] for c in C for l in L for t in T))
+m2.addConstrs((quicksum(t_camion[c,l,t] for c in C for l in L) <= 25 for t in T))
+
+
+m2.setObjective(quicksum(camion_tercero_b[l,t] + camion_tercero_t[l,t] for l in L for t in T))
+m2.update()
+m2.optimize()
+
+ruta = [[[0 for t in T] for p in P] for l in L]
+for v in m2.getVars():
+
+    if 'ruta' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, p, t = [int(n) for n in i.split(',')]
+
+        try:
+            ruta[l][p][t] = v.x
+
+        except KeyError:
+            print("Hubo un error")
+
+
+# # #Restricciones Planta
+m3.addConstrs((p_fermentando[p,t] == p_rec[p,t] + p_fermentando[p,t-1] - p_proc[p,t-1] for p in P for t in T if t >=1))
+m3.addConstrs((p_fermentando[p,0] == 0 for p in P))
+m3.addConstrs((p_proc[p,t] <= cap_proc[p] for p in P for t in T))
+m3.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
 
 if dia >= 7:
-    m.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][dia + t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
+    m3.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][dia + t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
 else:
-    m.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
-m.addConstrs((p_disp[p,t] == SimDisponible for p in P for t in T if t == 0))
+    m3.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
+m3.addConstrs((p_disp[p,t] == SimDisponible for p in P for t in T if t == 0))
 
-m.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(c_cant_uva[l,t]*t_ruta[l,p,t] for l in L) for p in P for t in T))
-m.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(c_cant_uva[l,t] for l in L) for p in P for t in T))
-m.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3 for p in P for t in T))
-m.addConstrs((p_rec[p,t] <= cap_fermentacion[p] - p_fermentando[p,t] for p in P for t in T))
-m.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p] for p in P for t in T))
+m3.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(cantidad[l][t]*ruta[l][p][t] for l in L) for p in P for t in T))
+m3.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(cantidad[l][t] for l in L) for p in P for t in T))
+m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3 for p in P for t in T))
+m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p] - p_fermentando[p,t] for p in P for t in T))
+m3.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p] for p in P for t in T))
+
+m3.setObjective(quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[p])) for p in P for t in T) + quicksum(p_terceros[p,t] for p in P for t in T)*1.2*80)
+m3.update()
+m3.optimize()
 
 
 
-#Auxiliar
-m.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
-a = 0.9
-m.update()
 
-#Funcion Objetivo
-costo_terceros = quicksum(1.12*80*p_terceros[p,t] for p in P for t in T) \
-                 + quicksum((camion_tercero_t[l,t] + camion_tercero_b[l,t])*1.15*100 for t in T for l in L)
-sobrecosto_ocupacion = quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[p])) for p in P for t in T)
-promedio = quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)
-
-m.setObjective(costo_terceros + sobrecosto_ocupacion + penalizacion*(1 - auxiliar) + quicksum(costo_procesado[p]*p_proc[p,t] for p in P for t in T))
-
-m.update()
-m.optimize()
 
 # with open('archivo.obj', 'w') as file:
 #     pickle.dump(m, file)
@@ -233,31 +329,32 @@ for v in m.getVars():
             lot_montas[lot_names[l]] = {}
 
         lot_montas[lot_names[l]][f'dia {t}'] = v.x
-     if 'numtolva' in v.varName:
-            _, i = v.varName.split('[')
-            i = i[:-1]
-            l, t = [int(n) for n in i.split(',')]
-            if v.x != 0 or v.x != -0:
-                pass
+
+    if 'numtolva' in v.varName:
+
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        l, t = [int(n) for n in i.split(',')]
+        if v.x != 0 or v.x != -0:
+            pass
                 #print(l, t, v.x)
+        try:
+            lot_tolvas[lot_names[l]]
 
-            try:
-                lot_tolvas[lot_names[l]]
+        except KeyError:
+            lot_tolvas[lot_names[l]] = {}
 
-            except KeyError:
-                lot_tolvas[lot_names[l]] = {}
-
-            lot_tolvas[lot_names[l]][f'dia {t}'] = v.x
-
+        lot_tolvas[lot_names[l]][f'dia {t}'] = v.x
 
 
-      if 'recepcionado' in v.varName:
-          _, i = v.varName.split('[')
-          i = i[:-1]
-          p, t = [int(n) for n in i.split(',')]
-          if v.x != 0 or v.x != -0:
-              recepcionado[p][dia + t] = v.x
-              print(p, t, v.x)
+
+    if 'recepcionado' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        p, t = [int(n) for n in i.split(',')]
+        if v.x != 0 or v.x != -0:
+            recepcionado[p][dia + t] = v.x
+            print(p, t, v.x)
         
         
 dict_paths = {
