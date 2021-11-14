@@ -244,7 +244,8 @@ lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
 # lot_harvest = {lot_names[i]: {f'dia {t}': bool(m.getVarByName(f'cosecha[{i},{t}]').x) for t in range(7)} for i in range(len(lot_names))}
 # cosecha[95,0]
 
-for v in m.getVars():
+for v in m1.getVars():
+
 
     if 'cosecha' in v.varName:
         _, i = v.varName.split('[')
@@ -259,18 +260,7 @@ for v in m.getVars():
 
         lot_harvest[lot_names[l]][f'dia {t}'] = bool(v.x)
 
-    if 'camion' in v.varName:
-        _, i = v.varName.split('[')
-        i = i[:-1]
-        c, l, t = [int(n) for n in i.split(',')]
-        try:
-            lot_trucks[truck_names[c]]
-
-        except KeyError:
-            lot_trucks[truck_names[c]] = {}
-
-        if bool(v.x):
-            lot_trucks[truck_names[c]][f'dia {t}'] = numtolot[l]
+    
 
     if 'cuadrillas' in v.varName:
         _, i = v.varName.split('[')
@@ -347,6 +337,23 @@ for v in m.getVars():
         lot_tolvas[lot_names[l]][f'dia {t}'] = v.x
 
 
+        
+for v in m2.getVars():
+
+    if 'camion' in v.varName:
+        _, i = v.varName.split('[')
+        i = i[:-1]
+        c, l, t = [int(n) for n in i.split(',')]
+        try:
+            lot_trucks[truck_names[c]]
+
+        except KeyError:
+            lot_trucks[truck_names[c]] = {}
+
+        if bool(v.x):
+            lot_trucks[truck_names[c]][f'dia {t}'] = numtolot[l]
+
+for v in m3.getVars():
 
     if 'recepcionado' in v.varName:
         _, i = v.varName.split('[')
@@ -355,7 +362,7 @@ for v in m.getVars():
         if v.x != 0 or v.x != -0:
             recepcionado[p][dia + t] = v.x
             print(p, t, v.x)
-        
+
         
 dict_paths = {
     join('data', 'results', 'lots.json'): lot_harvest,
