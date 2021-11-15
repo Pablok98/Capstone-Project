@@ -105,7 +105,19 @@ p_terceros = m3.addVars(len(P),len(T), vtype=GRB.CONTINUOUS, name='terceros')
 # sobrecosto_ocupacion = quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[p])) for p in P for t in T)
 # promedio = quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)
 
-m1.setObjective(quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10)
+VarJornaleros= quicksum((c_cuad[k,l,t] * tam_cuadrillas[k] * ef_jorn)/1000 for k in K for l in L for t in T)
+
+VarConductores= quicksum((c_cant_uva[l,t])/15000 for l in L for t in T)
+
+VarTractores= quicksum(((c_cant_uva[l,t])/1000)*0.1 for l in L for t in T)
+
+VarTolva= quicksum(((quicksum(c_man_tolva[k,l,t] * tam_cuadrillas[k] *ef_jorn for k in K))/1000)*0.1 for l in L for t in T)
+
+VarCosechadora= quicksum(((ef_jorn * 4000*c_auto[l,t])/1000)*0.1 for l in L for t in T)
+
+RepBines= quicksum(c_bines[l,t] for l in L for t in T)/100
+
+m1.setObjective(quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
 m1.update()
 m1.optimize()
@@ -171,6 +183,8 @@ m2.addConstrs((t_camion_tolva[c,l,t] + t_camion_bin[c,l,t] == t_camion[c,l,t] fo
 m2.addConstrs((quicksum(t_camion[c,l,t] for c in C for l in L) <= 25 for t in T))
 
 
+#VarCamion = quicksum((t_camion_bin[c,l,t] * cap_bines[c] *kg_bin) for c in C for l in L for t in T for p in p)
+
 m2.setObjective(quicksum(camion_tercero_b[l,t] + camion_tercero_t[l,t] for l in L for t in T))
 m2.update()
 m2.optimize()
@@ -208,7 +222,11 @@ m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3 for p in P for t in T))
 m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p] - p_fermentando[p,t] for p in P for t in T))
 m3.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p] for p in P for t in T))
 
-m3.setObjective(quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[p])) for p in P for t in T) + quicksum(p_terceros[p,t] for p in P for t in T)*1.2*80)
+VarPlanta = quicksum((p_proc[p,t]*ch_kg[p])for p in P for t in T)
+
+TercerizacionPlanta = quicksum((p_terceros[p,t] * 1.12 * ch_kg[p]) for p in P for t in T)
+
+m3.setObjective(quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[p])) for p in P for t in T) + quicksum(p_terceros[p,t] for p in P for t in T)*1.2*80 + VarPlanta + TercerizacionPlanta)
 m3.update()
 m3.optimize()
 
