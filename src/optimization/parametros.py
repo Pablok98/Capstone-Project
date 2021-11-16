@@ -16,15 +16,16 @@ recepcionado = [[0 for i in range(180)] for i in P]
 ###############################################################################
 
 ###############################################################################
-ef_cos = [[4000 * 10 for t in T] for l in L]  #10 hras  ->  #kg/día                       #lt
-ef_jorn = 700 #kg/dia                                           #lt
-ef_cuad = [[5 * ef_jorn for t in T] for l in L]  #Cuadrillas de 5 personas                #lt
-###############################################################################
-
-
-###############################################################################
 cap_cuadrillas = 200 # cuantas cuadrillas podremos ocupar
 ###############################################################################
+
+###############################################################################
+tam_cuadrillas = [5 for i in range(cap_cuadrillas)]
+ef_cos = [[4000 * 10 for t in T] for l in L]  #10 hras  ->  #kg/día                       #lt
+ef_jorn = 700 #kg/dia                                           #lt
+ef_cuad = [[tam_cuadrillas[0] * ef_jorn for t in T] for l in L]  #Cuadrillas de 5 personas                #lt
+###############################################################################
+
 
 
 def load_km():
@@ -88,6 +89,10 @@ kg_tolva = 10000
 cantidad_tolvas = 100
 CFD = 10  #costo fijo diario
 penalizacion = 10
+
+UTM = 54.171
+
+ch_kg = [20/UTM, 30.8/UTM, 20.8/UTM, 27.8/UTM, 29.2/UTM]
 
 
 
