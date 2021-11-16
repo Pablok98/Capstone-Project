@@ -22,6 +22,7 @@ paths = {
     join('data', 'results_old', 'hoppers.json'): 'hoppers',
     join('data', 'results_old', 'harvesters.json'): 'harvesters',
     join('data', 'results_old', 'lift.json'): 'lift_trucks',
+    join('data', 'results_old', 'plants.json'): 'plants',
 }
 
 for path, name in paths.items():

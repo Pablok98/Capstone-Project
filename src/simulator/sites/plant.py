@@ -39,6 +39,16 @@ class Plant(SimulationObject):
         self.daily_grapes = 0
 
     @property
+    def week_recieved(self):
+        load = 0
+        for batch in self.grapes:
+            time_ = (SimulationObject.current_time - batch.date).days < 7
+            if not time_:
+                break
+            load += batch.kilograms
+        return load
+
+    @property
     def current_load(self) -> int:
         """
         Iterates through the batches (tuples) of grape and counts the total grape currently

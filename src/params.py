@@ -3,6 +3,7 @@ from os.path import join
 
 # General
 TOTAL_DAYS = 180
+INITIAL_DAY = 77
 
 # Modelo inicial
 DEMAND_WEIGHT = 0.2
