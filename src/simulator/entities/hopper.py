@@ -26,6 +26,8 @@ class Hopper:
         self.depreciation_rate = TASA_DEPRECIACION_TOLVA
         self.ton_cost = COSTO_POR_TONELADA_TOLVA
 
+        self.assigned = False
+
     @property
     def full(self) -> bool:
         """

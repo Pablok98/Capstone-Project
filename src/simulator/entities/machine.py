@@ -18,6 +18,8 @@ class Machine(ABC):
         self.nombre = ''
         self.id = -2
 
+        self.assigned = False
+
     def assign_driver(self, driver: 'MachineDriver') -> None:
         msg = f'{SimulationObject.current_time} -> '
         if driver.weekly_days < MAX_DIAS_TRABAJO_CONDUCTORES:
@@ -29,7 +31,6 @@ class Machine(ABC):
             msg += f"El conductor {driver.id} no pudo ser asignado al {self.nombre} con {self.id}" + \
                   "porque excede los dias maximos de trabajo"
             logging.warning(msg)
-
 
     def depreciar(self) -> None:
         if self.days_used == 30:

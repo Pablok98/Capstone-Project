@@ -50,6 +50,16 @@ class Plant(SimulationObject):
         return load
 
     @property
+    def fermented(self):
+        load = 0
+        for grape in self.grapes:
+            fermented = (SimulationObject.current_time - grape.date).days >= 7
+            if not fermented:
+                break
+            load += grape.kilograms
+        return load
+
+    @property
     def current_load(self) -> int:
         """
         Iterates through the batches (tuples) of grape and counts the total grape currently

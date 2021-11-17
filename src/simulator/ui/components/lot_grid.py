@@ -14,12 +14,14 @@ class LotGrid(QWidget):
         self.lots = {}
 
         self.max_fila = 10
-
+        self.ending_coords = (0, 0)  # This is aborrent
         self.init_gui()
 
     def set_lots(self, data):
-        i, j = 0, 0
+        i, j = self.ending_coords
         for lot_name in data.keys():
+            if lot_name in self.lots.keys():
+                continue
             lot = LotSquare()
             self.lots[lot_name] = lot
             self.grid.addWidget(lot, i, j)
@@ -28,6 +30,7 @@ class LotGrid(QWidget):
             if i == self.max_fila:
                 i = 0
                 j += 1
+        self.ending_coords = (i, j)
 
     def init_gui(self):
         self.grid = QGridLayout(self)

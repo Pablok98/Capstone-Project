@@ -413,4 +413,3 @@ if __name__ == "__main__":
     modelo_principal(77)
 
 
-
