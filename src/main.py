@@ -8,6 +8,7 @@ import threading
 import sys
 from os.path import join
 from simulator.sim import SimulationObject
+from modelo_test import modelo_principal
 
 ui = True
 lot_data = read_lot_data()
@@ -46,3 +47,5 @@ if ui:
     sys.exit(app.exec())
 else:
     winifera.run()
+
+# modelo_principal(winifera.current_day,winifera.grape_disp())
