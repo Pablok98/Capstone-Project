@@ -1,9 +1,11 @@
+from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Union
 from params import MAX_DIAS_TRABAJO_JORNALERO
 from ..entities import *
 from ..sim import SimulationObject, event
 import logging
+
 
 Event = 'tuple[str, str, datetime]'
 

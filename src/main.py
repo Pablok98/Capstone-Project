@@ -11,6 +11,7 @@ from simulator.sim import SimulationObject
 import logging
 
 logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
+from modelo_test import modelo_principal
 
 ui = False
 lot_data = read_lot_data()
@@ -47,3 +48,5 @@ if ui:
     sys.exit(app.exec())
 else:
     winifera.run()
+
+modelo_principal(winifera.current_day,winifera.grape_disp())

@@ -1,5 +1,5 @@
 from .machine import Machine
-from src.params import TASA_DEPRECIACION_MONTACARGAS, COSTO_POR_TONELADA_MONTACARGAS
+from params import TASA_DEPRECIACION_MONTACARGAS, COSTO_POR_TONELADA_MONTACARGAS
 
 
 class LiftTruck(Machine):

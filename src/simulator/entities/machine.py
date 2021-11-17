@@ -1,6 +1,6 @@
 import logging
 from abc import ABC
-from src.params import MAX_DIAS_TRABAJO_CONDUCTORES
+from params import MAX_DIAS_TRABAJO_CONDUCTORES
 from ..entities import *
 from typing import Union
 from ..sim import SimulationObject
