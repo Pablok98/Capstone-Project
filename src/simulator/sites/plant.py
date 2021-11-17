@@ -1,3 +1,4 @@
+from __future__ import annotations
 from ..sim import SimulationObject
 from ..datastruct import Batch
 from ..entities import *

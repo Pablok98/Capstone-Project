@@ -226,7 +226,7 @@ class Wine(SimulationObject):
         machine.assign_driver(driver)
 
     @property
-    def lotes_veraison(self) -> dict[str, Lot]:
+    def lotes_veraison(self) -> "dict[str, Lot]":
         results = {}
         for llabe, lote in self.lotes.items():
             dia_optimo = lote.optimal_day

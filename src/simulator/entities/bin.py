@@ -1,6 +1,8 @@
+from __future__ import annotations
 from .crate import Crate
 from datetime import datetime
 from typing import Union
+
 
 
 class Bin:

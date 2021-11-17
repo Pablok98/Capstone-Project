@@ -10,20 +10,20 @@ from os.path import join
 from simulator.sim import SimulationObject
 from modelo_test import modelo_principal
 
-ui = True
+ui = False
 lot_data = read_lot_data()
 winifera = Wine(lot_data, ui)
 
 # TODO: get out of here
 
 paths = {
-    join('data', 'results_old', 'lots.json'): 'harvesters',
-    join('data', 'results_old', 'trucks.json'): 'trucks',
-    join('data', 'results_old', 'cuads.json'): 'laborers',
-    join('data', 'results_old', 'hoppers.json'): 'hoppers',
-    join('data', 'results_old', 'harvesters.json'): 'harvesters',
-    join('data', 'results_old', 'lift.json'): 'lift_trucks',
-    join('data', 'results_old', 'plants.json'): 'plants',
+    join('data', 'results', 'lots.json'): 'harvesters',
+    join('data', 'results', 'trucks.json'): 'trucks',
+    join('data', 'results', 'cuads.json'): 'laborers',
+    join('data', 'results', 'hoppers.json'): 'hoppers',
+    join('data', 'results', 'harvesters.json'): 'harvesters',
+    join('data', 'results', 'lift.json'): 'lift_trucks',
+    join('data', 'results', 'plants.json'): 'plants',
 }
 
 for path, name in paths.items():
@@ -48,4 +48,4 @@ if ui:
 else:
     winifera.run()
 
-# modelo_principal(winifera.current_day,winifera.grape_disp())
+modelo_principal(winifera.current_day,winifera.grape_disp())

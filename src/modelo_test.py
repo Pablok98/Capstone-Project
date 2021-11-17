@@ -402,5 +402,15 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
     print("Operación realizada con éxito")
 
+def f_disponible(disp):
+    lista = [0 for l in L]
+    for n in disp.keys():#el diccionario tiene a todos los lotes?
+        aux = n.split("_")[1]
+        lista[int(aux)-1] = disp[n]
+    return lista
+
 if __name__ == "__main__":
     modelo_principal(77)
+
+
+
