@@ -49,4 +49,5 @@ if ui:
 else:
     winifera.run()
 
-modelo_principal(winifera.current_day)
+
+modelo_principal(winifera.current_day, winifera.grape_disp())

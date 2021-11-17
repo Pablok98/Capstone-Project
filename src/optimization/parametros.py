@@ -3,7 +3,7 @@ import os
 import json
 import pandas as pd
 
-L = [i for i in range(100)]
+L = [i for i in range(290)]
 T = [i for i in range(7)]
 K = [i for i in range(100)]
 C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
@@ -63,7 +63,7 @@ def load_DI():
 km = load_km() #lp
 ###############################################################################
 #l
-DI = load_DI() #tn
+DI = load_DI() #kg
 
 
 #p

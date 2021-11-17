@@ -26,7 +26,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     if dia == 0:
         actual_DI = DI
     else:
-        actual_DI = disponible_cosecha
+        actual_DI = f_disponible(disponible_cosecha)
 
     m1 = Model()
     # m.Params.OutputFlag = 0
@@ -47,7 +47,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     #c_cajones
 
     # #Variable Auxiliar
-    # auxiliar = m.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
+    auxiliar = m1.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
 
     m1.update()
 
@@ -72,6 +72,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
+    m1.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
     #restriccion carros tolva 17
     #restriccion cajones??
 
@@ -88,14 +89,6 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     camion_tercero_t = m2.addVars(len(L),len(T), vtype=GRB.INTEGER, name='ctercerot')
 
 
-    # #Restricciones Transporte
-    # m2.addConstrs((sum(t_ruta[l,p,t] for p in P) == c_cosecha[l,t] for l in L for t in T))
-    # # m2.addConstrs((sum(t_ruta[l,p,t] for p in P) == 0 for l in L for t in T))
-    # m2.addConstrs((camion_tercero_b[l,t] + sum(t_camion_bin[c,l,t] * cap_bines[c] for c in C) >= c_bines[l,t] for l in L for t in T))
-    # m2.addConstrs((camion_tercero_t[l,t] + sum(t_camion_tolva[c,l,t] * cap_tolva[c] for c in C) >= c_tolva[l,t] for l in L for t in T))
-    # m2.addConstrs((t_camion_tolva[c,l,t] + t_camion_bin[c,l,t] == t_camion[c,l,t] for c in C for l in L for t in T))
-    # m2.addConstrs((quicksum(t_camion[c,l,t] for c in C for l in L) <= 25 for t in T))
-
     #######################
 
     m3 = Model()
@@ -110,12 +103,6 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
     ########################
 
-    # #Funcion Objetivo
-    # costo_terceros = quicksum(1.12*80*p_terceros[p,t] for p in P for t in T) \
-    #                  + quicksum((camion_tercero_t[l,t] + camion_tercero_b[l,t])*1.15*100 for t in T for l in L)
-    # sobrecosto_ocupacion = quicksum(CFD * (1 - (p_fermentando[p,t]/cap_fermentacion[p])) for p in P for t in T)
-    # promedio = quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)
-
     VarJornaleros= quicksum((c_cuad[k,l,t] * tam_cuadrillas[k] * ef_jorn)/1000 for k in K for l in L for t in T)
 
     VarConductores= quicksum((c_cant_uva[l,t])/15000 for l in L for t in T)
@@ -128,7 +115,9 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
     RepBines= quicksum(c_bines[l,t] for l in L for t in T)/100
 
-    m1.setObjective(quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
+    KPICalidad = auxiliar 
+
+    m1.setObjective((1 - auxiliar) * 217 + quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
     m1.update()
     m1.optimize()
@@ -254,7 +243,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     for i in lot_names:
         numtolot[contador] = i
         contador += 1
-    lot_names = lot_names[:100]
+    # lot_names = lot_names[:100]#pq esta en 100?
     truck_names = [i for i in range (25)]
     cuad_names = [i for i in range(100)]
 
