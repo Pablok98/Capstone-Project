@@ -16,6 +16,7 @@ import json
 dia = 77
 cal = conseguir_cal(dia)
 SimDisponible = 100  # Uva disponible para procesar en planta
+#hola
 
 
 def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponible_planta = 10):
@@ -47,7 +48,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     #c_cajones
 
     # #Variable Auxiliar
-    auxiliar = m1.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
+    # auxiliar = m1.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
 
     m1.update()
 
@@ -72,7 +73,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
-    m1.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
+    # m1.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
     #restriccion carros tolva 17
     #restriccion cajones??
 
@@ -115,9 +116,9 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
     RepBines= quicksum(c_bines[l,t] for l in L for t in T)/100
 
-    KPICalidad = auxiliar 
+    # KPICalidad = auxiliar 
 
-    m1.setObjective((1 - auxiliar) * 217 + quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
+    m1.setObjective( + quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
     m1.update()
     m1.optimize()
@@ -257,7 +258,6 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     lot_tolvas = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_cosechadoras = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
-    truck_type = {truck_names[i]: {} for i in range(len(truck_names))}
 
     plants = {f'P{i+1}': {} for i in range(5)}
 
@@ -353,33 +353,6 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
             if bool(v.x):
                 lot_trucks[truck_names[c]][f'dia {t}'] = numtolot[l]
-
-        if 'cambin' in v.varName:
-            _, i = v.varName.split('[')
-            i = i[:-1]
-            c, l, t = [int(n) for n in i.split(',')]
-            try:
-                lot_trucks[truck_names[c]]
-
-            except KeyError:
-                lot_trucks[truck_names[c]] = {}
-
-            if bool(v.x):
-                truck_type[truck_names[c]][f'dia {t}'] = True
-
-        if 'camtolva' in v.varName:
-            _, i = v.varName.split('[')
-            i = i[:-1]
-            c, l, t = [int(n) for n in i.split(',')]
-            try:
-                lot_trucks[truck_names[c]]
-
-            except KeyError:
-                lot_trucks[truck_names[c]] = {}
-
-            if bool(v.x):
-                truck_type[truck_names[c]][f'dia {t}'] = False
-        
 
     dict_traduccion = {
         0: 'P1',
