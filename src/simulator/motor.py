@@ -13,7 +13,8 @@ from .sim import SimulationObject, Interface
 
 from files import read_rain_data
 
-from params import TRUCK_DATA, PLANTS_DATA, INITIAL_DAY
+from params import (TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
+                    COSECHADORAS, MONTACARGAS)
 import logging
 
 
@@ -54,6 +55,22 @@ class Wine(SimulationObject):
             self.set_daily_rain()
             self.simular_dia()
 
+    def initialize(self, day):
+        self.instanciar_lotes(self.lot_data)
+        self.set_initial_day(INITIAL_DAY)
+        self.initial_instancing()
+
+    def run_week(self):
+        # There's no variance per week yet
+        # self.set_rain_data()
+        self.set_rain_data()
+        last_day = SimulationObject.current_day + 6
+        while SimulationObject.current_day <= last_day:
+            self.assign()
+            self.set_daily_rain()
+            self.simular_dia()
+
+
     # ==== INSTANCIAR =========================================================
     def instanciar_lotes(self, info: dict) -> None:
         for name, info_lote in info.items():
@@ -78,7 +95,6 @@ class Wine(SimulationObject):
 
     def initial_instancing(self):
         # Plant instancing
-        # TODO: use keyword arguments
         for p_name, plant in PLANTS_DATA.items():
             self.plantas[p_name] = Plant(
                 p_name,
@@ -91,6 +107,15 @@ class Wine(SimulationObject):
             for _ in range(truck['avail_units']):
                 truck_i = Truck(c_type, truck['hopper_cap'], truck['bin_cap'])
                 self.camiones[truck_i.id] = truck_i
+
+        for _ in range(CAMIONEROS):
+            self.camioneros.append(TruckDriver())
+        for _ in range(CONDUCTORES):
+            self.conductores.append(MachineDriver())
+        for _ in range(COSECHADORAS):
+            self.cosechadoras.append(Harvester())
+        for _ in range(MONTACARGAS):
+            self.monta_cargas.append(LiftTruck())
 
         # TODO: Special day set
 
@@ -109,25 +134,45 @@ class Wine(SimulationObject):
         day_str = f'dia {self.week_day}'
         for laborer, assignation in self.assign_data.laborers.items():
             if day_str in assignation:
+                # TODO: jornaleros totales iniciales
                 self.asignar_jornalero(Laborer(), assignation[day_str])
 
         for id_, camion in self.camiones.items():
             camion.clean()
             if day_str in self.assign_data.trucks[str(id_)]:
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
+                # TODO: Real assignations
                 camion.assigned_plant = 'P1'
 
         for lot, assignation in self.assign_data.hoppers.items():
             for _ in range(int(assignation[day_str])):
-                self.lotes[lot].hoppers.append(Hopper())
+                to_assign = self.lotes[lot]
+                if not self.assign_hopper(to_assign):
+                    logging.warning('Se intentó asignar un tolva pero no quedan disponibles')
+                    break
+            else:
+                continue
+            break
 
         for lot, assignation in self.assign_data.harvesters.items():
             for _ in range(int(assignation[day_str])):
-                self.lotes[lot].hoppers.append(Hopper())
+                to_assign = self.lotes[lot]
+                if not self.assign_harvester(to_assign):
+                    logging.warning('Se intentó asignar una cosechadora pero no quedan disponibles')
+                    break
+            else:
+                continue
+            break
 
         for lot, assignation in self.assign_data.lift_trucks.items():
             for _ in range(int(assignation[day_str])):
-                self.lotes[lot].hoppers.append(Hopper())
+                to_assign = self.lotes[lot]
+                if not self.assign_lift_truck(to_assign):
+                    logging.warning('Se intentó asignar un montacarga pero no quedan disponibles')
+                    break
+            else:
+                continue
+            break
 
     # ========= SIMULATION CYCLE ==============================================
     def simular_dia(self) -> None:
@@ -138,6 +183,7 @@ class Wine(SimulationObject):
             self.command_signal.emit('lotes_inicial', self.lotes_veraison)
         sleep(0.5)
         logging.info(f'{SimulationObject.current_time} - Inicia el dia')
+        ui_counter = 0
         while SimulationObject.current_time < self.fin_jornada:
             eventos = {}
             for lote in self.lotes.values():
@@ -157,19 +203,24 @@ class Wine(SimulationObject):
                     planta = self.plantas[retorno.assigned_plant]
                     retorno.travel()
                     planta.truck_arrival(retorno)
-            sleep(0.005)
             if self.ui:
-                pass
-                self.status_signal.emit(self.estado_lotes_ui())
+                # ui delay
+                if ui_counter == 100:
+                    self.status_signal.emit(self.estado_lotes_ui())
+                    ui_counter = 0
+                else:
+                    ui_counter += 1
             else:
-                print(self.estado_lotes_noui())
+                # print(self.estado_lotes_noui())
+                pass
 
         for lote in self.lotes.values():
+            lote.end_day()
             for camion in lote.trucks:
                 planta = self.plantas[camion.assigned_plant]
                 camion.travel()
                 planta.truck_arrival(camion)
-            lote.end_day()
+            lote.truck_clean()
 
         while SimulationObject.current_time < self.termino_dia:
             eventos = {}
@@ -187,7 +238,6 @@ class Wine(SimulationObject):
             planta.process_day()
 
         self.pass_day()
-
 
     @property
     def fin_jornada(self) -> datetime:
@@ -207,8 +257,7 @@ class Wine(SimulationObject):
         SimulationObject.current_day += 1
         if (SimulationObject.current_day + 1) % 7 == 0:
             self.week_number += 1
-        SimulationObject.current_time.replace(hour=6, minute=0, second=0)
-
+        SimulationObject.current_time = SimulationObject.current_time.replace(hour=6, minute=0, second=0)
 
     # =======================================================================
     def asignar_jornalero(self, jornalero: Laborer, lote: str) -> None:
@@ -216,6 +265,30 @@ class Wine(SimulationObject):
 
     def assign_truck(self, truck: Truck, lot: str) -> None:
         self.lotes[lot].assign_truck(truck)
+
+    def assign_hopper(self, lot: Lot):
+        for hopper in self.tolvas:
+            if not hopper.assigned:
+                hopper.assigned = True
+                lot.hoppers.append(hopper)
+                return True
+        return False
+
+    def assign_harvester(self, lot: Lot):
+        for harvester in self.cosechadoras:
+            if not harvester.assigned:
+                harvester.assigned = True
+                lot.harvesters.append(harvester)
+                return True
+        return False
+
+    def assign_lift_truck(self, lot: Lot):
+        for lift_truck in self.monta_cargas:
+            if not lift_truck.assigned:
+                lift_truck.assigned = True
+                lot.lift_trucks.append(lift_truck)
+                return True
+        return False
 
     @staticmethod
     def assign_truck_driver(driver: TruckDriver, truck: Truck) -> None:
@@ -236,10 +309,6 @@ class Wine(SimulationObject):
                 results[llabe] = lote
         return results
 
-
-
-
-
     def estado_lotes_ui(self):
         data = {}
         for lote in self.lotes_veraison.values():
@@ -251,7 +320,6 @@ class Wine(SimulationObject):
         for lote in self.lotes.values():
             string += lote.estado_string
         return string
-
 
     # ---------------  Optimization functions --------------------------------
     def grape_disp(self):
@@ -266,7 +334,11 @@ class Wine(SimulationObject):
             info[name] = plant.week_recieved
         return info
 
-
+    def fermented_unprocessed(self):
+        info = {}
+        for name, plant in self.plantas.items():
+            info[name] = plant.fermented
+        return info
 
     # ---------------  Now unused  --------------------------------------------
     def _test_assing(self) -> None:

@@ -8,21 +8,24 @@ import threading
 import sys
 from os.path import join
 from simulator.sim import SimulationObject
+import logging
 
-ui = True
+logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
+
+ui = False
 lot_data = read_lot_data()
 winifera = Wine(lot_data, ui)
 
 # TODO: get out of here
 
 paths = {
-    join('data', 'results_old', 'lots.json'): 'harvesters',
-    join('data', 'results_old', 'trucks.json'): 'trucks',
-    join('data', 'results_old', 'cuads.json'): 'laborers',
-    join('data', 'results_old', 'hoppers.json'): 'hoppers',
-    join('data', 'results_old', 'harvesters.json'): 'harvesters',
-    join('data', 'results_old', 'lift.json'): 'lift_trucks',
-    join('data', 'results_old', 'plants.json'): 'plants',
+    join('data', 'results', 'lots.json'): 'harvesters',
+    join('data', 'results', 'trucks.json'): 'trucks',
+    join('data', 'results', 'cuads.json'): 'laborers',
+    join('data', 'results', 'hoppers.json'): 'hoppers',
+    join('data', 'results', 'harvesters.json'): 'harvesters',
+    join('data', 'results', 'lift.json'): 'lift_trucks',
+    join('data', 'results', 'plants.json'): 'plants',
 }
 
 for path, name in paths.items():
@@ -31,9 +34,7 @@ for path, name in paths.items():
         winifera.assign_data.load_data(name, data)
 
 # -----------------------------
-import logging
 
-logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
 if ui:
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)

@@ -388,5 +388,4 @@ for path, data in dict_paths.items():
         json.dump(data, archivo, indent=4)
 
 
-
 print("Operación realizada con éxito")

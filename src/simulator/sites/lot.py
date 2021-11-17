@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 from typing import Union
-from src.params import MAX_DIAS_TRABAJO_JORNALERO
+from params import MAX_DIAS_TRABAJO_JORNALERO
 from ..entities import *
 from ..sim import SimulationObject, event
 import logging
 
-Event = tuple[str, str, datetime]
+Event = 'tuple[str, str, datetime]'
 
 
 class Lot(SimulationObject):
@@ -301,8 +301,8 @@ class Lot(SimulationObject):
         Se despacha camión y se eliminca de la lista de camiones disp.
         """
         for i, camion in enumerate(self.trucks):
-            if camion.full:
-                msg = f'{SimulationObject.current_time} -> Se despacho un camión'
+            if camion.full or not self.grape_quantity:
+                msg = f'{SimulationObject.current_time} -> Se despacho un camion'
                 msg += f' [{self.name}]'
                 logging.info(msg)
 
@@ -324,6 +324,7 @@ class Lot(SimulationObject):
 
     def enganchar_tolva(self) -> None:
         SimulationObject.current_time = self.attaching_hopper.transport_time
+        self.attaching_hopper.transport_time = None
         for camion in self.trucks:
             if not camion.loading_bins and camion.can_attach:
                 msg = f'{SimulationObject.current_time} -> Se enganchó el tolva {self.attaching_hopper.id} al camion {camion.id}'
@@ -338,8 +339,6 @@ class Lot(SimulationObject):
             msg = f'{SimulationObject.current_time} -> Hay un carro tolva que no se puede enganchar'
             msg += f' [{self.name}]'
             logging.warning(msg)
-
-            self.attaching_hopper.transport_time = None
     # ------------------------------    Event Handling    ------------------------------------------
 
     @property
@@ -413,6 +412,9 @@ class Lot(SimulationObject):
         self.timegen_crate()
         self.timegen_bin_fill()
 
+    def truck_clean(self):
+        self.trucks = []
+
     def end_day(self) -> None:
         """
         Resolves all events that correspond to the day's ending.
@@ -421,10 +423,29 @@ class Lot(SimulationObject):
         # Add a day of work to laborers
         for laborer in self.laborers:
             laborer.days_working += 1
+
         # Reset laborer and harvester assignations (harvest timeframe is over)
         self.laborers = []
+
+        # Done with new assign
+        for hopper in self.hoppers:
+            # If the hopper was being hooked, we just do it
+            if hopper.transport_time:
+                # We reuse the event but reset the time back
+                time_ = SimulationObject.current_time
+                self.enganchar_tolva()
+                SimulationObject.current_time = time_
+            hopper.assigned = False
+        self.hoppers = []
+
+        for harvester in self.harvesters:
+            harvester.assigned = False
         self.harvesters = []
-        self.trucks = []
+
+        for lift_truck in self.lift_trucks:
+            lift_truck.assigned = False
+        self.lift_trucks = []
+
 
     @property
     def estado(self) -> dict:
