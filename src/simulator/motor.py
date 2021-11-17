@@ -50,7 +50,8 @@ class Wine(SimulationObject):
         self.initial_instancing()
         self.set_rain_data()
 
-        while SimulationObject.current_day <= 86:
+        last_day = SimulationObject.current_day + 6
+        while SimulationObject.current_day <= last_day:
             self.assign()
             self.set_daily_rain()
             self.simular_dia()
@@ -91,7 +92,7 @@ class Wine(SimulationObject):
             return
         SimulationObject.current_day = day
         SimulationObject.current_time += timedelta(days=day)
-        self.week_number = int(day/7)
+        self.week_number = int(day//7)
 
     def initial_instancing(self):
         # Plant instancing
@@ -255,7 +256,7 @@ class Wine(SimulationObject):
     def pass_day(self):
         SimulationObject.current_time += timedelta(days=1)
         SimulationObject.current_day += 1
-        if (SimulationObject.current_day + 1) % 7 == 0:
+        if SimulationObject.current_day % 7 == 0:
             self.week_number += 1
         SimulationObject.current_time = SimulationObject.current_time.replace(hour=6, minute=0, second=0)
 
