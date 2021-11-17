@@ -399,6 +399,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
                 nom_plant = dict_traduccion[int(p)]
                 plants[nom_plant][dia + t] = v.x
 
+
             
     dict_paths = {
         join('data', 'results', 'lots.json'): lot_harvest,
@@ -425,6 +426,7 @@ def f_disponible(disp):
         aux = n.split("_")[1]
         lista[int(aux)-1] = disp[n]
     return lista
+
 
 if __name__ == "__main__":
     modelo_principal(77)
