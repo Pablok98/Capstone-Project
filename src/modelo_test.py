@@ -257,6 +257,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     lot_tolvas = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_cosechadoras = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
+    truck_type = {truck_names[i]: {} for i in range(len(truck_names))}
 
     plants = {f'P{i+1}': {} for i in range(5)}
 
@@ -352,6 +353,33 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
             if bool(v.x):
                 lot_trucks[truck_names[c]][f'dia {t}'] = numtolot[l]
+
+        if 'cambin' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            c, l, t = [int(n) for n in i.split(',')]
+            try:
+                lot_trucks[truck_names[c]]
+
+            except KeyError:
+                lot_trucks[truck_names[c]] = {}
+
+            if bool(v.x):
+                truck_type[truck_names[c]][f'dia {t}'] = True
+
+        if 'camtolva' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            c, l, t = [int(n) for n in i.split(',')]
+            try:
+                lot_trucks[truck_names[c]]
+
+            except KeyError:
+                lot_trucks[truck_names[c]] = {}
+
+            if bool(v.x):
+                truck_type[truck_names[c]][f'dia {t}'] = False
+        
 
     dict_traduccion = {
         0: 'P1',
