@@ -195,10 +195,12 @@ class Lot(SimulationObject):
         crate = Crate(self.grape, self.current_quality)
         container.load_crate(crate)
         self.grape_quantity -= 18
-
+        """
         msg = f'{SimulationObject.current_time} - Se lleno un nuevo cajon'
         msg += f' [{self.name}]'
         logging.info(msg)
+        """
+
 
     # --------------------------------  Automatic Harvester  ---------------------------------------
     def timegen_bin_fill(self) -> None:
@@ -250,10 +252,12 @@ class Lot(SimulationObject):
         :return: Time which the next bin would be loaded to a truck.
         """
         # We need to check if there's a lift truck to load the bin
+        if self.loading_bin:
+            return self.loading_bin.load_time
         lift_truck = self.available_lift_truck()
         if not lift_truck:
+            # logging.warning(f'{SimulationObject.current_time} - No hay monta cargas para cargar un bin')
             return SimulationObject.never_date
-
         if self.bins and self.bins[0].full:
             if not self.current_loading_truck:
                 return SimulationObject.never_date
@@ -263,6 +267,7 @@ class Lot(SimulationObject):
                 self.working_lift_trucks.append(lift_truck)
                 lift_truck.working = True
             return self.loading_bin.load_time
+        return SimulationObject.never_date
 
     def available_lift_truck(self) -> Union['LiftTruck', None]:
         for truck in self.lift_trucks:
@@ -272,6 +277,7 @@ class Lot(SimulationObject):
 
     def free_lift_truck(self) -> None:
         lift_truck = self.working_lift_trucks.pop(0)
+        lift_truck.working = False
         logging.info(f'{SimulationObject.current_time} -> El montacargas {lift_truck.id} fue desocupado')
 
     def load_bin_event(self) -> None:
@@ -294,7 +300,7 @@ class Lot(SimulationObject):
     @property
     def tiempo_proximo_camion(self) -> datetime:
         for camion in self.trucks:
-            if camion.full or not self.grape_quantity:
+            if camion.full:
                 return SimulationObject.current_time
         return datetime(3000, 1, 1, hour=6, minute=0, second=0)
 
@@ -303,7 +309,7 @@ class Lot(SimulationObject):
         Se despacha camión y se eliminca de la lista de camiones disp.
         """
         for i, camion in enumerate(self.trucks):
-            if camion.full or not self.grape_quantity:
+            if camion.full:
                 msg = f'{SimulationObject.current_time} -> Se despacho un camion'
                 msg += f' [{self.name}]'
                 logging.info(msg)
@@ -359,6 +365,8 @@ class Lot(SimulationObject):
         ]
         next_event_time = min(times)
         events = ['crate_full', 'load_bin', 'truck_dispatch', 'autofill_bin', 'hopper_attach']
+        if self.name == 'U_55_8_149_78':
+            print(self.lift_trucks)
         return self.name, events[times.index(next_event_time)], next_event_time
 
     def resolve_event(self, event_: str) -> Union['Truck', None]:
@@ -447,7 +455,6 @@ class Lot(SimulationObject):
         for lift_truck in self.lift_trucks:
             lift_truck.assigned = False
         self.lift_trucks = []
-
 
     @property
     def estado(self) -> dict:

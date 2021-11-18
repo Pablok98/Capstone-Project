@@ -13,7 +13,7 @@ import logging
 logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
 from modelo_test import modelo_principal
 
-ui = False
+ui = True
 lot_data = read_lot_data()
 winifera = Wine(lot_data, ui)
 

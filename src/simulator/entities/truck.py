@@ -40,26 +40,32 @@ class Truck(Machine):
         """
         self.hoppers = []
         self.loading_bins = True
-        self.driver = None
+        if self.driver:
+            self.driver.unassign()
+            self.driver = None
         self.current_lot = None
         self.assigned_plant = None
 
-    def assign_driver(self, driver: 'TruckDriver') -> None:
+    def assign_driver(self, driver: 'TruckDriver') -> bool:
         """
         Assigns a driver to this truck. The truck can only function if it has a driver.
 
         :param driver: Driver to be assigned (can ONLY be a truck driver)
         """
         msg = f'{SimulationObject.current_time} -> '
+        if driver.truck:
+            return False
         if driver.weekly_days < p.MAX_DIAS_TRABAJO_CONDUCTORES or self.driver:
             self.driver = driver
             driver.assign_truck(self)
             msg += f'El conductor {driver.id} fue asignado al camion {self.id}'
             logging.info(msg)
+            return True
         else:
             msg +=f"El conductor {driver.id} no pudo ser asignado al camion {self.id}" + \
                   "porque excede los dias maximos de trabajo"
             logging.warning(msg)
+            return False
 
     @property
     def full(self) -> bool:
