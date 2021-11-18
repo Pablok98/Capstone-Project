@@ -15,15 +15,15 @@ import json
 ###############RELLENAR DIA EN EL QUE SE ESTA ACA PARA LA CALIDAD DE CADA LOTE##########
 dia = 77
 cal = conseguir_cal(dia)
-SimDisponible = 100  # Uva disponible para procesar en planta
+#SimDisponible = 100  # Uva disponible para procesar en planta
 #hola
 
 
 def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponible_planta = 10):
 
     cal = conseguir_cal(dia)
-    SimDisponible = disponible_planta
-    recepcionado = rec
+    SimDisponible = Disponible_dic_a_lista(disponible_planta)
+    recepcionado = recepcionado_dic_a_lista(rec)
     if dia == 0:
         actual_DI = DI
     else:
@@ -215,7 +215,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
         m3.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][dia + t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
     else:
         m3.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
-    m3.addConstrs((p_disp[p,t] == SimDisponible for p in P for t in T if t == 0))
+    m3.addConstrs((p_disp[p,t] == SimDisponible[p] for p in P for t in T if t == 0))
 
     m3.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(cantidad[l][t]*ruta[l][p][t] for l in L) for p in P for t in T))
     m3.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(cantidad[l][t] for l in L) for p in P for t in T))
@@ -258,6 +258,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
     lot_tolvas = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_cosechadoras = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
+    truck_type = {truck_names[i]: {} for i in range(len(truck_names))}
 
     plants = {f'P{i+1}': {} for i in range(5)}
 
@@ -353,6 +354,31 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
             if bool(v.x):
                 lot_trucks[truck_names[c]][f'dia {t}'] = numtolot[l]
+        if 'cambin' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            c, l, t = [int(n) for n in i.split(',')]
+            try:
+                lot_trucks[truck_names[c]]
+
+            except KeyError:
+                lot_trucks[truck_names[c]] = {}
+
+            if bool(v.x):
+                truck_type[truck_names[c]][f'dia {t}'] = True
+
+        if 'camtolva' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            c, l, t = [int(n) for n in i.split(',')]
+            try:
+                lot_trucks[truck_names[c]]
+
+            except KeyError:
+                lot_trucks[truck_names[c]] = {}
+
+            if bool(v.x):
+                truck_type[truck_names[c]][f'dia {t}'] = False
 
     dict_traduccion = {
         0: 'P1',
@@ -400,6 +426,19 @@ def f_disponible(disp):
         lista[int(aux)-1] = disp[n]
     return lista
 
+def recepcionado_dic_a_lista(rec):
+    lista = []
+    for i in rec.keys():
+        aux = int(i[1])
+        lista[aux - 1] = rec[i]
+    return lista
+
+def Disponible_dic_a_lista(disponible_planta):
+    lista = []
+    for i in disponible_planta.keys():
+        aux = int(i[1])
+        lista[aux - 1] = disponible_planta[i]
+    return lista
 
 if __name__ == "__main__":
     modelo_principal(77)
