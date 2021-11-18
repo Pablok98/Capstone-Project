@@ -127,7 +127,7 @@ class Plant(SimulationObject):
             truck = self.trucks[0]  # Truck to unload
             rate = self.bin_cap if truck.loading_bins else self.hopper_cap  # Maximum hourly rate
 
-            print(f"Descargando camion {truck.id} en la planta {self.name}")
+            print(f"{SimulationObject.current_time} - Descargando camion {truck.id} en la planta {self.name}")
             # While we still can unload grapes, we take grape batched from the truck and store them
             # in the plant's storage
             while unloaded < rate and truck.has_content:

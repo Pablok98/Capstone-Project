@@ -1,3 +1,4 @@
+import time
 from collections import deque
 from random import expovariate, randint, uniform, seed
 from datetime import datetime, timedelta
@@ -122,6 +123,7 @@ class Wine(SimulationObject):
 
     def set_rain_data(self) -> None:
         self.rain_data = read_rain_data()
+
     # =========================================================================
     # Week assigments
     # =========================================================================
@@ -138,9 +140,18 @@ class Wine(SimulationObject):
                 # TODO: jornaleros totales iniciales
                 self.asignar_jornalero(Laborer(), assignation[day_str])
 
-        for id_, camion in self.camiones.items():
+        # Los camiones se sacan de las plantas si quedan a las 10
+        for camion in self.camiones.values():
             camion.clean()
+
+        for id_, camion in self.camiones.items():
             if day_str in self.assign_data.trucks[str(id_)]:
+                for camionero in self.camioneros:
+                    if camion.assign_driver(camionero):
+                        break
+                else:
+                    logging.warning("No hay camioneros para camionar")
+                    continue
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
                 # TODO: Real assignations
                 camion.assigned_plant = 'P1'
@@ -280,6 +291,7 @@ class Wine(SimulationObject):
             if not harvester.assigned:
                 harvester.assigned = True
                 lot.harvesters.append(harvester)
+                # TODO: necesita drivers?
                 return True
         return False
 
@@ -288,6 +300,9 @@ class Wine(SimulationObject):
             if not lift_truck.assigned:
                 lift_truck.assigned = True
                 lot.lift_trucks.append(lift_truck)
+
+                lift_truck.assign_driver(MachineDriver())
+
                 return True
         return False
 
