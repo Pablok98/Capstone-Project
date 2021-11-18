@@ -11,25 +11,14 @@ from simulator.sim import SimulationObject
 import logging
 
 logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
-from modelo_test import modelo_principal
+# from modelo_test import modelo_principal
 
 ui = True
 lot_data = read_lot_data()
 winifera = Wine(lot_data, ui)
 
-# TODO: get out of here
 
-paths = {
-    join('data', 'results', 'lots.json'): 'harvesters',
-    join('data', 'results', 'trucks.json'): 'trucks',
-    join('data', 'results', 'cuads.json'): 'laborers',
-    join('data', 'results', 'hoppers.json'): 'hoppers',
-    join('data', 'results', 'harvesters.json'): 'harvesters',
-    join('data', 'results', 'lift.json'): 'lift_trucks',
-    join('data', 'results', 'plants.json'): 'plants',
-}
-
-for path, name in paths.items():
+for path, name in p.PATHS_DUMP.items():
     with open(path, 'r') as file:
         data = json.load(file)
         winifera.assign_data.load_data(name, data)
@@ -50,4 +39,4 @@ else:
     winifera.run()
 
 
-modelo_principal(winifera.current_day, winifera.grape_disp(), winifera.plant_recv(), winifera.fermented_unprocessed())
+# modelo_principal(winifera.current_day, winifera.grape_disp(), winifera.plant_recv(), winifera.fermented_unprocessed())

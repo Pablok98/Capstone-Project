@@ -19,12 +19,19 @@ cal = conseguir_cal(dia)
 #hola
 
 
-def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponible_planta = 10):
+def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_planta = None, paths=None):
 
     cal = conseguir_cal(dia)
-    SimDisponible = Disponible_dic_a_lista(disponible_planta)
-    recepcionado = recepcionado_dic_a_lista(rec)
-    if dia == 0:
+    if not disponible_planta:
+        SimDisponible = [100 for _ in range(5)]
+    else:
+        SimDisponible = Disponible_dic_a_lista(disponible_planta)
+    if not rec:
+        recepcionado = [[0 for i in range(180)] for i in P]
+    else:
+        recepcionado = recepcionado_dic_a_lista(rec)
+
+    if dia == 0 or not disponible_cosecha:
         actual_DI = DI
     else:
         actual_DI = f_disponible(disponible_cosecha)
@@ -118,7 +125,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
 
     # KPICalidad = auxiliar 
 
-    m1.setObjective( + quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
+    m1.setObjective(quicksum(c_disponibilidad[l,t] - c_cant_uva[l,t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
     m1.update()
     m1.optimize()
@@ -314,7 +321,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
             if v.x != 0 or v.x != -0:
-                print(l, t, v.x)
+                pass
 
             try:
                 lot_cosechadoras[lot_names[l]]
@@ -329,7 +336,7 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
             if v.x != 0 or v.x != -0:
-                print(l, t, v.x)
+                pass
 
             try:
                 lot_montas[lot_names[l]]
@@ -387,35 +394,45 @@ def modelo_principal(dia, disponible_cosecha = DI, rec = recepcionado, disponibl
         3: 'P4',
         4: 'P5'
     }
-
     for v in m3.getVars():
-
         if 'recepcionado' in v.varName:
             _, i = v.varName.split('[')
             i = i[:-1]
             p, t = [int(n) for n in i.split(',')]
-            if v.x != 0 or v.x != -0:
-                nom_plant = dict_traduccion[int(p)]
-                plants[nom_plant][dia + t] = v.x
 
-
-            
-    dict_paths = {
-        join('data', 'results', 'lots.json'): lot_harvest,
-        join('data', 'results', 'trucks.json'): lot_trucks,
-        join('data', 'results', 'cuads.json'): lot_cuad,
-        join('data', 'results', 'hoppers.json'): lot_tolvas,
-        join('data', 'results', 'harvesters.json'): lot_cosechadoras,
-        join('data', 'results', 'lift.json'): lot_montas,
-        join('data', 'results', 'plants.json'): plants
-    }
+            try:
+                if v.x != 0 or v.x != -0:
+                    nom_plant = dict_traduccion[int(p)]
+                    plants[nom_plant][dia + t] = v.x
+            except:
+                print(v.varName, 'no tiene valor')
+    if not paths:
+        dict_paths = {
+            join('data', 'results', 'lots.json'): lot_harvest,
+            join('data', 'results', 'trucks.json'): lot_trucks,
+            join('data', 'results', 'cuads.json'): lot_cuad,
+            join('data', 'results', 'hoppers.json'): lot_tolvas,
+            join('data', 'results', 'harvesters.json'): lot_cosechadoras,
+            join('data', 'results', 'lift.json'): lot_montas,
+            join('data', 'results', 'plants.json'): plants,
+            join('data', 'results', 'truck_type.json'): truck_type,
+        }
+    else:
+        dict_paths = {
+            join('results', 'lots.json'): lot_harvest,
+            join('results', 'trucks.json'): lot_trucks,
+            join('results', 'cuads.json'): lot_cuad,
+            join('results', 'hoppers.json'): lot_tolvas,
+            join('results', 'harvesters.json'): lot_cosechadoras,
+            join('results', 'lift.json'): lot_montas,
+            join('results', 'plants.json'): plants,
+            join('results', 'truck_type.json'): truck_type,
+        }
     for path, data in dict_paths.items():
         if isfile(path):
             remove(path)
         with open(path, 'w') as archivo:
             json.dump(data, archivo, indent=4)
-
-
 
     print("Operación realizada con éxito")
 
@@ -427,14 +444,14 @@ def f_disponible(disp):
     return lista
 
 def recepcionado_dic_a_lista(rec):
-    lista = []
+    lista = [0 for _ in range(5)]
     for i in rec.keys():
         aux = int(i[1])
         lista[aux - 1] = rec[i]
     return lista
 
 def Disponible_dic_a_lista(disponible_planta):
-    lista = []
+    lista = [0 for _ in range(5)]
     for i in disponible_planta.keys():
         aux = int(i[1])
         lista[aux - 1] = disponible_planta[i]

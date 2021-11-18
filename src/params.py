@@ -3,7 +3,7 @@ from os.path import join
 
 # General
 TOTAL_DAYS = 180
-INITIAL_DAY = 77
+INITIAL_DAY = 0
 
 # Modelo inicial
 DEMAND_WEIGHT = 0.2
@@ -68,3 +68,26 @@ CAMIONEROS = 25
 CONDUCTORES = 22
 COSECHADORAS = 5
 MONTACARGAS = 10
+
+
+PATHS_DUMP = {
+    join('data', 'results', 'lots.json'): 'harvesters',
+    join('data', 'results', 'trucks.json'): 'trucks',
+    join('data', 'results', 'cuads.json'): 'laborers',
+    join('data', 'results', 'hoppers.json'): 'hoppers',
+    join('data', 'results', 'harvesters.json'): 'harvesters',
+    join('data', 'results', 'lift.json'): 'lift_trucks',
+    join('data', 'results', 'plants.json'): 'plants',
+    join('data', 'results', 'truck_type.json'): 'truck_type'
+}
+
+PATHS_FINAL = {
+    join('results', 'lots.json'): 'harvesters',
+    join('results', 'trucks.json'): 'trucks',
+    join('results', 'cuads.json'): 'laborers',
+    join('results', 'hoppers.json'): 'hoppers',
+    join('results', 'harvesters.json'): 'harvesters',
+    join('results', 'lift.json'): 'lift_trucks',
+    join('results', 'plants.json'): 'plants',
+    join('results', 'truck_type.json'): 'truck_type'
+}
