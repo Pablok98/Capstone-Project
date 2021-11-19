@@ -13,8 +13,8 @@ from os import remove
 import json
 
 ###############RELLENAR DIA EN EL QUE SE ESTA ACA PARA LA CALIDAD DE CADA LOTE##########
-dia = 77
-cal = conseguir_cal(dia)
+#dia = 77
+#cal = conseguir_cal(dia)
 #SimDisponible = 100  # Uva disponible para procesar en planta
 #hola
 
@@ -23,7 +23,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     cal = conseguir_cal(dia)
     if not disponible_planta:
-        SimDisponible = [100 for _ in range(5)]
+        SimDisponible = [10 for _ in range(5)]
     else:
         SimDisponible = Disponible_dic_a_lista(disponible_planta)
     if not rec:
@@ -119,7 +119,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     VarTolva= gb.quicksum(((gb.quicksum(c_man_tolva[k, l, t] * tam_cuadrillas[k] * ef_jorn for k in K)) / 1000) * 0.1 for l in L for t in T)
 
-    VarCosechadora= gb.quicksum(((ef_jorn * 4000 * c_auto[l, t]) / 1000) * 0.1 for l in L for t in T)
+    VarCosechadora= gb.quicksum(((ef_jorn * 4000 * 8 * c_auto[l, t]) / 1000) * 0.1 for l in L for t in T)
 
     RepBines= gb.quicksum(c_bines[l, t] for l in L for t in T) / 100
 
@@ -230,9 +230,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p] - p_fermentando[p,t] for p in P for t in T))
     m3.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p] for p in P for t in T))
 
-    VarPlanta = gb.quicksum((p_proc[p, t] * ch_kg[p]) for p in P for t in T)
+    VarPlanta = gb.quicksum((p_proc[p, t] * utm_kg[p]) for p in P for t in T)
 
-    TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * ch_kg[p]) for p in P for t in T)
+    TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]) for p in P for t in T)
 
     m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / cap_fermentacion[p])) for p in P for t in T) + gb.quicksum(p_terceros[p, t] for p in P for t in T) * 1.2 * 80 + VarPlanta + TercerizacionPlanta)
     m3.update()
