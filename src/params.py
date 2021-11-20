@@ -68,3 +68,10 @@ CAMIONEROS = 25
 CONDUCTORES = 22
 COSECHADORAS = 5
 MONTACARGAS = 10
+
+# Contratos
+CONTRACTS_DATA = {
+    '1': {'a_j': 0.9, 'c_j': 1, 'ps_j': 0},
+    '2': {'a_j': 0.95, 'c_j': 0.7, 'ps_j': 1.15},
+    '3': {'a_j': 1, 'c_j': 0.5, 'ps_j': 1.15}
+}
