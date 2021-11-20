@@ -249,6 +249,7 @@ class Wine(SimulationObject):
 
         for planta in self.plantas.values():
             planta.process_day()
+            planta.end_day()
 
         self.pass_day()
 
@@ -348,7 +349,7 @@ class Wine(SimulationObject):
     def plant_recv(self):
         info = {}
         for name, plant in self.plantas.items():
-            info[name] = plant.week_recieved
+            info[name] = plant.recv_grapes
         return info
 
     def fermented_unprocessed(self):
