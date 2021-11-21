@@ -17,17 +17,27 @@ import json
 #cal = conseguir_cal(dia)
 #SimDisponible = 100  # Uva disponible para procesar en planta
 #hola
+dic_neutro = {
+    -7: 0,
+    -6: 0,
+    -5: 0,
+    -4: 0,
+    -3: 0,
+    -2: 0,
+    -1: 0
+}
 
 
 def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_planta = None, paths=None):
 
+
     cal = conseguir_cal(dia)
     if not disponible_planta:
-        SimDisponible = [10 for _ in range(5)]
+        SimDisponible = [0 for _ in range(5)]
     else:
         SimDisponible = Disponible_dic_a_lista(disponible_planta)
     if not rec:
-        recepcionado = [[0 for i in range(180)] for i in P]
+        recepcionado = [ dic_neutro for i in P]
     else:
         recepcionado = recepcionado_dic_a_lista(rec)
 
@@ -219,7 +229,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m3.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
 
     if dia >= 7:
-        m3.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][dia + t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
+        m3.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
     else:
         m3.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
     m3.addConstrs((p_disp[p,t] == SimDisponible[p] for p in P for t in T if t == 0))
@@ -419,14 +429,14 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
         }
     else:
         dict_paths = {
-            join('results', 'lots.json'): lot_harvest,
-            join('results', 'trucks.json'): lot_trucks,
-            join('results', 'cuads.json'): lot_cuad,
-            join('results', 'hoppers.json'): lot_tolvas,
-            join('results', 'harvesters.json'): lot_cosechadoras,
-            join('results', 'lift.json'): lot_montas,
-            join('results', 'plants.json'): plants,
-            join('results', 'truck_type.json'): truck_type,
+            join('data','results', 'lots.json'): lot_harvest,
+            join('data','results', 'trucks.json'): lot_trucks,
+            join('data','results', 'cuads.json'): lot_cuad,
+            join('data','results', 'hoppers.json'): lot_tolvas,
+            join('data','results', 'harvesters.json'): lot_cosechadoras,
+            join('data','results', 'lift.json'): lot_montas,
+            join('data','results', 'plants.json'): plants,
+            join('data','results', 'truck_type.json'): truck_type,
         }
     for path, data in dict_paths.items():
         if isfile(path):
@@ -447,7 +457,18 @@ def recepcionado_dic_a_lista(rec):
     lista = [0 for _ in range(5)]
     for i in rec.keys():
         aux = int(i[1])
-        lista[aux - 1] = rec[i]
+        dic = {
+        -7: rec[i][0],
+        -6: rec[i][1],
+        -5: rec[i][2],
+        -4: rec[i][3],
+        -3: rec[i][4],
+        -2: rec[i][5],
+        -1: rec[i][6]
+        }
+        lista[aux - 1] = dic
+    print("Este es el parametro recepcionado: ")
+    print(lista)
     return lista
 
 def Disponible_dic_a_lista(disponible_planta):

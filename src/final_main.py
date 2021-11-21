@@ -15,7 +15,7 @@ logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname
 
 dia_inicial = 0
 # Primera optimización
-# modelo_principal(dia_inicial, paths=True)
+modelo_principal(dia_inicial, paths=True)
 
 # Inicializacion del simulador
 # Leemos excel de lotes

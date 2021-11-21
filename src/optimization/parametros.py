@@ -83,7 +83,8 @@ costo_camion = [0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.025, 0.025, 0.025, 0
 0.018, 0.018, 0.018, 0.018, 0.018, 0.018, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032]  #UTM/TKM
 contador = 0
 while contador < len(costo_camion):
-    costo_camion[contador] = costo_camion[contador] * 1000 #UTM/KgKM
+    costo_camion[contador] = costo_camion[contador] * 1000 
+    contador += 1#UTM/KgKM
 
 
 cap_montacargas = 22
