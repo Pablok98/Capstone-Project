@@ -51,7 +51,7 @@
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_7_2_149_109": {
         "dia 0": false,
@@ -108,8 +108,8 @@
         "dia 6": false
     },
     "U_13_6_146_89": {
-        "dia 0": false,
-        "dia 1": false,
+        "dia 0": true,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -141,7 +141,7 @@
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_17_1_143_113": {
         "dia 0": false,
@@ -203,7 +203,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_24_1_97_115": {
@@ -244,12 +244,12 @@
     },
     "U_28_3_102_92": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_29_2_76_81": {
         "dia 0": false,
@@ -279,10 +279,10 @@
         "dia 6": false
     },
     "U_32_6_139_89": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -329,7 +329,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_38_7_49_100": {
@@ -343,7 +343,7 @@
     },
     "U_39_6_43_80": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -357,7 +357,7 @@
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_41_1_126_115": {
         "dia 0": false,
@@ -397,8 +397,8 @@
     },
     "U_45_6_133_89": {
         "dia 0": false,
-        "dia 1": false,
-        "dia 2": false,
+        "dia 1": true,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
@@ -420,7 +420,7 @@
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_48_7_123_101": {
         "dia 0": false,
@@ -460,7 +460,7 @@
     },
     "U_52_2_120_84": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -471,7 +471,7 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -516,7 +516,7 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -524,11 +524,11 @@
     "U_59_8_130_92": {
         "dia 0": false,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_60_7_136_74": {
         "dia 0": false,
@@ -563,7 +563,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_64_8_102_98": {
@@ -576,8 +576,8 @@
         "dia 6": false
     },
     "U_65_8_91_91": {
-        "dia 0": false,
-        "dia 1": false,
+        "dia 0": true,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -600,14 +600,14 @@
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_68_7_63_90": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -631,10 +631,10 @@
     },
     "U_71_5_130_88": {
         "dia 0": false,
-        "dia 1": false,
-        "dia 2": false,
-        "dia 3": false,
-        "dia 4": false,
+        "dia 1": true,
+        "dia 2": true,
+        "dia 3": true,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -648,9 +648,9 @@
         "dia 6": false
     },
     "U_73_6_78_82": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
@@ -669,7 +669,7 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -684,12 +684,12 @@
         "dia 6": false
     },
     "U_77_2_113_89": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
-        "dia 5": false,
+        "dia 4": true,
+        "dia 5": true,
         "dia 6": false
     },
     "U_78_3_117_98": {
@@ -706,7 +706,7 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -788,7 +788,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_89_4_85_116": {
@@ -832,7 +832,7 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -857,9 +857,9 @@
     "U_96_6_79_93": {
         "dia 0": false,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -945,7 +945,7 @@
         "dia 6": false
     },
     "U_106_2_114_79": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
@@ -960,12 +960,12 @@
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_108_4_54_83": {
         "dia 0": false,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
@@ -974,8 +974,8 @@
     "U_109_1_44_90": {
         "dia 0": false,
         "dia 1": false,
-        "dia 2": false,
-        "dia 3": false,
+        "dia 2": true,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -1018,7 +1018,7 @@
     },
     "U_114_2_130_84": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -1063,10 +1063,10 @@
     },
     "U_119_8_42_85": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -1101,7 +1101,7 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -1198,10 +1198,10 @@
     },
     "U_134_2_51_88": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -1233,12 +1233,12 @@
         "dia 6": false
     },
     "U_138_8_138_88": {
-        "dia 0": false,
-        "dia 1": false,
+        "dia 0": true,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
-        "dia 5": false,
+        "dia 4": true,
+        "dia 5": true,
         "dia 6": false
     },
     "U_139_3_111_124": {
@@ -1263,17 +1263,17 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
-        "dia 4": false,
+        "dia 3": true,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
     "U_142_6_128_90": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -1310,7 +1310,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_147_5_74_116": {
@@ -1396,10 +1396,10 @@
     },
     "U_156_8_35_89": {
         "dia 0": false,
-        "dia 1": false,
-        "dia 2": false,
+        "dia 1": true,
+        "dia 2": true,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -1481,7 +1481,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_166_8_38_99": {
@@ -1639,7 +1639,7 @@
     },
     "U_183_8_115_80": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -1670,7 +1670,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_187_6_85_73": {
@@ -1683,9 +1683,9 @@
         "dia 6": false
     },
     "U_188_5_65_90": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
@@ -1695,8 +1695,8 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
-        "dia 4": false,
+        "dia 3": true,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -1722,8 +1722,8 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
-        "dia 4": false,
+        "dia 3": true,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -1848,7 +1848,7 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -1864,7 +1864,7 @@
     },
     "U_208_2_63_91": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -1873,9 +1873,9 @@
     },
     "U_209_2_101_91": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -1956,7 +1956,7 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -1984,7 +1984,7 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -2011,9 +2011,9 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_225_2_27_130": {
         "dia 0": false,
@@ -2031,10 +2031,10 @@
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
-        "dia 6": false
+        "dia 6": true
     },
     "U_227_2_30_82": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
@@ -2099,7 +2099,7 @@
     "U_234_5_114_90": {
         "dia 0": false,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
@@ -2120,7 +2120,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_237_5_31_121": {
@@ -2164,8 +2164,8 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
-        "dia 5": false,
+        "dia 4": true,
+        "dia 5": true,
         "dia 6": false
     },
     "U_242_3_66_104": {
@@ -2182,7 +2182,7 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -2196,7 +2196,7 @@
         "dia 6": false
     },
     "U_245_8_79_85": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
@@ -2269,7 +2269,7 @@
     },
     "U_253_4_40_85": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
@@ -2277,7 +2277,7 @@
         "dia 6": false
     },
     "U_254_8_44_87": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
@@ -2286,9 +2286,9 @@
         "dia 6": false
     },
     "U_255_4_141_91": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
@@ -2299,7 +2299,7 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": false,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -2340,7 +2340,7 @@
         "dia 6": false
     },
     "U_261_8_105_82": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
@@ -2379,8 +2379,8 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": false,
-        "dia 3": false,
-        "dia 4": false,
+        "dia 3": true,
+        "dia 4": true,
         "dia 5": false,
         "dia 6": false
     },
@@ -2403,7 +2403,7 @@
         "dia 6": false
     },
     "U_268_4_92_91": {
-        "dia 0": false,
+        "dia 0": true,
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
@@ -2441,7 +2441,7 @@
     "U_272_7_119_80": {
         "dia 0": false,
         "dia 1": false,
-        "dia 2": false,
+        "dia 2": true,
         "dia 3": false,
         "dia 4": false,
         "dia 5": false,
@@ -2453,7 +2453,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_274_4_111_117": {
@@ -2588,7 +2588,7 @@
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,
-        "dia 5": false,
+        "dia 5": true,
         "dia 6": false
     },
     "U_289_4_118_113": {
@@ -2602,7 +2602,7 @@
     },
     "U_290_6_84_81": {
         "dia 0": false,
-        "dia 1": false,
+        "dia 1": true,
         "dia 2": false,
         "dia 3": false,
         "dia 4": false,

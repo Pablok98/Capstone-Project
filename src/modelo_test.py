@@ -429,14 +429,14 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
         }
     else:
         dict_paths = {
-            join('data','results', 'lots.json'): lot_harvest,
-            join('data','results', 'trucks.json'): lot_trucks,
-            join('data','results', 'cuads.json'): lot_cuad,
-            join('data','results', 'hoppers.json'): lot_tolvas,
-            join('data','results', 'harvesters.json'): lot_cosechadoras,
-            join('data','results', 'lift.json'): lot_montas,
-            join('data','results', 'plants.json'): plants,
-            join('data','results', 'truck_type.json'): truck_type,
+            join('results', 'lots.json'): lot_harvest,
+            join('results', 'trucks.json'): lot_trucks,
+            join('results', 'cuads.json'): lot_cuad,
+            join('results', 'hoppers.json'): lot_tolvas,
+            join('results', 'harvesters.json'): lot_cosechadoras,
+            join('results', 'lift.json'): lot_montas,
+            join('results', 'plants.json'): plants,
+            join('results', 'truck_type.json'): truck_type,
         }
     for path, data in dict_paths.items():
         if isfile(path):

@@ -46,13 +46,13 @@ winifera.initialize(dia_inicial)
 
 def loop_semanal():
     global winifera
-    cargar_data_semana()
     while SimulationObject.current_day <= p.TOTAL_DAYS:
+        cargar_data_semana()
         motor_thread = threading.Thread(target=winifera.run_week, daemon=True)
         motor_thread.start()
         motor_thread.join()
-
-        modelo_principal(SimulationObject.current_day, winifera.grape_disp(), winifera.plant_recv(),
+        if winifera.lotes_veraison:
+            modelo_principal(SimulationObject.current_day, winifera.grape_disp(), winifera.plant_recv(),
                          winifera.fermented_unprocessed(), True)
 
 
