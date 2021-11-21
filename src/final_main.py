@@ -22,12 +22,18 @@ modelo_principal(dia_inicial, paths=True)
 lot_data = read_lot_data()
 # Instanciamos el motor
 winifera = Wine(lot_data, True)
-# Cargamos la información de la optimizacion
-for path, name in p.PATHS_FINAL.items():
-    with open(path, 'r') as file:
-        data = json.load(file)
-        winifera.assign_data.load_data(name, data)
 
+
+# Cargamos la información de la optimizacion
+def cargar_data_semana():
+    global winifera
+    for path, name in p.PATHS_FINAL.items():
+        with open(path, 'r') as file:
+            data = json.load(file)
+            winifera.assign_data.load_data(name, data)
+
+
+cargar_data_semana()
 # Iniciación ui
 app = QApplication(sys.argv)
 ventana = GUI()
@@ -36,8 +42,11 @@ winifera.command_signal = ventana.command_signal
 winifera.initialize(dia_inicial)
 
 
+
+
 def loop_semanal():
     global winifera
+    cargar_data_semana()
     while SimulationObject.current_day <= p.TOTAL_DAYS:
         motor_thread = threading.Thread(target=winifera.run_week, daemon=True)
         motor_thread.start()
