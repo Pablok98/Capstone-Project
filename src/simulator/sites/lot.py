@@ -1,9 +1,11 @@
+from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Union
 from params import MAX_DIAS_TRABAJO_JORNALERO
 from ..entities import *
 from ..sim import SimulationObject, event
 import logging
+
 
 Event = 'tuple[str, str, datetime]'
 
@@ -363,8 +365,6 @@ class Lot(SimulationObject):
         ]
         next_event_time = min(times)
         events = ['crate_full', 'load_bin', 'truck_dispatch', 'autofill_bin', 'hopper_attach']
-        if self.name == 'U_55_8_149_78':
-            print(self.lift_trucks)
         return self.name, events[times.index(next_event_time)], next_event_time
 
     def resolve_event(self, event_: str) -> Union['Truck', None]:

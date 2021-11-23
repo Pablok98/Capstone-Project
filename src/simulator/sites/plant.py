@@ -1,3 +1,4 @@
+from __future__ import annotations
 from ..sim import SimulationObject
 from ..datastruct import Batch
 from ..entities import *
@@ -38,15 +39,11 @@ class Plant(SimulationObject):
 
         self.daily_grapes = 0
 
-    @property
-    def week_recieved(self):
-        load = 0
-        for batch in self.grapes:
-            time_ = (SimulationObject.current_time - batch.date).days < 7
-            if not time_:
-                break
-            load += batch.kilograms
-        return load
+        self.recv_grapes = []
+
+    def end_day(self):
+        self.recv_grapes.append(self.daily_grapes)
+        self.daily_grapes = 0
 
     @property
     def fermented(self):

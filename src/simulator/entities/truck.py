@@ -1,3 +1,4 @@
+from __future__ import annotations
 import logging
 
 import params as p
@@ -7,7 +8,7 @@ from ..sites import *
 from .machine import Machine
 from ..sim import SimulationObject
 
-Load = Union[tuple[int, float], None]
+Load = Union["tuple[int, float]", None]
 
 
 class Truck(Machine):
