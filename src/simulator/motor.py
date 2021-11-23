@@ -59,12 +59,11 @@ class Wine(SimulationObject):
 
     def initialize(self, day):
         self.instanciar_lotes(self.lot_data)
-        self.set_initial_day(INITIAL_DAY)
+        self.set_initial_day(day)
         self.initial_instancing()
 
     def run_week(self):
         # There's no variance per week yet
-        # self.set_rain_data()
         self.set_rain_data()
         last_day = SimulationObject.current_day + 6
         while SimulationObject.current_day <= last_day:
@@ -205,6 +204,8 @@ class Wine(SimulationObject):
                 planta, evento, tiempo = plant.next_event
                 eventos[planta] = {'event': evento, 'tiempo': tiempo}
             prox_lote = min(eventos, key=lambda x: eventos[x]['tiempo'])
+            if eventos[prox_lote]['tiempo'] == SimulationObject.never_date:
+                break
             if prox_lote in ['P1', 'P2', 'P3', 'P4', 'P5']:
                 retorno = self.plantas[prox_lote].resolve_event(eventos[prox_lote]['event'])
             else:
@@ -248,6 +249,7 @@ class Wine(SimulationObject):
 
         for planta in self.plantas.values():
             planta.process_day()
+            planta.end_day()
 
         self.pass_day()
 
@@ -315,7 +317,7 @@ class Wine(SimulationObject):
         machine.assign_driver(driver)
 
     @property
-    def lotes_veraison(self) -> dict[str, Lot]:
+    def lotes_veraison(self) -> "dict[str, Lot]":
         results = {}
         for llabe, lote in self.lotes.items():
             dia_optimo = lote.optimal_day
@@ -347,7 +349,7 @@ class Wine(SimulationObject):
     def plant_recv(self):
         info = {}
         for name, plant in self.plantas.items():
-            info[name] = plant.week_recieved
+            info[name] = plant.recv_grapes
         return info
 
     def fermented_unprocessed(self):

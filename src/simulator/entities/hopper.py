@@ -1,10 +1,10 @@
 from ..entities import *
 from typing import Union
 from datetime import datetime
-from src.params import TASA_DEPRECIACION_TOLVA, COSTO_POR_TONELADA_TOLVA
+from params import TASA_DEPRECIACION_TOLVA, COSTO_POR_TONELADA_TOLVA
 import logging
 from ..sim import SimulationObject
-Load = Union[tuple[int, float], None]
+Load = Union["tuple[int, float]", None]
 
 
 class Hopper:

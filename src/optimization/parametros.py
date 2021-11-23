@@ -3,7 +3,7 @@ import os
 import json
 import pandas as pd
 
-L = [i for i in range(100)]
+L = [i for i in range(290)]
 T = [i for i in range(7)]
 K = [i for i in range(100)]
 C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
@@ -63,7 +63,7 @@ def load_DI():
 km = load_km() #lp
 ###############################################################################
 #l
-DI = load_DI() #tn
+DI = load_DI() #kg
 
 
 #p
@@ -81,6 +81,10 @@ cap_bines = [36, 36, 36, 36, 36, 36, 36, 32, 32, 32, 36, 36, 36, 36, 36, 36, 36,
 cap_tolva = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1]
 costo_camion = [0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.025, 0.025, 0.025, 0.018, 0.018, 
 0.018, 0.018, 0.018, 0.018, 0.018, 0.018, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032]  #UTM/TKM
+contador = 0
+while contador < len(costo_camion):
+    costo_camion[contador] = costo_camion[contador] * 1000 
+    contador += 1#UTM/KgKM
 
 
 cap_montacargas = 22
@@ -92,7 +96,7 @@ penalizacion = 10
 
 UTM = 54.171
 
-ch_kg = [20/UTM, 30.8/UTM, 20.8/UTM, 27.8/UTM, 29.2/UTM]
+utm_kg = [20/UTM, 30.8/UTM, 20.8/UTM, 27.8/UTM, 29.2/UTM]
 
 
 

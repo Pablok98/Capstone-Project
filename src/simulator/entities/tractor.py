@@ -1,5 +1,5 @@
 from .machine import Machine
-from src.params import TASA_DEPRECIACION_TRACTOR, COSTO_POR_TONELADA_TRACTOR
+from params import TASA_DEPRECIACION_TRACTOR, COSTO_POR_TONELADA_TRACTOR
 
 
 class Tractor(Machine):  # Tractor xd
