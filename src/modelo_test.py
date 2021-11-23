@@ -133,9 +133,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     RepBines= gb.quicksum(c_bines[l, t] for l in L for t in T) / 100
 
-    # KPICalidad = auxiliar 
+    PerdidaCalidad = gb.quicksum(c_cant_uva[l,t] * (1-cal[l][t])* 216.13 for l in L for t in T)
 
-    m1.setObjective(gb.quicksum(c_disponibilidad[l, t] - c_cant_uva[l, t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
+    m1.setObjective(PerdidaCalidad + gb.quicksum(c_disponibilidad[l, t] - c_cant_uva[l, t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
     m1.update()
     m1.optimize()
@@ -190,6 +190,15 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
             except KeyError:
                 print("Hubo un error")
+    
+    print("\n")
+    print("La calidad promedio es: ")
+    total_lotes_cosechados = sum(cosecha[l][t] for l in L for t in T)
+    if total_lotes_cosechados == 0:
+        calidad_promedio = 0
+    else:
+        calidad_promedio = gb.quicksum(cal[l][t] * cosecha[l][t] for l in L for t in T) / total_lotes_cosechados
+    print(calidad_promedio)
 
 
 
@@ -201,9 +210,10 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m2.addConstrs((gb.quicksum(t_camion[c, l, t] for c in C for l in L) <= 25 for t in T))
 
 
-    #VarCamion = quicksum((t_camion_bin[c,l,t] * cap_bines[c] *kg_bin) for c in C for l in L for t in T for p in p)
+    VarCamion = gb.quicksum((t_camion_bin[c,l,t] * cap_bines[c] *kg_bin * 30*costo_camion[c] + t_camion_tolva[c,l,t] * cap_tolva[c] *kg_tolva * 30*costo_camion[c]) for c in C for l in L for t in T)
+    TerCamion = gb.quicksum((camion_tercero_b[l,t]* 36 * kg_bin * 30 *1.15 *20 + camion_tercero_t[l,t] * 2* kg_tolva * 30 * 1.15*20) for l in L for t in T)
 
-    m2.setObjective(gb.quicksum(camion_tercero_b[l, t] + camion_tercero_t[l, t] for l in L for t in T))
+    m2.setObjective(TerCamion+VarCamion)
     m2.update()
     m2.optimize()
 
