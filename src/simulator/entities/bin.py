@@ -64,7 +64,7 @@ class Bin:
             crates += 1
         quality /= crates
         self.reset()
-        return kg, crates
+        return kg, quality
 
     def reset(self) -> None:
         self.crates = []
