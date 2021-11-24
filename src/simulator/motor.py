@@ -45,6 +45,8 @@ class Wine(SimulationObject):
 
         self.assign_data = Interface()
 
+        self.dias_camiones_extra = 0
+
     def run(self):
         self.instanciar_lotes(self.lot_data)
         self.set_initial_day(INITIAL_DAY)
@@ -190,6 +192,13 @@ class Wine(SimulationObject):
             else:
                 continue
             break
+
+        self.special_assignations()
+
+    def special_assignations(self):
+        for lote in self.lotes.values():
+            if lote
+
 
     # ========= SIMULATION CYCLE ==============================================
     def simular_dia(self) -> None:
