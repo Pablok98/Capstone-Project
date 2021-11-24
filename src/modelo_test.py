@@ -127,15 +127,15 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     VarTractores= gb.quicksum(((c_cant_uva[l, t]) / 1000) * 0.1 for l in L for t in T)
 
-    VarTolva= gb.quicksum(((gb.quicksum(c_man_tolva[k, l, t] * tam_cuadrillas[k] * ef_jorn for k in K)) / 1000) * 0.1 for l in L for t in T)
+    VarTolva= gb.quicksum(((gb.quicksum(c_man_tolva[k, l, t] * tam_cuadrillas[k] * ef_jorn for k in K)) / 1000) * 0.01 for l in L for t in T)
 
-    VarCosechadora= gb.quicksum(((ef_jorn * 4000 * 8 * c_auto[l, t]) / 1000) * 0.1 for l in L for t in T)
+    VarCosechadora= gb.quicksum(((ef_cos[l][t]  * c_auto[l, t]) / 1000) * 0.1 for l in L for t in T)
 
     RepBines= gb.quicksum(c_bines[l, t] for l in L for t in T) / 100
 
-    PerdidaCalidad = gb.quicksum(c_cant_uva[l,t] * (1-cal[l][t])* 216.13 for l in L for t in T)
+    PerdidaCalidad = gb.quicksum(c_cant_uva[l,t] * (1-cal[l][t])* 0.004 for l in L for t in T) #el 0.004 es el costo promedio en utm por kg de uva
 
-    m1.setObjective(PerdidaCalidad + gb.quicksum(c_disponibilidad[l, t] - c_cant_uva[l, t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
+    m1.setObjective(PerdidaCalidad + gb.quicksum((c_disponibilidad[l, t] - c_cant_uva[l, t]) * cal[l][t] * 0.004 for l in L for t in T) + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
     m1.update()
     m1.optimize()
