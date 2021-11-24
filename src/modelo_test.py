@@ -286,6 +286,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     lot_cosechadoras = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
     truck_type = {truck_names[i]: {} for i in range(len(truck_names))}
+    routes = {lot_names[i]: {} for i in range(len(lot_names))}
 
     plants = {f'P{i+1}': {} for i in range(5)}
 
@@ -368,6 +369,21 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
             
     for v in m2.getVars():
+
+        if 'ruta' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            l, p, t = [int(n) for n in i.split(',')]
+            nom_plant = dict_traduccion[int(p)]
+
+            try:
+                routes[lot_names[l]]
+
+            except KeyError:
+                routes[lot_names[l]] = {}
+            
+            if bool(v.x):
+                routes[lot_names[l]][f'dia {t}'] = plants[nom_plant]
 
         if 'camion' in v.varName:
             _, i = v.varName.split('[')
