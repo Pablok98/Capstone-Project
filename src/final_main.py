@@ -10,6 +10,7 @@ from os.path import join
 from simulator.sim import SimulationObject
 import logging
 from modelo_test import modelo_principal
+from initial_data import write_rain
 
 logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
 
@@ -31,6 +32,7 @@ def cargar_data_semana():
         with open(path, 'r') as file:
             data = json.load(file)
             winifera.assign_data.load_data(name, data)
+    write_rain()
 
 
 cargar_data_semana()
@@ -40,8 +42,6 @@ ventana = GUI()
 winifera.status_signal = ventana.status_signal
 winifera.command_signal = ventana.command_signal
 winifera.initialize(dia_inicial)
-
-
 
 
 def loop_semanal():

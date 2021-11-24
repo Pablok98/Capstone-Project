@@ -145,6 +145,12 @@ class Wine(SimulationObject):
 
         for id_, camion in self.camiones.items():
             if day_str in self.assign_data.trucks[str(id_)]:
+                if not (day_str in self.assign_data.truck_type[str(id_)]):
+                    logging.warning(f"El camion con id {id_} está asignado a un lote pero no su tipo")
+                    camion.loading_bins = True
+                else:
+                    camion.loading_bins = self.assign_data.truck_type[str(id_)][day_str]
+
                 for camionero in self.camioneros:
                     if camion.assign_driver(camionero):
                         break
