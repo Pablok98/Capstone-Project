@@ -41,6 +41,9 @@ class Plant(SimulationObject):
 
         self.recv_grapes = []
 
+        self.historical_grapes = []
+        # obtener los batch de toda la simulacion
+
     def end_day(self):
         self.recv_grapes.append(self.daily_grapes)
         self.daily_grapes = 0
@@ -131,6 +134,7 @@ class Plant(SimulationObject):
                 kg, quality = truck.unload()
                 batch = Batch(kg, quality, SimulationObject.current_time)
 
+                self.historical_grapes.append(batch)
                 self.grapes.append(batch)
                 self.daily_grapes += kg
                 unloaded += kg

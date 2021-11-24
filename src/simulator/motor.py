@@ -358,6 +358,31 @@ class Wine(SimulationObject):
             info[name] = plant.fermented
         return info
 
+    def obtener_info(self, comando):  # entrega la prop de cada planta por la qty
+        kpi = 0
+        if comando == "calidad_promedio":
+            total_kilos = 0
+            list_kilos_plantas = []
+            list_calidad_plantas = []
+            for planta in self.plantas:  # agregar plantas de terceros
+                calidad_planta = 0
+                kilos_planta = 0
+                if len(self.plantas[planta].historical_grapes) != 0:
+                    for batch in self.plantas[planta].historical_grapes:
+                        kilos_planta += batch.kilograms
+                        calidad_planta += batch.quality
+                    list_kilos_plantas.append(kilos_planta)
+                    list_calidad_plantas.append(calidad_planta/len(self.plantas[planta].historical_grapes))
+
+                    total_kilos += kilos_planta
+                else:
+                    list_kilos_plantas.append(0)
+                    list_calidad_plantas.append(0)
+            for _ in range(len(self.plantas)):
+                kpi += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
+            return kpi/total_kilos
+
+
     # ---------------  Now unused  --------------------------------------------
     def _test_assing(self) -> None:
         for i, jornalero in enumerate(self.jornaleros):
