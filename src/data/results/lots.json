@@ -254,8 +254,8 @@
     "U_29_2_76_81": {
         "dia 0": false,
         "dia 1": true,
-        "dia 2": false,
-        "dia 3": false,
+        "dia 2": true,
+        "dia 3": true,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false
@@ -1201,7 +1201,7 @@
         "dia 1": false,
         "dia 2": false,
         "dia 3": false,
-        "dia 4": true,
+        "dia 4": false,
         "dia 5": true,
         "dia 6": false
     },
@@ -2055,7 +2055,7 @@
         "dia 0": false,
         "dia 1": false,
         "dia 2": true,
-        "dia 3": true,
+        "dia 3": false,
         "dia 4": false,
         "dia 5": false,
         "dia 6": false

@@ -276,7 +276,13 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     cuad_names = [i for i in range(100)]
 
 
-
+    dict_traduccion = {
+        0: 'P1',
+        1: 'P2',
+        2: 'P3',
+        3: 'P4',
+        4: 'P5'
+    }
     monta = {}
 
     lot_harvest = {lot_names[i]: {} for i in range(len(lot_names))}
@@ -286,7 +292,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     lot_cosechadoras = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
     truck_type = {truck_names[i]: {} for i in range(len(truck_names))}
-
+    routes = {lot_names[i]: {} for i in range(len(lot_names))}
     plants = {f'P{i+1}': {} for i in range(5)}
 
 
@@ -369,6 +375,21 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             
     for v in m2.getVars():
 
+        if 'ruta' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            l, p, t = [int(n) for n in i.split(',')]
+            nom_plant = dict_traduccion[int(p)]
+
+            try:
+                routes[lot_names[l]]
+
+            except KeyError:
+                routes[lot_names[l]] = {}
+            
+            if bool(v.x):
+                routes[lot_names[l]][f'dia {t}'] = p
+
         if 'camion' in v.varName:
             _, i = v.varName.split('[')
             i = i[:-1]
@@ -407,13 +428,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             if bool(v.x):
                 truck_type[truck_names[c]][f'dia {t}'] = False
 
-    dict_traduccion = {
-        0: 'P1',
-        1: 'P2',
-        2: 'P3',
-        3: 'P4',
-        4: 'P5'
-    }
     for v in m3.getVars():
         if 'recepcionado' in v.varName:
             _, i = v.varName.split('[')
@@ -436,6 +450,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             join('data', 'results', 'lift.json'): lot_montas,
             join('data', 'results', 'plants.json'): plants,
             join('data', 'results', 'truck_type.json'): truck_type,
+            join('data', 'results', 'routes.json'): routes,
         }
     else:
         dict_paths = {
@@ -447,6 +462,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             join('results', 'lift.json'): lot_montas,
             join('results', 'plants.json'): plants,
             join('results', 'truck_type.json'): truck_type,
+            join('results', 'routes.json'): routes,
         }
     for path, data in dict_paths.items():
         if isfile(path):
