@@ -9,79 +9,19 @@
     "7": {},
     "8": {},
     "9": {},
-    "10": {
-        "dia 4": true,
-        "dia 1": true,
-        "dia 2": true
-    },
-    "11": {
-        "dia 6": true,
-        "dia 4": true,
-        "dia 2": true,
-        "dia 1": true,
-        "dia 3": true
-    },
-    "12": {
-        "dia 5": true,
-        "dia 4": true,
-        "dia 6": true,
-        "dia 2": true,
-        "dia 3": true,
-        "dia 1": true
-    },
-    "13": {
-        "dia 2": true,
-        "dia 5": true,
-        "dia 4": true,
-        "dia 6": true,
-        "dia 1": true,
-        "dia 3": true
-    },
-    "14": {
-        "dia 5": true,
-        "dia 6": true,
-        "dia 2": true,
-        "dia 3": true,
-        "dia 1": true
-    },
-    "15": {
-        "dia 5": true,
-        "dia 6": true,
-        "dia 4": true,
-        "dia 2": true,
-        "dia 3": true
-    },
-    "16": {
-        "dia 2": true,
-        "dia 4": true,
-        "dia 6": true,
-        "dia 1": true,
-        "dia 3": true,
-        "dia 5": true
-    },
-    "17": {
-        "dia 4": true,
-        "dia 6": true,
-        "dia 1": true,
-        "dia 3": true,
-        "dia 5": true
-    },
+    "10": {},
+    "11": {},
+    "12": {},
+    "13": {},
+    "14": {},
+    "15": {},
+    "16": {},
+    "17": {},
     "18": {},
-    "19": {
-        "dia 5": true
-    },
+    "19": {},
     "20": {},
-    "21": {
-        "dia 2": true
-    },
-    "22": {
-        "dia 5": true,
-        "dia 3": true
-    },
-    "23": {
-        "dia 5": true,
-        "dia 1": true,
-        "dia 3": true
-    },
+    "21": {},
+    "22": {},
+    "23": {},
     "24": {}
 }

@@ -45,7 +45,7 @@ class Wine(SimulationObject):
 
         self.assign_data = Interface()
 
-        self.dias_camiones_extra = 0
+        self.camiones_extra = 0
 
     def run(self):
         self.instanciar_lotes(self.lot_data)
@@ -197,8 +197,13 @@ class Wine(SimulationObject):
 
     def special_assignations(self):
         for lote in self.lotes.values():
-            if lote
-
+            if not lote.trucks:
+                cond = (lote.laborers) or (lote.harvesters) or (lote.bins)
+                if cond:
+                    camion = Truck('A', 2, 36)
+                    camion.assign_driver(TruckDriver())
+                    self.assign_truck(camion, lote.name)
+                    self.camiones_extra += 1
 
     # ========= SIMULATION CYCLE ==============================================
     def simular_dia(self) -> None:
