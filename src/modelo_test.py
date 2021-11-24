@@ -211,7 +211,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     VarCamion = gb.quicksum((t_camion_bin[c,l,t] * cap_bines[c] *kg_bin * 30*costo_camion[c] + t_camion_tolva[c,l,t] * cap_tolva[c] *kg_tolva * 30*costo_camion[c]) for c in C for l in L for t in T)
-    TerCamion = gb.quicksum((camion_tercero_b[l,t]* 36 * kg_bin * 30 *1.15 *20 + camion_tercero_t[l,t] * 2* kg_tolva * 30 * 1.15*20) for l in L for t in T)
+    TerCamion = gb.quicksum((camion_tercero_b[l,t]* 36 * kg_bin * 30 *1.15 * 0.02 / 1000 + camion_tercero_t[l,t] * 2* kg_tolva * 30 * 1.15*0.02 / 1000) for l in L for t in T)
 
     m2.setObjective(TerCamion+VarCamion)
     m2.update()
@@ -254,7 +254,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]) for p in P for t in T)
 
-    m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / cap_fermentacion[p])) for p in P for t in T) + gb.quicksum(p_terceros[p, t] for p in P for t in T) * 1.2 * 80 + VarPlanta + TercerizacionPlanta)
+    m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / cap_fermentacion[p])) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
     m3.update()
     m3.optimize()
 
