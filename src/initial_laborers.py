@@ -3,6 +3,8 @@ from optimization.parametros import *
 from optimization.parametros import conseguir_cal
 from optimization.parametros import recepcionado
 from optimization.parametros import DI
+from statistics import mean
+import json
 
 dic_neutro = {
     -7: 0,
@@ -131,19 +133,30 @@ def modelo_cosecha(dia, jornaleros_list, disponible_cosecha = None, rec = None, 
 
     return m1
 
-dia_inicial = 0
+
+UTM = 52842
+
+laborer_cost = 8 * UTM
 
 jornaleros_obj = {}
 
-for j in [100]:
+for j in range(1, 20):
 
+    objs = []
     jornaleros_list = [i for i in range(j)]
+    cost = laborer_cost * j * tam_cuadrillas[0]
 
-    model = modelo_cosecha(dia_inicial, jornaleros_list)
+    for dia in [77, 84, 91, 98]:
 
-    obj = model.getObjective().getValue()
+        model = modelo_cosecha(dia, jornaleros_list)
 
-    jornaleros_obj[j] = obj
+        obj = model.getObjective().getValue()
 
+        objs.append(obj + cost)
+
+    jornaleros_obj[j] = mean(objs)
 
 print(jornaleros_obj)
+
+with open('data/initial_laborers.json', 'w') as file:
+    json.dump(jornaleros_obj, file)
