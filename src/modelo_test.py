@@ -31,7 +31,8 @@ dic_neutro = {
 def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_planta = None, paths=None):
 
 
-    cal = conseguir_cal(dia)
+    cal = conseguir_cal2(dia)
+
     if not disponible_planta:
         SimDisponible = [0 for _ in range(5)]
     else:
