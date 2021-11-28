@@ -237,8 +237,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) >= t_ruta[l,p,t] for l in L for p in P for t in T)) #si hay ruta se tiene q asignar por lo menos uno
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) <= 1000 * t_ruta[l,p,t] for l in L for p in P for t in T)) #si no hay ruta no se puede asignar
 
-
-
     VarCamion = gb.quicksum(t_camion_bin[c,l,p,t] * cap_bines[c] *kg_bin * km[l][p] for c in C for l in L for t in T for p in P)
     TerCamion = gb.quicksum(camion_tercero_b[l,p,t] * kg_bin * km[l][p] * 100 + camion_tercero_t[l,p,t] * kg_tolva * km[l][p] * 100 for l in L for t in T for p in P)
 
@@ -422,8 +420,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             
             if bool(v.x):
                 routes[lot_names[l]][f'dia {t}'] = p
-                print(f"ruta hasta la planta {p}, desde el lote {l}, en tiempo {t}")
-
 
         if 'camion' in v.varName:
             _, i = v.varName.split('[')

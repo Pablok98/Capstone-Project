@@ -144,8 +144,6 @@ def conseguir_cal(actual):
         calfinal.append(aux1)
     end_time = datetime.datetime.now()
     print(end_time - start_time)
-
-
     return calfinal
     #print(aux)
     #print(len(aux))
