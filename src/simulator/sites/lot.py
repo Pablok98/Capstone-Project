@@ -460,6 +460,11 @@ class Lot(SimulationObject):
             lift_truck.assigned = False
         self.lift_trucks = []
 
+        # TODO
+        # Just a stupid patch, hopefully temporary
+        if len(self.bins) == 1:
+            self.bins = []
+
     @property
     def estado(self) -> dict:
         ctd_jornaleros = len(self.laborers)

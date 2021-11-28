@@ -40,6 +40,7 @@ class Truck(Machine):
         """
         self.hoppers = []
         self.loading_bins = True
+        self.bins = []
         if self.driver:
             self.driver.unassign()
             self.driver = None
