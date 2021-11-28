@@ -2,6 +2,7 @@ import numpy as np
 import os
 import json
 import pandas as pd
+import datetime
 
 L = [i for i in range(290)]
 T = [i for i in range(7)]
@@ -102,6 +103,7 @@ utm_kg = [20/UTM, 30.8/UTM, 20.8/UTM, 27.8/UTM, 29.2/UTM]
 
 
 def conseguir_cal(actual):
+    start_time = datetime.datetime.now()
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
@@ -129,6 +131,7 @@ def conseguir_cal(actual):
                 for dato in calidades[i]:
                     fila.append(dato)
                 dia += 14
+                #break
             else:
                 fila.append(0)
             dia += 1
@@ -139,10 +142,50 @@ def conseguir_cal(actual):
         for j in range(actual, actual+7):
             aux1.append(i[j])
         calfinal.append(aux1)
+    end_time = datetime.datetime.now()
+    print(end_time - start_time)
+
+
     return calfinal
     #print(aux)
     #print(len(aux))
     #print(len(aux[0]))
+
+def conseguir_cal2(actual):
+    # start_time = datetime.datetime.now()
+    lista = [[0 for i in range(180)] for l in L]
+    curr_dir = os.path.dirname(__file__)
+    parent = os.path.split(curr_dir)[0]
+    with open(os.path.join(parent, 'data', 'simulated_expected_q.json')) as jsonFile:
+        jsonObject = json.load(jsonFile)
+        jsonFile.close()
+
+    calidades = list(jsonObject.values())
+
+    file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
+
+    for i in range(len(calidades)):
+        dia_optimo = file.iloc[i]['Dia optimo cosecha']
+        inicio_veraison = dia_optimo - 7
+        for j in range(len(calidades[i])):
+            lista[i][inicio_veraison + j] = calidades[i][j]
+    calfinal = []
+    for i in lista:
+        aux1 = []
+        for j in range(actual, actual+7):
+            aux1.append(i[j])
+        calfinal.append(aux1)
+    # end_time = datetime.datetime.now()
+    # print(end_time - start_time)
+
+    return calfinal
+    
+
+
+        
+
+# print(file.head())
+
 
 
 #print(km)

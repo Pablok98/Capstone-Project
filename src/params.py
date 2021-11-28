@@ -2,8 +2,10 @@ from os.path import join
 
 
 # General
-TOTAL_DAYS = 77
-INITIAL_DAY = 0
+
+TOTAL_DAYS = 110
+INITIAL_DAY = 63
+
 
 # Modelo inicial
 DEMAND_WEIGHT = 0.2
