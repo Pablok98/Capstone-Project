@@ -1,6 +1,5 @@
 import time
 from collections import deque
-from random import expovariate, randint, uniform, seed
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Union
@@ -41,9 +40,11 @@ class Wine(SimulationObject):
         self.status_signal = None
         self.command_signal = None
 
-        self.week_number = 0
+        self.week_number = 9
 
         self.assign_data = Interface()
+
+        self.camiones_extra = 0
 
     def run(self):
         self.instanciar_lotes(self.lot_data)
@@ -104,6 +105,16 @@ class Wine(SimulationObject):
                 plant['hopper_cap']*1000,
                 plant['bin_cap']*1000
             )
+        # Special plant
+
+        self.plantas["P6"] = Plant(
+            "P6",
+            99999999999999 * 1000,
+            9999999999 * 1000,
+            9999999999 * 1000,
+            9999999999 * 1000
+        )
+
         for c_type, truck in TRUCK_DATA.items():
             for _ in range(truck['avail_units']):
                 truck_i = Truck(c_type, truck['hopper_cap'], truck['bin_cap'])
@@ -145,6 +156,12 @@ class Wine(SimulationObject):
 
         for id_, camion in self.camiones.items():
             if day_str in self.assign_data.trucks[str(id_)]:
+                if not (day_str in self.assign_data.truck_type[str(id_)]):
+                    logging.warning(f"El camion con id {id_} está asignado a un lote pero no su tipo")
+                    camion.loading_bins = True
+                else:
+                    camion.loading_bins = self.assign_data.truck_type[str(id_)][day_str]
+
                 for camionero in self.camioneros:
                     if camion.assign_driver(camionero):
                         break
@@ -152,8 +169,13 @@ class Wine(SimulationObject):
                     logging.warning("No hay camioneros para camionar")
                     continue
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
-                # TODO: Real assignations
-                camion.assigned_plant = 'P1'
+
+        for name, lot in self.lotes.items():
+            if day_str in self.assign_data.routes[name]:
+                plant = self.assign_data.routes[name][day_str]
+                lot.assigned_plant = f"P{plant + 1}"
+            else:
+                lot.assigned_plant = "P6"
 
         for lot, assignation in self.assign_data.hoppers.items():
             for _ in range(int(assignation[day_str])):
@@ -185,6 +207,23 @@ class Wine(SimulationObject):
                 continue
             break
 
+        self.special_assignations()
+
+    def special_assignations(self):
+        for lote in self.lotes.values():
+            if not lote.trucks:
+                cond = (lote.laborers) or (lote.harvesters) or (lote.bins)
+                if cond:
+                    camion = Truck('A', 2, 36)
+                    camion.assign_driver(TruckDriver())
+                    self.assign_truck(camion, lote.name)
+                    self.camiones_extra += 1
+
+                    if not lote.lift_trucks:
+                        lt = LiftTruck()
+                        lote.lift_trucks.append(lt)
+                        lt.assign_driver(MachineDriver())
+
     # ========= SIMULATION CYCLE ==============================================
     def simular_dia(self) -> None:
         for lote in self.lotes.values():
@@ -206,7 +245,7 @@ class Wine(SimulationObject):
             prox_lote = min(eventos, key=lambda x: eventos[x]['tiempo'])
             if eventos[prox_lote]['tiempo'] == SimulationObject.never_date:
                 break
-            if prox_lote in ['P1', 'P2', 'P3', 'P4', 'P5']:
+            if prox_lote in ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']:
                 retorno = self.plantas[prox_lote].resolve_event(eventos[prox_lote]['event'])
             else:
                 retorno = self.lotes[prox_lote].resolve_event(
@@ -279,6 +318,7 @@ class Wine(SimulationObject):
 
     def assign_truck(self, truck: Truck, lot: str) -> None:
         self.lotes[lot].assign_truck(truck)
+        truck.assigned_plant = self.lotes[lot].assigned_plant
 
     def assign_hopper(self, lot: Lot):
         for hopper in self.tolvas:
@@ -349,14 +389,69 @@ class Wine(SimulationObject):
     def plant_recv(self):
         info = {}
         for name, plant in self.plantas.items():
+            if name == "P6":
+                continue
             info[name] = plant.recv_grapes
         return info
 
     def fermented_unprocessed(self):
         info = {}
         for name, plant in self.plantas.items():
+            if name == "P6":
+                continue
             info[name] = plant.fermented
         return info
+
+    def obtener_info(self, comando):  # entrega la prop de cada planta por la qty
+        kpi = 0
+        print(comando)
+        if comando == "calidad_promedio":
+            total_kilos = 0
+            list_kilos_plantas = []
+            list_calidad_plantas = []
+            for planta in self.plantas:  # agregar plantas de terceros
+                calidad_planta = 0
+                kilos_planta = 0
+                if len(self.plantas[planta].historical_grapes) != 0:
+                    lenght = len(self.plantas[planta].historical_grapes)
+                    for batch in self.plantas[planta].historical_grapes:
+                        if batch.quality != 0:  # eliminar calidad 0
+                            kilos_planta += batch.kilograms
+                            calidad_planta += batch.quality
+                        else:
+                            lenght -= 1
+                    list_kilos_plantas.append(kilos_planta)
+                    list_calidad_plantas.append(calidad_planta/lenght)
+                    total_kilos += kilos_planta
+                else:
+                    list_kilos_plantas.append(0)
+                    list_calidad_plantas.append(0)
+            print(list_kilos_plantas, list_calidad_plantas)
+            for _ in range(len(self.plantas)):
+                kpi += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
+            if total_kilos == 0:
+                total_kilos = 1
+            return kpi/total_kilos
+        elif comando == "ocupacion_promedio_ferm":
+            ocupacion = []
+            for planta in self.plantas:
+                historial_util = [0]
+                for dia in self.plantas[planta].historical_ferm:
+                    if dia != 0:
+                        index = self.plantas[planta].historical_ferm.index(dia)
+                        historial_util = self.plantas[planta].historical_ferm[index:]
+                        break
+                print(self.plantas[planta].historical_ferm)
+                print(historial_util)
+                promedio = sum(historial_util)/len(historial_util)
+                ocupacion.append([self.plantas[planta].name, promedio/self.plantas[planta].ferm_cap])
+            return ocupacion
+        elif comando == "ocupacion_promedio_proc":
+            ocupacion = []
+            for planta in self.plantas:
+                ocupacion.append(self.plantas[planta].total_grape)
+            return ocupacion
+
 
     # ---------------  Now unused  --------------------------------------------
     def _test_assing(self) -> None:

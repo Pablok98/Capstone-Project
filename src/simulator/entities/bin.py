@@ -2,6 +2,7 @@ from __future__ import annotations
 from .crate import Crate
 from datetime import datetime
 from typing import Union
+from ..sim import SimulationObject
 
 
 
@@ -60,18 +61,28 @@ class Bin:
         quality, kg, crates = 0, 0, 0
         for cajon in self.crates:
             kg += 18
-            quality += cajon.quality
+            # We calculate quality loss since harvest
+            quality += self.real_quality(cajon)
             crates += 1
         quality /= crates
         self.reset()
-        return kg, crates
+        return kg, quality
+
+    def real_quality(self, crate):
+        harvest = crate.time_harvested
+        current = SimulationObject.current_time
+        days = (current - harvest).days
+        if days > 3:
+            return 0
+        q = {
+            0: 0.95,
+            1: 0.95,
+            2: 0.85,
+            3: 0.8,
+        }
+        return crate.quality * q[days]
 
     def reset(self) -> None:
         self.crates = []
         self.load_time = None
-
-
-
-
-
 
