@@ -19,6 +19,7 @@ class Interface(SimulationObject):
         self.machine_drivers = None
         self.plants = None
         self.truck_type = None
+        self.routes = None
 
     def load_data(self, name, data):
         setattr(self, name, data)

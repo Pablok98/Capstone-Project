@@ -137,6 +137,8 @@ class Plant(SimulationObject):
             # If the truck doesn't have contents, we remove it from the plant
             if not truck.has_content:
                 self.trucks.pop(0)
+            if unloaded >= rate:
+                break
 
     def process_day(self) -> None:
         """

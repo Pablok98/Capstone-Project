@@ -52,7 +52,6 @@ def loop_semanal():
         motor_thread.start()
         motor_thread.join()
         if winifera.lotes_veraison:
-            print("DIAAAAAAA", SimulationObject.current_day)
             modelo_principal(SimulationObject.current_day, winifera.grape_disp(), winifera.plant_recv(),
                          winifera.fermented_unprocessed(), True)
 

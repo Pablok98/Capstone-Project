@@ -1,6 +1,5 @@
 import time
 from collections import deque
-from random import expovariate, randint, uniform, seed
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Union
@@ -106,6 +105,16 @@ class Wine(SimulationObject):
                 plant['hopper_cap']*1000,
                 plant['bin_cap']*1000
             )
+        # Special plant
+
+        self.plantas["P6"] = Plant(
+            "P6",
+            99999999999999 * 1000,
+            9999999999 * 1000,
+            9999999999 * 1000,
+            9999999999 * 1000
+        )
+
         for c_type, truck in TRUCK_DATA.items():
             for _ in range(truck['avail_units']):
                 truck_i = Truck(c_type, truck['hopper_cap'], truck['bin_cap'])
@@ -160,8 +169,13 @@ class Wine(SimulationObject):
                     logging.warning("No hay camioneros para camionar")
                     continue
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
-                # TODO: Real assignations
-                camion.assigned_plant = 'P1'
+
+        for name, lot in self.lotes.items():
+            if day_str in self.assign_data.routes[name]:
+                plant = self.assign_data.routes[name][day_str]
+                lot.assigned_plant = f"P{plant + 1}"
+            else:
+                lot.assigned_plant = "P6"
 
         for lot, assignation in self.assign_data.hoppers.items():
             for _ in range(int(assignation[day_str])):
@@ -204,7 +218,6 @@ class Wine(SimulationObject):
                     camion.assign_driver(TruckDriver())
                     self.assign_truck(camion, lote.name)
                     self.camiones_extra += 1
-                    camion.assigned_plant = f'P{randint(1,5)}'
 
                     if not lote.lift_trucks:
                         lt = LiftTruck()
@@ -232,7 +245,7 @@ class Wine(SimulationObject):
             prox_lote = min(eventos, key=lambda x: eventos[x]['tiempo'])
             if eventos[prox_lote]['tiempo'] == SimulationObject.never_date:
                 break
-            if prox_lote in ['P1', 'P2', 'P3', 'P4', 'P5']:
+            if prox_lote in ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']:
                 retorno = self.plantas[prox_lote].resolve_event(eventos[prox_lote]['event'])
             else:
                 retorno = self.lotes[prox_lote].resolve_event(
@@ -305,6 +318,7 @@ class Wine(SimulationObject):
 
     def assign_truck(self, truck: Truck, lot: str) -> None:
         self.lotes[lot].assign_truck(truck)
+        truck.assigned_plant = self.lotes[lot].assigned_plant
 
     def assign_hopper(self, lot: Lot):
         for hopper in self.tolvas:
@@ -375,12 +389,16 @@ class Wine(SimulationObject):
     def plant_recv(self):
         info = {}
         for name, plant in self.plantas.items():
+            if name == "P6":
+                continue
             info[name] = plant.recv_grapes
         return info
 
     def fermented_unprocessed(self):
         info = {}
         for name, plant in self.plantas.items():
+            if name == "P6":
+                continue
             info[name] = plant.fermented
         return info
 

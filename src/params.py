@@ -97,6 +97,7 @@ PATHS_FINAL = {
     join('results', 'harvesters.json'): 'harvesters',
     join('results', 'lift.json'): 'lift_trucks',
     join('results', 'plants.json'): 'plants',
-    join('results', 'truck_type.json'): 'truck_type'
+    join('results', 'truck_type.json'): 'truck_type',
+    join('results', 'routes.json'): 'routes'
 }
 

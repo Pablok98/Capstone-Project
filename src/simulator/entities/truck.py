@@ -126,7 +126,11 @@ class Truck(Machine):
         Must be called when the truck travels to his assigned plant. This method will calculate
         the distance traveled and stores it.
         """
-        distance = self.current_lot.plant_distances[self.assigned_plant]
+        try:
+            distance = self.current_lot.plant_distances[self.assigned_plant]
+        except KeyError:
+            # In case the plant is the special P6
+            distance = 20
         self.distance_travelled += distance
 
     def state(self) -> dict:

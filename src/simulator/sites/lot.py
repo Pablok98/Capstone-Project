@@ -55,6 +55,7 @@ class Lot(SimulationObject):
         self.working_lift_trucks: list[LiftTruck] = []  # Todo: what it does
         self.flag_bin = True
 
+        self.assigned_plant = "P6"
 
     # -----------------------------------  General methods  ----------------------------------------
 
@@ -88,12 +89,12 @@ class Lot(SimulationObject):
 
         :return: Quality of the grape, in point number percentage
         """
-        # TODO: clean? Move?
         a = (self.quality_range[0] + self.quality_range[1] - 2) / 98
         b = (self.quality_range[1] - self.quality_range[0]) / 14
         quality = a * (self.current_optimal_delta ** 2) + b * self.current_optimal_delta + 1
         quality = quality * (1 - self.penalty)
         quality = quality if quality <= 1 else 1
+        quality = quality if quality >= 0 else 0
         return quality
 
     # --------------------------------  Assignment methods  ----------------------------------------
@@ -390,7 +391,12 @@ class Lot(SimulationObject):
         :param rain: 1 if it rained, 0 otherwise
         """
         self.is_raining = rain
-        if rain:
+
+        # We only penalize if the lot is at the veraison
+        opt_day = self.optimal_day.replace(hour=10, minute=10, second=10, microsecond=10)
+        current_day = SimulationObject.current_time.replace(hour=10, minute=10, second=10, microsecond=10)
+        penalty_cond = abs((opt_day - current_day).days) <= 7
+        if rain and penalty_cond:
             self.penalize()
 
     def penalize(self) -> None:

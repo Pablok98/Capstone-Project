@@ -51,7 +51,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     # m.Params.LogToConsole = 0
 
     #Variables Cosecha
-    print("CCCCCCCCCCCC")
     c_cosecha = m1.addVars(len(L), len(T), vtype=gb.GRB.BINARY, name='cosecha')
     c_auto = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name ='auto')
     c_manual = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='manual')
@@ -64,7 +63,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     c_monta = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='montacargas')
     c_disponibilidad = m1.addVars(len(L), len(T), vtype=gb.GRB.CONTINUOUS, name='disponibilidad')
     #c_cajones
-    print("DDDDDDDDDDDD")
 
     # #Variable Auxiliar
     # auxiliar = m1.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
