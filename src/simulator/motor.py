@@ -204,6 +204,12 @@ class Wine(SimulationObject):
                     camion.assign_driver(TruckDriver())
                     self.assign_truck(camion, lote.name)
                     self.camiones_extra += 1
+                    camion.assigned_plant = f'P{randint(1,5)}'
+
+                    if not lote.lift_trucks:
+                        lt = LiftTruck()
+                        lote.lift_trucks.append(lt)
+                        lt.assign_driver(MachineDriver())
 
     # ========= SIMULATION CYCLE ==============================================
     def simular_dia(self) -> None:

@@ -51,6 +51,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     # m.Params.LogToConsole = 0
 
     #Variables Cosecha
+    print("CCCCCCCCCCCC")
     c_cosecha = m1.addVars(len(L), len(T), vtype=gb.GRB.BINARY, name='cosecha')
     c_auto = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name ='auto')
     c_manual = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='manual')
@@ -63,6 +64,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     c_monta = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='montacargas')
     c_disponibilidad = m1.addVars(len(L), len(T), vtype=gb.GRB.CONTINUOUS, name='disponibilidad')
     #c_cajones
+    print("DDDDDDDDDDDD")
 
     # #Variable Auxiliar
     # auxiliar = m1.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
@@ -71,6 +73,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     #Restricciones Cosecha
+
     m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
@@ -90,6 +93,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
+
     # m1.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
     #restriccion carros tolva 17
     #restriccion cajones??
@@ -112,6 +116,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m3 = gb.Model()
 
     # #Variables Planta
+
     p_proc = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='procesado')
     p_fermentando = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='fermentando')
     p_disp = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='disp')
@@ -120,7 +125,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     ########################
-
     VarJornaleros= gb.quicksum((c_cuad[k, l, t] * tam_cuadrillas[k] * ef_jorn) / 1000 for k in K for l in L for t in T)
 
     VarConductores= gb.quicksum((c_cant_uva[l, t]) / 15000 for l in L for t in T)

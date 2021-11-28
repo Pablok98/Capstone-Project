@@ -118,7 +118,7 @@ def conseguir_cal(actual):
 
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
 # print(file.head())
-
+    print("AAAAAAAAAAAA")
     aux = []
     for i in range(len(calidades)):
         fila = []
@@ -140,7 +140,7 @@ def conseguir_cal(actual):
         for j in range(actual, actual+7):
             aux1.append(i[j])
         calfinal.append(aux1)
-
+    print("BBBBBBBBB")
     return calfinal
     #print(aux)
     #print(len(aux))
