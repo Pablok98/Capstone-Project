@@ -72,6 +72,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     #Restricciones Cosecha
+
     m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
@@ -91,6 +92,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
+
     # m1.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
     #restriccion carros tolva 17
     #restriccion cajones??
@@ -119,6 +121,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m3 = gb.Model()
 
     # #Variables Planta
+
     p_proc = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='procesado')
     p_fermentando = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='fermentando')
     p_disp = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='disp')
@@ -127,7 +130,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     ########################
-
     VarJornaleros= gb.quicksum((c_cuad[k, l, t] * tam_cuadrillas[k] * ef_jorn) / 1000 for k in K for l in L for t in T)
 
     VarConductores= gb.quicksum((c_cant_uva[l, t]) / 15000 for l in L for t in T)
@@ -421,6 +423,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             if bool(v.x):
                 routes[lot_names[l]][f'dia {t}'] = p
                 print(f"ruta hasta la planta {p}, desde el lote {l}, en tiempo {t}")
+
 
         if 'camion' in v.varName:
             _, i = v.varName.split('[')

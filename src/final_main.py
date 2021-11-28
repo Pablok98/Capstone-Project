@@ -10,6 +10,7 @@ from os.path import join
 from simulator.sim import SimulationObject
 import logging
 from modelo_test import modelo_principal
+from initial_data import write_rain
 
 logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
 
@@ -31,6 +32,7 @@ def cargar_data_semana():
         with open(path, 'r') as file:
             data = json.load(file)
             winifera.assign_data.load_data(name, data)
+    write_rain()
 
 
 cargar_data_semana()
@@ -42,11 +44,9 @@ winifera.command_signal = ventana.command_signal
 winifera.initialize(dia_inicial)
 
 
-
-
 def loop_semanal():
     global winifera
-    while SimulationObject.current_day <= p.TOTAL_DAYS:
+    while SimulationObject.current_day <= p.TOTAL_DAYS: # cambiar p.TOTAL_DAYS
         cargar_data_semana()
         motor_thread = threading.Thread(target=winifera.run_week, daemon=True)
         motor_thread.start()
@@ -54,6 +54,10 @@ def loop_semanal():
         if winifera.lotes_veraison:
             modelo_principal(SimulationObject.current_day, winifera.grape_disp(), winifera.plant_recv(),
                          winifera.fermented_unprocessed(), True)
+
+    print(winifera.obtener_info("calidad_promedio"))
+    print(winifera.obtener_info("ocupacion_promedio_ferm"))
+    print(winifera.obtener_info("ocupacion_promedio_proc"))
 
 
 thrd = threading.Thread(target=loop_semanal, daemon=True)

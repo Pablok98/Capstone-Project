@@ -62,12 +62,26 @@ class Hopper:
         if not self.crates:
             return
         crate = self.crates.pop(0)
-        quality = crate.quality
+        quality = self.real_quality(crate)
         kg = 18
         # If there's no more content, then we're ready for reset.
         if not self.crates:
             self.reset()
         return kg, quality
+
+    def real_quality(self, crate):
+        harvest = crate.time_harvested
+        current = SimulationObject.current_time
+        days = (harvest - current).days
+        if days > 3:
+            return 0
+        q = {
+            1: 0.95,
+            2: 0.85,
+            3: 0.8,
+        }
+        return crate.quality * q[days]
+
 
     def reset(self) -> None:
         self.transport_time = None
