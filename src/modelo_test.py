@@ -71,6 +71,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     #Restricciones Cosecha
+
     m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
@@ -90,6 +91,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
+
     # m1.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
     #restriccion carros tolva 17
     #restriccion cajones??
@@ -112,6 +114,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m3 = gb.Model()
 
     # #Variables Planta
+
     p_proc = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='procesado')
     p_fermentando = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='fermentando')
     p_disp = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='disp')
@@ -120,22 +123,21 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     ########################
-
     VarJornaleros= gb.quicksum((c_cuad[k, l, t] * tam_cuadrillas[k] * ef_jorn) / 1000 for k in K for l in L for t in T)
 
     VarConductores= gb.quicksum((c_cant_uva[l, t]) / 15000 for l in L for t in T)
 
     VarTractores= gb.quicksum(((c_cant_uva[l, t]) / 1000) * 0.1 for l in L for t in T)
 
-    VarTolva= gb.quicksum(((gb.quicksum(c_man_tolva[k, l, t] * tam_cuadrillas[k] * ef_jorn for k in K)) / 1000) * 0.1 for l in L for t in T)
+    VarTolva= gb.quicksum(((gb.quicksum(c_man_tolva[k, l, t] * tam_cuadrillas[k] * ef_jorn for k in K)) / 1000) * 0.01 for l in L for t in T)
 
-    VarCosechadora= gb.quicksum(((ef_jorn * 4000 * 8 * c_auto[l, t]) / 1000) * 0.1 for l in L for t in T)
+    VarCosechadora= gb.quicksum(((ef_cos[l][t]  * c_auto[l, t]) / 1000) * 0.1 for l in L for t in T)
 
     RepBines= gb.quicksum(c_bines[l, t] for l in L for t in T) / 100
 
-    PerdidaCalidad = gb.quicksum(c_cant_uva[l,t] * (1-cal[l][t])* 216.13 for l in L for t in T)
+    PerdidaCalidad = gb.quicksum(c_cant_uva[l,t] * (1-cal[l][t])* 0.004 for l in L for t in T) #el 0.004 es el costo promedio en utm por kg de uva
 
-    m1.setObjective(PerdidaCalidad + gb.quicksum(c_disponibilidad[l, t] - c_cant_uva[l, t] for l in L for t in T) * 10 + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
+    m1.setObjective(PerdidaCalidad + gb.quicksum((c_disponibilidad[l, t] - c_cant_uva[l, t]) * cal[l][t] * 0.004 for l in L for t in T) + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
     m1.update()
     m1.optimize()
@@ -211,7 +213,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     VarCamion = gb.quicksum((t_camion_bin[c,l,t] * cap_bines[c] *kg_bin * 30*costo_camion[c] + t_camion_tolva[c,l,t] * cap_tolva[c] *kg_tolva * 30*costo_camion[c]) for c in C for l in L for t in T)
-    TerCamion = gb.quicksum((camion_tercero_b[l,t]* 36 * kg_bin * 30 *1.15 *20 + camion_tercero_t[l,t] * 2* kg_tolva * 30 * 1.15*20) for l in L for t in T)
+    TerCamion = gb.quicksum((camion_tercero_b[l,t]* 36 * kg_bin * 30 *1.15 * 0.02 / 1000 + camion_tercero_t[l,t] * 2* kg_tolva * 30 * 1.15*0.02 / 1000) for l in L for t in T)
 
     m2.setObjective(TerCamion+VarCamion)
     m2.update()
@@ -254,7 +256,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]) for p in P for t in T)
 
-    m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / cap_fermentacion[p])) for p in P for t in T) + gb.quicksum(p_terceros[p, t] for p in P for t in T) * 1.2 * 80 + VarPlanta + TercerizacionPlanta)
+    m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / cap_fermentacion[p])) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
     m3.update()
     m3.optimize()
 
@@ -276,7 +278,13 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     cuad_names = [i for i in range(100)]
 
 
-
+    dict_traduccion = {
+        0: 'P1',
+        1: 'P2',
+        2: 'P3',
+        3: 'P4',
+        4: 'P5'
+    }
     monta = {}
 
     lot_harvest = {lot_names[i]: {} for i in range(len(lot_names))}
@@ -286,7 +294,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     lot_cosechadoras = {lot_names[i]: {} for i in range(len(lot_names))}
     lot_montas = {lot_names[i]: {} for i in range(len(lot_names))}
     truck_type = {truck_names[i]: {} for i in range(len(truck_names))}
-
+    routes = {lot_names[i]: {} for i in range(len(lot_names))}
     plants = {f'P{i+1}': {} for i in range(5)}
 
 
@@ -369,6 +377,21 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             
     for v in m2.getVars():
 
+        if 'ruta' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            l, p, t = [int(n) for n in i.split(',')]
+            nom_plant = dict_traduccion[int(p)]
+
+            try:
+                routes[lot_names[l]]
+
+            except KeyError:
+                routes[lot_names[l]] = {}
+            
+            if bool(v.x):
+                routes[lot_names[l]][f'dia {t}'] = p
+
         if 'camion' in v.varName:
             _, i = v.varName.split('[')
             i = i[:-1]
@@ -407,13 +430,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             if bool(v.x):
                 truck_type[truck_names[c]][f'dia {t}'] = False
 
-    dict_traduccion = {
-        0: 'P1',
-        1: 'P2',
-        2: 'P3',
-        3: 'P4',
-        4: 'P5'
-    }
     for v in m3.getVars():
         if 'recepcionado' in v.varName:
             _, i = v.varName.split('[')
@@ -436,6 +452,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             join('data', 'results', 'lift.json'): lot_montas,
             join('data', 'results', 'plants.json'): plants,
             join('data', 'results', 'truck_type.json'): truck_type,
+            join('data', 'results', 'routes.json'): routes,
         }
     else:
         dict_paths = {
@@ -447,6 +464,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             join('results', 'lift.json'): lot_montas,
             join('results', 'plants.json'): plants,
             join('results', 'truck_type.json'): truck_type,
+            join('results', 'routes.json'): routes,
         }
     for path, data in dict_paths.items():
         if isfile(path):

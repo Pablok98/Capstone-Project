@@ -70,6 +70,14 @@ COSECHADORAS = 5
 MONTACARGAS = 10
 
 
+# Contratos
+CONTRACTS_DATA = {
+    '1': {'a_j': 0.9, 'c_j': 1, 'ps_j': 0},
+    '2': {'a_j': 0.95, 'c_j': 0.7, 'ps_j': 1.15},
+    '3': {'a_j': 1, 'c_j': 0.5, 'ps_j': 1.15}
+}
+
+
 PATHS_DUMP = {
     join('data', 'results', 'lots.json'): 'harvesters',
     join('data', 'results', 'trucks.json'): 'trucks',
@@ -89,5 +97,7 @@ PATHS_FINAL = {
     join('results', 'harvesters.json'): 'harvesters',
     join('results', 'lift.json'): 'lift_trucks',
     join('results', 'plants.json'): 'plants',
-    join('results', 'truck_type.json'): 'truck_type'
+    join('results', 'truck_type.json'): 'truck_type',
+    join('results', 'routes.json'): 'routes'
 }
+

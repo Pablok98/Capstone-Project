@@ -9,8 +9,9 @@ def stationary_distribution(p_matrix, accuracy=1000):
 
 
 if __name__ == '__main__':
-    p_matrix = [[0.4, 0.6], 
-                [0.2, 0.8]]
+    p_11, p_01 = 0.39, 0.43
+    p_matrix = [[p_11, (1 - p_11)], 
+                [p_01, (1 - p_01)]]
     p_matrix = np.array(p_matrix)
     pi_obtenido = stationary_distribution(p_matrix)
     print(pi_obtenido)

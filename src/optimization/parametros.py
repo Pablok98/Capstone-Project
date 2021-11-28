@@ -16,7 +16,7 @@ recepcionado = [[0 for i in range(180)] for i in P]
 ###############################################################################
 
 ###############################################################################
-cap_cuadrillas = 200 # cuantas cuadrillas podremos ocupar
+cap_cuadrillas = 100 # cuantas cuadrillas podremos ocupar
 ###############################################################################
 
 ###############################################################################
@@ -83,7 +83,7 @@ costo_camion = [0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.025, 0.025, 0.025, 0
 0.018, 0.018, 0.018, 0.018, 0.018, 0.018, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032]  #UTM/TKM
 contador = 0
 while contador < len(costo_camion):
-    costo_camion[contador] = costo_camion[contador] * 1000 
+    costo_camion[contador] = costo_camion[contador] / 1000 
     contador += 1#UTM/KgKM
 
 
@@ -94,7 +94,7 @@ cantidad_tolvas = 100
 CFD = 10  #costo fijo diario
 penalizacion = 10
 
-UTM = 54.171
+UTM = 54171
 
 utm_kg = [20/UTM, 30.8/UTM, 20.8/UTM, 27.8/UTM, 29.2/UTM]
 
@@ -118,7 +118,6 @@ def conseguir_cal(actual):
 
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
 # print(file.head())
-
     aux = []
     for i in range(len(calidades)):
         fila = []
@@ -140,7 +139,6 @@ def conseguir_cal(actual):
         for j in range(actual, actual+7):
             aux1.append(i[j])
         calfinal.append(aux1)
-
     return calfinal
     #print(aux)
     #print(len(aux))
