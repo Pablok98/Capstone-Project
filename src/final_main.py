@@ -56,6 +56,7 @@ def loop_semanal():
                          winifera.fermented_unprocessed(), True)
 
     print(winifera.obtener_info("calidad_promedio"))
+    print(winifera.obtener_info("ocupacion_promedio_ferm"))
 
 
 thrd = threading.Thread(target=loop_semanal, daemon=True)

@@ -43,6 +43,7 @@ class Plant(SimulationObject):
 
         self.historical_grapes = []
         # obtener los batch de toda la simulacion
+        self.historical_proc = []
 
     def end_day(self):
         self.recv_grapes.append(self.daily_grapes)
@@ -160,6 +161,7 @@ class Plant(SimulationObject):
             processed += batch.kilograms
             self.total_grape += batch.kilograms
             self.total_wine += (batch.kilograms * batch.quality) * 0.55
+        self.historical_proc.append(self.current_load)
         print(self)
 
     def resolve_event(self, event: str) -> None:
