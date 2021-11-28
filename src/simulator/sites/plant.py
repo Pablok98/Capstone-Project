@@ -41,6 +41,10 @@ class Plant(SimulationObject):
 
         self.recv_grapes = []
 
+        self.historical_grapes = []
+        # obtener los batch de toda la simulacion
+        self.historical_ferm = []
+
     def end_day(self):
         self.recv_grapes.append(self.daily_grapes)
         self.daily_grapes = 0
@@ -131,12 +135,15 @@ class Plant(SimulationObject):
                 kg, quality = truck.unload()
                 batch = Batch(kg, quality, SimulationObject.current_time)
 
+                self.historical_grapes.append(batch)
                 self.grapes.append(batch)
                 self.daily_grapes += kg
                 unloaded += kg
             # If the truck doesn't have contents, we remove it from the plant
             if not truck.has_content:
                 self.trucks.pop(0)
+            if unloaded >= rate:
+                break
 
     def process_day(self) -> None:
         """
@@ -156,6 +163,7 @@ class Plant(SimulationObject):
             processed += batch.kilograms
             self.total_grape += batch.kilograms
             self.total_wine += (batch.kilograms * batch.quality) * 0.55
+        self.historical_ferm.append(self.current_load)
         print(self)
 
     def resolve_event(self, event: str) -> None:

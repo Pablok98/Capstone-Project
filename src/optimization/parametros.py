@@ -120,7 +120,6 @@ def conseguir_cal(actual):
 
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
 # print(file.head())
-
     aux = []
     for i in range(len(calidades)):
         fila = []
@@ -145,6 +144,7 @@ def conseguir_cal(actual):
         calfinal.append(aux1)
     end_time = datetime.datetime.now()
     print(end_time - start_time)
+
 
     return calfinal
     #print(aux)
