@@ -86,8 +86,3 @@ class Bin:
         self.crates = []
         self.load_time = None
 
-
-
-
-
-

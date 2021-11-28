@@ -19,6 +19,7 @@ winifera = Wine(lot_data, ui)
 
 
 for path, name in p.PATHS_DUMP.items():
+
     with open(path, 'r') as file:
         data = json.load(file)
         winifera.assign_data.load_data(name, data)
