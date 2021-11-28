@@ -13,7 +13,7 @@ from modelo_test import modelo_principal
 
 logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
 
-dia_inicial = 0
+dia_inicial = 63
 # Primera optimización
 modelo_principal(dia_inicial, paths=True)
 

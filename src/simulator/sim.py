@@ -1,11 +1,12 @@
 from datetime import datetime
 from random import randint
+import params as p
 
 
 class SimulationObject:
     current_time = datetime(2021, 1, 1, hour=6, minute=0, second=0)
     never_date = datetime(3000, 1, 1, hour=6, minute=0, second=0)
-    current_day = 0
+    current_day = p.INITIAL_DAY
     MAX_DAILY_UNLOAD = 0.3
 
 
