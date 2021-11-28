@@ -413,15 +413,20 @@ class Wine(SimulationObject):
                 calidad_planta = 0
                 kilos_planta = 0
                 if len(self.plantas[planta].historical_grapes) != 0:
+                    lenght = len(self.plantas[planta].historical_grapes)
                     for batch in self.plantas[planta].historical_grapes:
-                        kilos_planta += batch.kilograms
-                        calidad_planta += batch.quality
+                        if batch.quality != 0:  # eliminar calidad 0
+                            kilos_planta += batch.kilograms
+                            calidad_planta += batch.quality
+                        else:
+                            lenght -= 1
                     list_kilos_plantas.append(kilos_planta)
-                    list_calidad_plantas.append(calidad_planta/len(self.plantas[planta].historical_grapes))
+                    list_calidad_plantas.append(calidad_planta/lenght)
                     total_kilos += kilos_planta
                 else:
                     list_kilos_plantas.append(0)
                     list_calidad_plantas.append(0)
+            print(list_kilos_plantas, list_calidad_plantas)
             for _ in range(len(self.plantas)):
                 kpi += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
             if total_kilos == 0:
@@ -431,14 +436,20 @@ class Wine(SimulationObject):
             ocupacion = []
             for planta in self.plantas:
                 historial_util = [0]
-                for dia in self.plantas[planta].historical_proc:
+                for dia in self.plantas[planta].historical_ferm:
                     if dia != 0:
-                        index = self.plantas[planta].historical_proc.index(dia)
-                        historial_util = self.plantas[planta].historical_proc[index:]
+                        index = self.plantas[planta].historical_ferm.index(dia)
+                        historial_util = self.plantas[planta].historical_ferm[index:]
                         break
+                print(self.plantas[planta].historical_ferm)
                 print(historial_util)
                 promedio = sum(historial_util)/len(historial_util)
                 ocupacion.append([self.plantas[planta].name, promedio/self.plantas[planta].ferm_cap])
+            return ocupacion
+        elif comando == "ocupacion_promedio_proc":
+            ocupacion = []
+            for planta in self.plantas:
+                ocupacion.append(self.plantas[planta].total_grape)
             return ocupacion
 
 
