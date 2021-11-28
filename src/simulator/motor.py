@@ -40,7 +40,7 @@ class Wine(SimulationObject):
         self.status_signal = None
         self.command_signal = None
 
-        self.week_number = 9
+        self.week_number = INITIAL_DAY // 7
 
         self.assign_data = Interface()
 
