@@ -250,7 +250,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     for v in m2.getVars():
 
         if 'ruta' in v.varName:
-            print(v.varName, v.x)
             _, i = v.varName.split('[')
             i = i[:-1]
             l, p, t = [int(n) for n in i.split(',')]
@@ -421,11 +420,12 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             
             if bool(v.x):
                 routes[lot_names[l]][f'dia {t}'] = p
+                print(f"ruta hasta la planta {p}, desde el lote {l}, en tiempo {t}")
 
         if 'camion' in v.varName:
             _, i = v.varName.split('[')
             i = i[:-1]
-            c, l, t = [int(n) for n in i.split(',')]
+            c, l, p, t = [int(n) for n in i.split(',')]
             try:
                 lot_trucks[truck_names[c]]
 
@@ -437,7 +437,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
         if 'cambin' in v.varName:
             _, i = v.varName.split('[')
             i = i[:-1]
-            c, l, t = [int(n) for n in i.split(',')]
+            c, l, p, t = [int(n) for n in i.split(',')]
             try:
                 lot_trucks[truck_names[c]]
 
@@ -450,7 +450,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
         if 'camtolva' in v.varName:
             _, i = v.varName.split('[')
             i = i[:-1]
-            c, l, t = [int(n) for n in i.split(',')]
+            c, l, p, t = [int(n) for n in i.split(',')]
             try:
                 lot_trucks[truck_names[c]]
 
