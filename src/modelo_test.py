@@ -237,7 +237,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) >= t_ruta[l,p,t] for l in L for p in P for t in T)) #si hay ruta se tiene q asignar por lo menos uno
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) <= 1000 * t_ruta[l,p,t] for l in L for p in P for t in T)) #si no hay ruta no se puede asignar
 
-    VarCamion = gb.quicksum(t_camion_bin[c,l,p,t] * cap_bines[c] *kg_bin * km[l][p] for c in C for l in L for t in T for p in P)
+    VarCamion = gb.quicksum(t_camion_bin[c,l,p,t] * cap_bines[c] *kg_bin * km[l][p]*costo_camion[c] + t_camion_tolva[c,l,p,t] * cap_tolva[c] *kg_tolva * km[l][p]*costo_camion[c] for c in C for l in L for t in T for p in P)
     TerCamion = gb.quicksum(camion_tercero_b[l,p,t] * kg_bin * km[l][p] * 100 + camion_tercero_t[l,p,t] * kg_tolva * km[l][p] * 100 for l in L for t in T for p in P)
 
     m2.setObjective(TerCamion + VarCamion)
@@ -265,7 +265,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     # # #Restricciones Planta
     m3.addConstrs((p_fermentando[p,t] == p_rec[p,t] + p_fermentando[p,t-1] - p_proc[p,t-1] for p in P for t in T if t >=1))
     m3.addConstrs((p_fermentando[p,0] == 0 for p in P))
-    m3.addConstrs((p_proc[p,t] <= cap_proc[p] for p in P for t in T))
+    m3.addConstrs((p_proc[p,t] <= cap_proc[p]*1000 for p in P for t in T))
     m3.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
 
     if dia >= 7:
@@ -276,15 +276,15 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     m3.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(cantidad[l][t]*ruta[l][p][t] for l in L) for p in P for t in T))
     m3.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(cantidad[l][t] for l in L) for p in P for t in T))
-    m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3 for p in P for t in T))
-    m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p] - p_fermentando[p,t] for p in P for t in T))
-    m3.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p] for p in P for t in T))
+    m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3*1000 for p in P for t in T))
+    m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*1000 - p_fermentando[p,t] for p in P for t in T))
+    m3.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p]*1000 for p in P for t in T))
 
     VarPlanta = gb.quicksum((p_proc[p, t] * utm_kg[p]) for p in P for t in T)
 
-    TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]) for p in P for t in T)
+    TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]*100) for p in P for t in T)
 
-    m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / cap_fermentacion[p])) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
+    m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / (cap_fermentacion[p]*1000))) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
     m3.Params.MIPGap = 0.02
     m3.update()
     m3.optimize()
