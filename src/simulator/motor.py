@@ -537,7 +537,7 @@ class Wine(SimulationObject):
             costo_variable = 0
 
             for jornalero in self.jornaleros:
-                costo_variable += floor(jornalero.harvested / 1000) * SUELDO_VARIABLE_JORNALEROS
+                costo_variable += floor(jornalero.harvested / 5000) * SUELDO_VARIABLE_JORNALEROS * TAMANO_CUADRILLAS
 
 
             return costo_fijo + costo_variable
