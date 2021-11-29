@@ -405,9 +405,12 @@ class Wine(SimulationObject):
         return info
 
     def obtener_info(self, comando):  # entrega la prop de cada planta por la qty
-        kpi = 0
-        print(comando)
+        
+        comando_print = comando.replace("_", " ").upper()
+        print(comando_print)
+
         if comando == "calidad_promedio":
+            kilo_por_calidad = 0
             total_kilos = 0
             list_kilos_plantas = []
             list_calidad_plantas = []
@@ -430,10 +433,11 @@ class Wine(SimulationObject):
                     list_calidad_plantas.append(0)
             print(f"kilos:{list_kilos_plantas}", f"calidad:{list_calidad_plantas}")
             for _ in range(len(self.plantas)):
-                kpi += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
+                kilo_por_calidad += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
             if total_kilos == 0:
                 total_kilos = 1
-            return kpi/total_kilos
+            return kilo_por_calidad / total_kilos
+
         elif comando == "ocupacion_promedio_ferm":
             ocupacion = []
             for planta in self.plantas:
@@ -448,15 +452,33 @@ class Wine(SimulationObject):
                 maximo = max(historial_util)/self.plantas[planta].ferm_cap
                 ocupacion.append([self.plantas[planta].name, promedio/self.plantas[planta].ferm_cap, maximo])
             return ocupacion
+
         elif comando == "procesado_planta":
             ocupacion = []
             for planta in self.plantas:
                 ocupacion.append(self.plantas[planta].total_grape)
             return ocupacion
+
         elif comando == "porcentaje_camiones_tercero":
             print(f"camiones originales: {self.camiones_originales}")
             print(f"camiones extra: {self.camiones_extra}")
             return (self.camiones_extra/(self.camiones_originales + self.camiones_extra))
+        
+        elif comando == "porcentaje_uva_terceros":
+            
+            kilos_planta_terceros = 0
+            kilos_totales = 0
+
+            for planta in self.plantas:
+                for batch in self.plantas[planta].historical_grapes:
+                    if batch.quality != 0:  # eliminar calidad 0
+                        kilos_totales += batch.kilograms
+
+                        if planta == self.plantas[5]:
+                            kilos_planta_terceros += batch.kilograms
+
+            return kilos_planta_terceros / kilos_totales
+    
 
 
 

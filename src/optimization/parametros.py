@@ -6,7 +6,7 @@ import datetime
 
 L = [i for i in range(290)]
 T = [i for i in range(7)]
-K = [i for i in range(100)]
+K = [i for i in range(8)]
 C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
 P = [0,1,2,3,4]
 M = 1000000
