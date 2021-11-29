@@ -34,6 +34,8 @@ class Truck(Machine):
         self.distance_travelled = 0
         self.loading_bins = True  # True if the truck currently is loading bins (and not hopper)
 
+        self.total_kgs = 0
+
     def clean(self) -> None:
         """
         Clears the Truck of any events or assignments it had during a day. Used when reassigned.
@@ -115,6 +117,13 @@ class Truck(Machine):
         # Bin unload process
         if self.loading_bins:
             bin_ = self.bins.pop()
+            
+            bin_kgs = 0
+            for crate in bin_.crates:
+                bin_kgs += crate
+
+            self.total_kgs += bin_kgs
+
             return bin_.unload()
 
         # Hopper unload process

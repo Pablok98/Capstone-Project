@@ -32,6 +32,8 @@ PLANTS_DATA = {
     'P5': {'ferm_cap': 900, 'prod_cap': 120, 'hopper_cap': 50, 'bin_cap': 30, 'fixed_cost': 31500 * UTM, 'var_cost': 29.2}
 }
 
+EXTERNAL_PLANT = {'var_cost': 34.496}
+
 
 # Camiones
 

@@ -13,7 +13,7 @@ from .sim import SimulationObject, Interface
 
 from files import read_rain_data
 
-from params import (TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
+from params import (EXTERNAL_PLANT, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
                     COSECHADORAS, MONTACARGAS)
 import logging
 
@@ -455,8 +455,8 @@ class Wine(SimulationObject):
 
         elif comando == "procesado_planta":
             ocupacion = []
-            for planta in self.plantas:
-                ocupacion.append(self.plantas[planta].total_grape)
+            for planta in self.plantas.values():
+                ocupacion.append(planta.total_grape)
             return ocupacion
 
         elif comando == "porcentaje_camiones_tercero":
@@ -468,18 +468,53 @@ class Wine(SimulationObject):
             
             kilos_planta_terceros = 0
             kilos_totales = 0
+            i = 0
 
-            for planta in self.plantas:
-                for batch in self.plantas[planta].historical_grapes:
-                    if batch.quality != 0:  # eliminar calidad 0
-                        kilos_totales += batch.kilograms
+            for planta in self.plantas.values():
+                kilos_totales += planta.total_grape
 
-                        if planta == self.plantas[5]:
-                            kilos_planta_terceros += batch.kilograms
+                if i == 5:
+                    kilos_planta_terceros += planta.total_grape
+
+                i += 1
 
             return kilos_planta_terceros / kilos_totales
-    
 
+        
+        elif comando == "costos_procesamiento":
+            
+            costo_total = 0
+    
+            i = 1
+
+            for planta in self.plantas.values():
+
+                if i < 6:
+                    costos_por_kg = PLANTS_DATA[f"P{i}"]["var_cost"]
+
+                else:
+                    costos_por_kg = EXTERNAL_PLANT["var_cost"]
+
+                costos_planta = costos_por_kg * planta.total_grape
+                costo_total += costos_planta
+
+                i += 1
+
+
+            return costo_total
+
+        elif comando == "costos_transporte":
+
+            costo_total = 0
+            
+            for camion in self.camiones.values():
+                ton = camion.total_kgs / 1000
+                unit = ton * camion.distance_travelled
+                costo_por_unidad = TRUCK_DATA[camion.t_type]
+                costo = costo_por_unidad * unit
+                costo_total += costo
+
+            return costo_total
 
 
 
