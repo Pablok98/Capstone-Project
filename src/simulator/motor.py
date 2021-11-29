@@ -255,8 +255,12 @@ class Wine(SimulationObject):
             if retorno:
                 if type(retorno) == Truck:
                     planta = self.plantas[retorno.assigned_plant]
+                    if not planta.truck_arrival(retorno):
+                        retorno.assigned_plant = "P6"
+                        planta = self.plantas[retorno.assigned_plant]
+                        if not planta.truck_arrival(retorno):
+                            logging.warning("Un camion anda en nada")
                     retorno.travel()
-                    planta.truck_arrival(retorno)
             if self.ui:
                 # ui delay
                 if ui_counter == 100:
