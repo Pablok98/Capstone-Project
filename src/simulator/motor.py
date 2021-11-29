@@ -168,7 +168,8 @@ class Wine(SimulationObject):
                         break
                 else:
                     logging.warning("No hay camioneros para camionar")
-                    continue
+                    logging.warning("Se asignó un camionero fake igual")
+                    camion.assign_driver(TruckDriver())
                 self.camiones_originales += 1
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
 
@@ -223,8 +224,9 @@ class Wine(SimulationObject):
 
                     if not lote.lift_trucks:
                         lt = LiftTruck()
-                        lote.lift_trucks.append(lt)
                         lt.assign_driver(MachineDriver())
+                        lote.lift_trucks.append(lt)
+
 
     # ========= SIMULATION CYCLE ==============================================
     def simular_dia(self) -> None:

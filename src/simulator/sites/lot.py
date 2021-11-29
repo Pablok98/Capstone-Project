@@ -458,7 +458,9 @@ class Lot(SimulationObject):
 
         for lift_truck in self.lift_trucks:
             lift_truck.assigned = False
+            lift_truck.working = False
         self.lift_trucks = []
+        self.working_lift_trucks = []
 
         # TODO
         # Just a stupid patch, hopefully temporary
