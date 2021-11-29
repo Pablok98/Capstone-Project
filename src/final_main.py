@@ -57,7 +57,8 @@ def loop_semanal():
 
     print(winifera.obtener_info("calidad_promedio"))
     print(winifera.obtener_info("ocupacion_promedio_ferm"))
-    print(winifera.obtener_info("ocupacion_promedio_proc"))
+    print(winifera.obtener_info("procesado_planta"))
+    print(winifera.obtener_info("porcentaje_camiones_tercero"))
 
 
 thrd = threading.Thread(target=loop_semanal, daemon=True)

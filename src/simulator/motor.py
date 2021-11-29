@@ -44,6 +44,7 @@ class Wine(SimulationObject):
 
         self.assign_data = Interface()
 
+        self.camiones_originales = 0
         self.camiones_extra = 0
 
     def run(self):
@@ -168,6 +169,7 @@ class Wine(SimulationObject):
                 else:
                     logging.warning("No hay camioneros para camionar")
                     continue
+                self.camiones_originales += 1
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
 
         for name, lot in self.lotes.items():
@@ -426,7 +428,7 @@ class Wine(SimulationObject):
                 else:
                     list_kilos_plantas.append(0)
                     list_calidad_plantas.append(0)
-            print(list_kilos_plantas, list_calidad_plantas)
+            print(f"kilos:{list_kilos_plantas}", f"calidad:{list_calidad_plantas}")
             for _ in range(len(self.plantas)):
                 kpi += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
             if total_kilos == 0:
@@ -441,16 +443,22 @@ class Wine(SimulationObject):
                         index = self.plantas[planta].historical_ferm.index(dia)
                         historial_util = self.plantas[planta].historical_ferm[index:]
                         break
-                print(self.plantas[planta].historical_ferm)
-                print(historial_util)
+                print(f"ferm_x_dia: {historial_util}")
                 promedio = sum(historial_util)/len(historial_util)
-                ocupacion.append([self.plantas[planta].name, promedio/self.plantas[planta].ferm_cap])
+                maximo = max(historial_util)/self.plantas[planta].ferm_cap
+                ocupacion.append([self.plantas[planta].name, promedio/self.plantas[planta].ferm_cap, maximo])
             return ocupacion
-        elif comando == "ocupacion_promedio_proc":
+        elif comando == "procesado_planta":
             ocupacion = []
             for planta in self.plantas:
                 ocupacion.append(self.plantas[planta].total_grape)
             return ocupacion
+        elif comando == "porcentaje_camiones_tercero":
+            print(f"camiones originales: {self.camiones_originales}")
+            print(f"camiones extra: {self.camiones_extra}")
+            return (self.camiones_extra/(self.camiones_originales + self.camiones_extra))
+
+
 
 
     # ---------------  Now unused  --------------------------------------------
