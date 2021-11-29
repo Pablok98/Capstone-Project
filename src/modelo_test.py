@@ -72,9 +72,10 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     #Restricciones Cosecha
-
-    m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
+    
+    m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T)) #POR QUE NO IGUALAMOS?
     m1.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
+    
     m1.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
     m1.addConstrs((c_cant_uva[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] <= c_disponibilidad[l,t] for l in L for t in T))

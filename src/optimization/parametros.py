@@ -4,9 +4,13 @@ import json
 import pandas as pd
 import datetime
 
+###############################################################################
+cap_cuadrillas = 8 # cuantas cuadrillas podremos ocupar
+###############################################################################
+
 L = [i for i in range(290)]
 T = [i for i in range(7)]
-K = [i for i in range(100)]
+K = [i for i in range(cap_cuadrillas)]
 C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
 P = [0,1,2,3,4]
 M = 1000000
@@ -16,9 +20,6 @@ M = 1000000
 recepcionado = [[0 for i in range(180)] for i in P]
 ###############################################################################
 
-###############################################################################
-cap_cuadrillas = 8 # cuantas cuadrillas podremos ocupar
-###############################################################################
 
 ###############################################################################
 tam_cuadrillas = [5 for i in range(cap_cuadrillas)]
