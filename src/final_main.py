@@ -14,7 +14,7 @@ from initial_data import write_rain
 
 logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
 
-dia_inicial = 63
+dia_inicial = p.INITIAL_DAY
 # Primera optimización
 modelo_principal(dia_inicial, paths=True)
 
