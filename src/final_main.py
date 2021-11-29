@@ -68,6 +68,10 @@ def loop_semanal():
     print(winifera.obtener_info("costos_procesamiento"))
     print("\n")
     print(winifera.obtener_info("costos_transporte"))
+    print("\n")
+    print(winifera.obtener_info("costos_jornaleros"))
+    print("\n")
+    print(winifera.obtener_info("costos_asignacion"))
 
 
 thrd = threading.Thread(target=loop_semanal, daemon=True)

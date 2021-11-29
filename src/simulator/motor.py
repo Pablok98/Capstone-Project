@@ -14,7 +14,10 @@ from .sim import SimulationObject, Interface
 
 from files import read_rain_data
 
-from params import (CANTIDAD_CUADRILLAS, EXTERNAL_PLANT, SUELDO_MENSUAL_JORNALEROS, SUELDO_VARIABLE_JORNALEROS, TAMANO_CUADRILLAS, TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
+from params import (CANTIDAD_CUADRILLAS, COSTO_ASIGNACION_CAMIONES, COSTO_ASIGNACION_COSECHADORA, 
+                    COSTO_ASIGNACION_JORNALEROS, EXTERNAL_PLANT, SUELDO_MENSUAL_CAMIONEROS, 
+                    SUELDO_MENSUAL_JORNALEROS, SUELDO_VARIABLE_JORNALEROS, TAMANO_CUADRILLAS, 
+                    TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
                     COSECHADORAS, MONTACARGAS)
 import logging
 
@@ -318,10 +321,12 @@ class Wine(SimulationObject):
     # =======================================================================
     def asignar_jornalero(self, jornalero: Laborer, lote: str) -> None:
         self.lotes[lote].assign_laborer(jornalero)
+        jornalero.times_assigned += 1
 
     def assign_truck(self, truck: Truck, lot: str) -> None:
         self.lotes[lot].assign_truck(truck)
         truck.assigned_plant = self.lotes[lot].assigned_plant
+        truck.times_assigned += 1
 
     def assign_hopper(self, lot: Lot):
         for hopper in self.tolvas:
@@ -335,6 +340,7 @@ class Wine(SimulationObject):
         for harvester in self.cosechadoras:
             if not harvester.assigned:
                 harvester.assigned = True
+                harvester.times_assigned += 1
                 lot.harvesters.append(harvester)
                 # TODO: necesita drivers?
                 return True
@@ -448,7 +454,7 @@ class Wine(SimulationObject):
                         index = self.plantas[planta].historical_ferm.index(dia)
                         historial_util = self.plantas[planta].historical_ferm[index:]
                         break
-                print(f"ferm_x_dia: {historial_util}")
+                # print(f"ferm_x_dia: {historial_util}")
                 promedio = sum(historial_util)/len(historial_util)
                 maximo = max(historial_util)/self.plantas[planta].ferm_cap
                 ocupacion.append([self.plantas[planta].name, promedio/self.plantas[planta].ferm_cap, maximo])
@@ -482,7 +488,7 @@ class Wine(SimulationObject):
             return kilos_planta_terceros / kilos_totales
 
         
-        elif comando == "costos_procesamiento": # costo en clp
+        elif comando == "costos_procesamiento":
             
             costo_total = 0
             i = 1
@@ -502,18 +508,27 @@ class Wine(SimulationObject):
 
             return costo_total
 
-        elif comando == "costos_transporte": # costo en clp
+        elif comando == "costos_transporte":
 
-            costo_total = 0
             
+            # Costos camiones
+
+            costo_camiones = 0
             for camion in self.camiones.values():
                 ton = camion.total_kgs / 1000
                 unit = ton * camion.distance_travelled
                 costo_por_unidad = TRUCK_DATA[camion.t_type]['cost_per_km']
                 costo = costo_por_unidad * unit
-                costo_total += costo
+                costo_camiones += costo
+                
+            # Costos conductores (camioneros)
 
-            return costo_total
+            meses = ceil((TOTAL_DAYS - INITIAL_DAY) / 30)
+            costo_camioneros = 0
+            for camionero in self.camioneros:
+                costo_camioneros += meses * SUELDO_MENSUAL_CAMIONEROS
+
+            return costo_camiones + costo_camioneros
 
         elif comando == "costos_jornaleros":
 
@@ -527,6 +542,42 @@ class Wine(SimulationObject):
 
             return costo_fijo + costo_variable
 
+
+        elif comando == "costos_asignacion":
+            
+            # Costos asignacion jornaleros
+            
+            costo_jornaleros = 0
+            for jornalero in self.jornaleros:
+                costo_jornaleros += jornalero.times_assigned * COSTO_ASIGNACION_JORNALEROS
+
+            # Costos asignacion cosechadora
+
+            costo_cosechadoras = 0
+            for cosechadora in self.cosechadoras:
+                costo_cosechadoras += cosechadora.times_assigned * COSTO_ASIGNACION_COSECHADORA
+
+            # Costos asignacion camiones
+
+            costo_camiones = 0
+
+            for camion in self.camiones.values():
+                costo_camiones += camion.times_assigned * COSTO_ASIGNACION_CAMIONES
+
+            
+            return costo_jornaleros + costo_cosechadoras + costo_camiones
+
+        elif comando == "costos_de_equipos":
+
+            # Costos equipos para cosecha
+
+            costos_equipos = 0
+
+            # Costos conductores de equipos con motor
+
+            costos_conductores = 0
+            
+            return costos_equipos + costos_conductores
 
     # ---------------  Now unused  --------------------------------------------
     def _test_assing(self) -> None:

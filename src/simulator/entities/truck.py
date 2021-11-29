@@ -35,6 +35,7 @@ class Truck(Machine):
         self.loading_bins = True  # True if the truck currently is loading bins (and not hopper)
 
         self.total_kgs = 0
+        self.times_assigned = 0
 
     def clean(self) -> None:
         """
