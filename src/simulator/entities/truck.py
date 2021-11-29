@@ -129,6 +129,12 @@ class Truck(Machine):
         # Hopper unload process
         for hopper in self.hoppers:
             if hopper.has_content:
+                hopper_kgs = 0
+                for _ in hopper.crates:
+                    self.total_kgs += 18
+
+                self.total_kgs += hopper_kgs
+                    
                 return hopper.unload()
 
     def travel(self) -> None:

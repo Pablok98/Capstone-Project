@@ -5,6 +5,7 @@ from time import sleep
 from typing import Union
 import logging
 import pandas as pd
+from math import ceil, floor
 
 from .entities import *
 from .sites import *
@@ -13,7 +14,7 @@ from .sim import SimulationObject, Interface
 
 from files import read_rain_data
 
-from params import (EXTERNAL_PLANT, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
+from params import (CANTIDAD_CUADRILLAS, EXTERNAL_PLANT, SUELDO_MENSUAL_JORNALEROS, SUELDO_VARIABLE_JORNALEROS, TAMANO_CUADRILLAS, TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
                     COSECHADORAS, MONTACARGAS)
 import logging
 
@@ -481,7 +482,7 @@ class Wine(SimulationObject):
             return kilos_planta_terceros / kilos_totales
 
         
-        elif comando == "costos_procesamiento":
+        elif comando == "costos_procesamiento": # costo en clp
             
             costo_total = 0
             i = 1
@@ -501,7 +502,7 @@ class Wine(SimulationObject):
 
             return costo_total
 
-        elif comando == "costos_transporte":
+        elif comando == "costos_transporte": # costo en clp
 
             costo_total = 0
             
@@ -514,6 +515,17 @@ class Wine(SimulationObject):
 
             return costo_total
 
+        elif comando == "costos_jornaleros":
+
+            meses = ceil((TOTAL_DAYS - INITIAL_DAY) / 30)
+            costo_fijo = meses * SUELDO_MENSUAL_JORNALEROS * CANTIDAD_CUADRILLAS * TAMANO_CUADRILLAS
+            costo_variable = 0
+
+            for jornalero in self.jornaleros:
+                costo_variable += floor(jornalero.harvested / 1000) * SUELDO_VARIABLE_JORNALEROS
+
+
+            return costo_fijo + costo_variable
 
 
     # ---------------  Now unused  --------------------------------------------
