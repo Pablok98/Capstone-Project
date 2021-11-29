@@ -120,7 +120,7 @@ class Truck(Machine):
             
             bin_kgs = 0
             for crate in bin_.crates:
-                bin_kgs += crate
+                bin_kgs += 18
 
             self.total_kgs += bin_kgs
 
