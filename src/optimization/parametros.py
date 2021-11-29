@@ -3,10 +3,18 @@ import os
 import json
 import pandas as pd
 import datetime
+import json
 
-L = [i for i in range(290)]
+cap_cuadrillas = 8
+
+curr_dir = os.path.dirname(__file__)
+parent = os.path.split(curr_dir)[0]
+with open(os.path.join(parent, 'data', 'initial_contracts.json'), "r") as file:
+    lotes_contratados = [key for key, value in json.load(file).items() if value]
+
+L = [i for i in range(len(lotes_contratados))]
 T = [i for i in range(7)]
-K = [i for i in range(100)]
+K = [i for i in range(cap_cuadrillas)]
 C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
 P = [0,1,2,3,4]
 M = 1000000
@@ -17,7 +25,7 @@ recepcionado = [[0 for i in range(180)] for i in P]
 ###############################################################################
 
 ###############################################################################
-cap_cuadrillas = 8 # cuantas cuadrillas podremos ocupar
+# cap_cuadrillas = 8 # cuantas cuadrillas podremos ocupar
 ###############################################################################
 
 ###############################################################################
@@ -29,14 +37,17 @@ ef_cuad = [[tam_cuadrillas[0] * ef_jorn for t in T] for l in L]  #Cuadrillas de 
 
 
 
+
 def load_km():
     curr_dir = os.path.dirname(__file__)
     parent = os.path.split(curr_dir)[0]
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
     lista = []
     for i in range (290):
-        lista.append([file.iloc[i]['km a P1'], file.iloc[i]['km a P2'], file.iloc[i]['km a P3'], 
-        file.iloc[i]['km a P4'], file.iloc[i]['km a P5']])
+        nombre_lote = file.iloc[i]['Lote COD']
+        if nombre_lote in lotes_contratados:
+            lista.append([file.iloc[i]['km a P1'], file.iloc[i]['km a P2'], file.iloc[i]['km a P3'], 
+            file.iloc[i]['km a P4'], file.iloc[i]['km a P5']])
     return lista
 
 def dic_lote():
@@ -46,7 +57,9 @@ def dic_lote():
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
     lots = {}
     for i in range (290):
-        lots[i] = file.iloc[i]['Lote COD']
+        nombre_lote = file.iloc[i]['Lote COD']
+        if nombre_lote in lotes_contratados:
+            lots[i] = file.iloc[i]['Lote COD']
     return lots
 
 def load_DI():
@@ -56,7 +69,9 @@ def load_DI():
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
     lista = []
     for i in range (290):
-        lista.append(1000*file.iloc[i]['Tn  '])
+        nombre_lote = file.iloc[i]['Lote COD']
+        if nombre_lote in lotes_contratados:
+            lista.append(1000*file.iloc[i]['Tn  '])
     return lista
 
 
@@ -156,9 +171,9 @@ def conseguir_cal2(actual):
     parent = os.path.split(curr_dir)[0]
     with open(os.path.join(parent, 'data', 'simulated_expected_q.json')) as jsonFile:
         jsonObject = json.load(jsonFile)
-        jsonFile.close()
 
-    calidades = list(jsonObject.values())
+    calidades = [value for _, value in filter(lambda x: x[0] in lotes_contratados, jsonObject.items())]
+    # print(calidades)
 
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
 
@@ -175,18 +190,10 @@ def conseguir_cal2(actual):
         calfinal.append(aux1)
     # end_time = datetime.datetime.now()
     # print(end_time - start_time)
+    # print(calfinal)
 
     return calfinal
     
 
 
         
-
-# print(file.head())
-
-
-
-#print(km)
-#print(DI_l)
-#cal = conseguir_cal(80)
-#print(cal)

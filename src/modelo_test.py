@@ -511,6 +511,7 @@ def f_disponible(disp):
     return lista
 
 def recepcionado_dic_a_lista(rec):
+    print(rec)
     lista = [0 for _ in range(5)]
     for i in rec.keys():
         aux = int(i[1])
