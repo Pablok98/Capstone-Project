@@ -484,7 +484,6 @@ class Wine(SimulationObject):
         elif comando == "costos_procesamiento":
             
             costo_total = 0
-    
             i = 1
 
             for planta in self.plantas.values():
@@ -500,7 +499,6 @@ class Wine(SimulationObject):
 
                 i += 1
 
-
             return costo_total
 
         elif comando == "costos_transporte":
@@ -510,7 +508,7 @@ class Wine(SimulationObject):
             for camion in self.camiones.values():
                 ton = camion.total_kgs / 1000
                 unit = ton * camion.distance_travelled
-                costo_por_unidad = TRUCK_DATA[camion.t_type]
+                costo_por_unidad = TRUCK_DATA[camion.t_type]['cost_per_km']
                 costo = costo_por_unidad * unit
                 costo_total += costo
 
