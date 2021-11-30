@@ -468,8 +468,7 @@ class Lot(SimulationObject):
 
         # TODO
         # Just a stupid patch, hopefully temporary
-        if len(self.bins) == 1:
-            self.bins = []
+        self.bins = []
 
     @property
     def estado(self) -> dict:
