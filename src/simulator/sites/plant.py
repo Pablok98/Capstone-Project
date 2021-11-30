@@ -79,13 +79,20 @@ class Plant(SimulationObject):
         """
         return round(self.daily_grapes / self.ferm_cap, 3)
 
-    def truck_arrival(self, truck) -> None:
+    def truck_arrival(self, truck) -> bool:
         """
         Method to call when a truck gets to the plant.
 
         :param truck: truck to add to the plant
         """
+        # We can only unload a percentage of the max capacity (per day)
+        max_daily = self.daily_grape_percentage <= SimulationObject.MAX_DAILY_UNLOAD
+        # We can't unload more than the plant's capacity
+        max_cap = self.current_load < self.ferm_cap
+        if not max_cap or not max_daily:
+            return False
         self.trucks.append(truck)
+        return True
 
     @property
     def next_event(self) -> tuple[str, str, datetime]:
