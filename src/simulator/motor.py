@@ -5,6 +5,7 @@ from time import sleep
 from typing import Union
 import logging
 import pandas as pd
+from math import ceil, floor
 
 from .entities import *
 from .sites import *
@@ -13,7 +14,10 @@ from .sim import SimulationObject, Interface
 
 from files import read_rain_data
 
-from params import (TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
+from params import (CANTIDAD_CUADRILLAS, COSTO_ASIGNACION_CAMIONES, COSTO_ASIGNACION_COSECHADORA, 
+                    COSTO_ASIGNACION_JORNALEROS, EXTERNAL_PLANT, SUELDO_MENSUAL_CAMIONEROS, 
+                    SUELDO_MENSUAL_CUADRILLAS, SUELDO_VARIABLE_CUADRILLAS, TAMANO_CUADRILLAS,  
+                    TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES, 
                     COSECHADORAS, MONTACARGAS)
 import logging
 
@@ -317,10 +321,12 @@ class Wine(SimulationObject):
     # =======================================================================
     def asignar_jornalero(self, jornalero: Laborer, lote: str) -> None:
         self.lotes[lote].assign_laborer(jornalero)
+        jornalero.times_assigned += 1
 
     def assign_truck(self, truck: Truck, lot: str) -> None:
         self.lotes[lot].assign_truck(truck)
         truck.assigned_plant = self.lotes[lot].assigned_plant
+        truck.times_assigned += 1
 
     def assign_hopper(self, lot: Lot):
         for hopper in self.tolvas:
@@ -334,6 +340,7 @@ class Wine(SimulationObject):
         for harvester in self.cosechadoras:
             if not harvester.assigned:
                 harvester.assigned = True
+                harvester.times_assigned += 1
                 lot.harvesters.append(harvester)
                 # TODO: necesita drivers?
                 return True
@@ -405,9 +412,12 @@ class Wine(SimulationObject):
         return info
 
     def obtener_info(self, comando):  # entrega la prop de cada planta por la qty
-        kpi = 0
-        print(comando)
+        
+        # comando_print = comando.replace("_", " ").upper()
+        # print(comando_print)
+
         if comando == "calidad_promedio":
+            kilo_por_calidad = 0
             total_kilos = 0
             list_kilos_plantas = []
             list_calidad_plantas = []
@@ -430,10 +440,11 @@ class Wine(SimulationObject):
                     list_calidad_plantas.append(0)
             print(f"kilos:{list_kilos_plantas}", f"calidad:{list_calidad_plantas}")
             for _ in range(len(self.plantas)):
-                kpi += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
+                kilo_por_calidad += list_kilos_plantas.pop(0)*list_calidad_plantas.pop(0)
             if total_kilos == 0:
                 total_kilos = 1
-            return kpi/total_kilos
+            return kilo_por_calidad / total_kilos
+
         elif comando == "ocupacion_promedio_ferm":
             ocupacion = []
             for planta in self.plantas:
@@ -443,23 +454,132 @@ class Wine(SimulationObject):
                         index = self.plantas[planta].historical_ferm.index(dia)
                         historial_util = self.plantas[planta].historical_ferm[index:]
                         break
-                print(f"ferm_x_dia: {historial_util}")
+                # print(f"ferm_x_dia: {historial_util}")
                 promedio = sum(historial_util)/len(historial_util)
                 maximo = max(historial_util)/self.plantas[planta].ferm_cap
                 ocupacion.append([self.plantas[planta].name, promedio/self.plantas[planta].ferm_cap, maximo])
             return ocupacion
+
         elif comando == "procesado_planta":
             ocupacion = []
-            for planta in self.plantas:
-                ocupacion.append(self.plantas[planta].total_grape)
+            for planta in self.plantas.values():
+                ocupacion.append(planta.total_grape)
             return ocupacion
+
         elif comando == "porcentaje_camiones_tercero":
             print(f"camiones originales: {self.camiones_originales}")
             print(f"camiones extra: {self.camiones_extra}")
+            if self.camiones_originales + self.camiones_extra == 0:
+                return 0
             return (self.camiones_extra/(self.camiones_originales + self.camiones_extra))
+        
+        elif comando == "porcentaje_uva_terceros":
+            
+            kilos_planta_terceros = 0
+            kilos_totales = 0
+            i = 0
+
+            for planta in self.plantas.values():
+                kilos_totales += planta.total_grape
+
+                if i == 5:
+                    kilos_planta_terceros += planta.total_grape
+
+                i += 1
+
+            return kilos_planta_terceros / kilos_totales
+
+        
+        elif comando == "costos_procesamiento":
+            
+            costo_total = 0
+            i = 1
+
+            for planta in self.plantas.values():
+
+                if i < 6:
+                    costos_por_kg = PLANTS_DATA[f"P{i}"]["var_cost"]
+
+                else:
+                    costos_por_kg = EXTERNAL_PLANT["var_cost"]
+
+                costos_planta = costos_por_kg * planta.total_grape
+                costo_total += costos_planta
+
+                i += 1
+
+            return costo_total
+
+        elif comando == "costos_transporte":
+
+            
+            # Costos camiones
+
+            costo_camiones = 0
+            for camion in self.camiones.values():
+                ton = camion.total_kgs / 1000
+                unit = ton * camion.distance_travelled
+                costo_por_unidad = TRUCK_DATA[camion.t_type]['cost_per_km']
+                costo = costo_por_unidad * unit
+                costo_camiones += costo
+                
+            # Costos conductores (camioneros)
+
+            meses = ceil((TOTAL_DAYS - INITIAL_DAY) / 30)
+            costo_camioneros = 0
+            for camionero in self.camioneros:
+                costo_camioneros += meses * SUELDO_MENSUAL_CAMIONEROS
+
+            return costo_camiones + costo_camioneros
+
+        elif comando == "costos_jornaleros":
+
+            meses = ceil((TOTAL_DAYS - INITIAL_DAY) / 30)
+            costo_fijo = meses * SUELDO_MENSUAL_CUADRILLAS * CANTIDAD_CUADRILLAS
+            costo_variable = 0
+
+            for jornalero in self.jornaleros:
+                costo_variable += floor(jornalero.harvested / (TAMANO_CUADRILLAS * 1000)) * SUELDO_VARIABLE_CUADRILLAS
 
 
+            return costo_fijo + costo_variable
 
+
+        elif comando == "costos_asignacion":
+            
+            # Costos asignacion jornaleros
+            
+            costo_jornaleros = 0
+            for jornalero in self.jornaleros:
+                costo_jornaleros += jornalero.times_assigned * COSTO_ASIGNACION_JORNALEROS
+
+            # Costos asignacion cosechadora
+
+            costo_cosechadoras = 0
+            for cosechadora in self.cosechadoras:
+                costo_cosechadoras += cosechadora.times_assigned * COSTO_ASIGNACION_COSECHADORA
+
+            # Costos asignacion camiones
+
+            costo_camiones = 0
+
+            for camion in self.camiones.values():
+                costo_camiones += camion.times_assigned * COSTO_ASIGNACION_CAMIONES
+
+            
+            return costo_jornaleros + costo_cosechadoras + costo_camiones
+
+        elif comando == "costos_de_equipos":
+
+            # Costos equipos para cosecha
+
+            costos_equipos = 0
+
+            # Costos conductores de equipos con motor
+
+            costos_conductores = 0
+            
+            return costos_equipos + costos_conductores
 
     # ---------------  Now unused  --------------------------------------------
     def _test_assing(self) -> None:

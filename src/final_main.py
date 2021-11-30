@@ -25,6 +25,12 @@ lot_data = read_lot_data()
 winifera = Wine(lot_data, True)
 
 
+# Create empty kpi json
+data = {}
+with open("results/kpi.json", "w") as file:
+    json.dump(data, file)
+
+
 # Cargamos la información de la optimizacion
 def cargar_data_semana():
     global winifera
@@ -55,11 +61,54 @@ def loop_semanal():
             modelo_principal(SimulationObject.current_day, winifera.grape_disp(), winifera.plant_recv(),
                          winifera.fermented_unprocessed(), True)
 
-    print(winifera.obtener_info("calidad_promedio"))
-    print(winifera.obtener_info("ocupacion_promedio_ferm"))
-    print(winifera.obtener_info("procesado_planta"))
-    print(winifera.obtener_info("porcentaje_camiones_tercero"))
+    # print(winifera.obtener_info("calidad_promedio"))
+    # print("\n")
+    # print(winifera.obtener_info("ocupacion_promedio_ferm"))
+    # print("\n")
+    # print(winifera.obtener_info("procesado_planta"))
+    # print("\n")
+    # print(winifera.obtener_info("porcentaje_camiones_tercero"))
+    # print("\n")
+    # print(winifera.obtener_info("porcentaje_uva_terceros"))
+    # print("\n")
+    # print(winifera.obtener_info("costos_procesamiento"))
+    # print("\n")
+    # print(winifera.obtener_info("costos_transporte"))
+    # print("\n")
+    # print(winifera.obtener_info("costos_jornaleros"))
+    # print("\n")
+    # print(winifera.obtener_info("costos_asignacion"))
 
+    simulation_kpis = {}
+
+    simulation_kpis["calidad_promedio"] = winifera.obtener_info("calidad_promedio")
+    simulation_kpis["ocupacion_promedio_ferm"] = winifera.obtener_info("ocupacion_promedio_ferm")
+    simulation_kpis["procesado_planta"] = winifera.obtener_info("procesado_planta")
+    simulation_kpis["porcentaje_camiones_tercero"] = winifera.obtener_info("porcentaje_camiones_tercero")
+    simulation_kpis["porcentaje_uva_terceros"] = winifera.obtener_info("porcentaje_uva_terceros")
+
+    costos_procesamiento = winifera.obtener_info("costos_procesamiento")
+    costos_transporte = winifera.obtener_info("costos_transporte")
+    costos_jornaleros = winifera.obtener_info("costos_jornaleros")
+    costos_asignacion = winifera.obtener_info("costos_asignacion")
+
+    simulation_kpis["costos_procesamiento"] = costos_procesamiento
+    simulation_kpis["costos_transporte"] = costos_transporte
+    simulation_kpis["costos_jornaleros"] = costos_jornaleros
+    simulation_kpis["costos_asignacion"] = costos_asignacion
+    simulation_kpis["costos_totales"] = costos_procesamiento + costos_transporte + costos_jornaleros + costos_asignacion
+
+    i = 1 # iteration number
+
+    kpis = {f"iter_{i}": simulation_kpis}
+
+    with open("results/kpi.json") as file:
+        data = json.load(file)
+
+    data.update(kpis)
+
+    with open("results/kpi.json", "w") as file:
+        json.dump(data, file)
 
 thrd = threading.Thread(target=loop_semanal, daemon=True)
 thrd.start()

@@ -9,3 +9,4 @@ class Laborer:
         self.harvested = 0
         self.time_working = 0
         self.days_working = 0
+        self.times_assigned = 0

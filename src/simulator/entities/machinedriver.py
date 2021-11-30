@@ -14,6 +14,7 @@ class MachineDriver:
         self.available = True
         self.weekly_days = 0
         self.total_days = 0
+        self.harvested = 0
 
     def assign_machine(self, machine: 'Machine') -> None:
         self.machine = machine
