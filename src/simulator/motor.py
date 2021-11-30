@@ -469,6 +469,8 @@ class Wine(SimulationObject):
         elif comando == "porcentaje_camiones_tercero":
             print(f"camiones originales: {self.camiones_originales}")
             print(f"camiones extra: {self.camiones_extra}")
+            if self.camiones_originales + self.camiones_extra == 0:
+                return 0
             return (self.camiones_extra/(self.camiones_originales + self.camiones_extra))
         
         elif comando == "porcentaje_uva_terceros":
