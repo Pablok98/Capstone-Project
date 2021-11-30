@@ -72,8 +72,8 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     #Restricciones Cosecha
-
-    m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T))
+    
+    m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T)) #POR QUE NO IGUALAMOS?
     m1.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
     m1.addConstrs((c_cant_uva[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
@@ -82,10 +82,10 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((c_auto[l,t] <=c_cosecha[l,t] * M for l in L for t in T)) #aca talvez para mejorar rendimiento se puede poner distintos M
     m1.addConstrs((c_manual[l,t] <=c_cosecha[l,t] * M for l in L for t in T))
     m1.addConstrs((sum(c_auto[l,t] for l in L) <= 5 for t in T))
-    m1.addConstrs((gb.quicksum(c_manual[l, t] for l in L) <= 100 for t in T)) #aca es el limite de cuadrillas, podria no necesitarse
-    m1.addConstrs((sum(c_cuad[k,l,t] for k in K) == c_manual[l,t] for l in L for t in T))
-    m1.addConstrs((c_bines[l,t] >= ((ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * sum(c_man_bin[k,l,t] for k in K))/kg_bin) for l in L for t in T))
-    m1.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * sum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))
+    m1.addConstrs((gb.quicksum(c_manual[l, t] for l in L) <= cap_cuadrillas for t in T)) #aca es el limite de cuadrillas, podria no necesitarse    
+    m1.addConstrs((sum(c_cuad[k,l,t] for k in K) == c_manual[l,t] for l in L for t in T)) 
+    m1.addConstrs((c_bines[l,t] >= ((ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * sum(c_man_bin[k,l,t] for k in K))/kg_bin) for l in L for t in T)) 
+    m1.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * sum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))    
     m1.addConstrs((sum(c_bines[l,t] for l in L) <= 800 for t in T))
     m1.addConstrs((sum(c_tolva[l,t] for l in L) <= cantidad_tolvas for t in T))
     m1.addConstrs((sum(c_monta[l,t] for l in L)  <= cap_montacargas for t in T))
