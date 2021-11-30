@@ -16,8 +16,8 @@ from files import read_rain_data
 
 from params import (CANTIDAD_CUADRILLAS, COSTO_ASIGNACION_CAMIONES, COSTO_ASIGNACION_COSECHADORA, 
                     COSTO_ASIGNACION_JORNALEROS, EXTERNAL_PLANT, SUELDO_MENSUAL_CAMIONEROS, 
-                    SUELDO_MENSUAL_JORNALEROS, SUELDO_VARIABLE_JORNALEROS, TAMANO_CUADRILLAS, 
-                    TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES,
+                    SUELDO_MENSUAL_CUADRILLAS, SUELDO_VARIABLE_CUADRILLAS, TAMANO_CUADRILLAS,  
+                    TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES, 
                     COSECHADORAS, MONTACARGAS)
 import logging
 
@@ -413,8 +413,8 @@ class Wine(SimulationObject):
 
     def obtener_info(self, comando):  # entrega la prop de cada planta por la qty
         
-        comando_print = comando.replace("_", " ").upper()
-        print(comando_print)
+        # comando_print = comando.replace("_", " ").upper()
+        # print(comando_print)
 
         if comando == "calidad_promedio":
             kilo_por_calidad = 0
@@ -533,11 +533,11 @@ class Wine(SimulationObject):
         elif comando == "costos_jornaleros":
 
             meses = ceil((TOTAL_DAYS - INITIAL_DAY) / 30)
-            costo_fijo = meses * SUELDO_MENSUAL_JORNALEROS * CANTIDAD_CUADRILLAS * TAMANO_CUADRILLAS
+            costo_fijo = meses * SUELDO_MENSUAL_CUADRILLAS * CANTIDAD_CUADRILLAS
             costo_variable = 0
 
             for jornalero in self.jornaleros:
-                costo_variable += floor(jornalero.harvested / 5000) * SUELDO_VARIABLE_JORNALEROS * TAMANO_CUADRILLAS
+                costo_variable += floor(jornalero.harvested / (TAMANO_CUADRILLAS * 1000)) * SUELDO_VARIABLE_CUADRILLAS
 
 
             return costo_fijo + costo_variable

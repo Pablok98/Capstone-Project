@@ -196,6 +196,10 @@ class Lot(SimulationObject):
         crate = Crate(self.grape, self.current_quality)
         container.load_crate(crate)
         self.grape_quantity -= 18
+
+        for cuad in self.laborers:
+            cuad.harvested += 18 / len(self.laborers)
+
         """
         msg = f'{SimulationObject.current_time} - Se lleno un nuevo cajon'
         msg += f' [{self.name}]'
