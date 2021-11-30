@@ -3,8 +3,9 @@ from os.path import join
 
 # General
 
-TOTAL_DAYS = 110
-INITIAL_DAY = 63
+TOTAL_DAYS = 180
+INITIAL_DAY = 0
+NUM_ITERATIONS = 10
 
 
 # Modelo inicial

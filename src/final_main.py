@@ -12,24 +12,6 @@ import logging
 from modelo_test import modelo_principal
 from initial_data import write_rain
 
-logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
-
-dia_inicial = p.INITIAL_DAY
-# Primera optimización
-modelo_principal(dia_inicial, paths=True)
-
-# Inicializacion del simulador
-# Leemos excel de lotes
-lot_data = read_lot_data()
-# Instanciamos el motor
-ui = True
-winifera = Wine(lot_data, ui)
-
-
-# Create empty kpi json
-data = {}
-with open("results/kpi.json", "w") as file:
-    json.dump(data, file)
 
 
 # Cargamos la información de la optimizacion
@@ -42,19 +24,11 @@ def cargar_data_semana():
     write_rain()
 
 
-cargar_data_semana()
-# Iniciación ui
-if ui:
-    app = QApplication(sys.argv)
-    ventana = GUI()
-    winifera.status_signal = ventana.status_signal
-    winifera.command_signal = ventana.command_signal
-winifera.initialize(dia_inicial)
 
-
-def loop_semanal():
+def loop_semanal(i):
     global winifera
-    while SimulationObject.current_day <= p.TOTAL_DAYS: # cambiar p.TOTAL_DAYS
+    while SimulationObject.current_day <= p.TOTAL_DAYS:
+        print(f"\n\n***** DIA ACTUAL: {SimulationObject.current_day}*****\n\n")
         cargar_data_semana()
         motor_thread = threading.Thread(target=winifera.run_week, daemon=True)
         motor_thread.start()
@@ -62,24 +36,6 @@ def loop_semanal():
         if winifera.lotes_veraison:
             modelo_principal(SimulationObject.current_day, winifera.grape_disp(), winifera.plant_recv(),
                          winifera.fermented_unprocessed(), True)
-
-    # print(winifera.obtener_info("calidad_promedio"))
-    # print("\n")
-    # print(winifera.obtener_info("ocupacion_promedio_ferm"))
-    # print("\n")
-    # print(winifera.obtener_info("procesado_planta"))
-    # print("\n")
-    # print(winifera.obtener_info("porcentaje_camiones_tercero"))
-    # print("\n")
-    # print(winifera.obtener_info("porcentaje_uva_terceros"))
-    # print("\n")
-    # print(winifera.obtener_info("costos_procesamiento"))
-    # print("\n")
-    # print(winifera.obtener_info("costos_transporte"))
-    # print("\n")
-    # print(winifera.obtener_info("costos_jornaleros"))
-    # print("\n")
-    # print(winifera.obtener_info("costos_asignacion"))
 
     simulation_kpis = {}
 
@@ -100,8 +56,6 @@ def loop_semanal():
     simulation_kpis["costos_asignacion"] = costos_asignacion
     simulation_kpis["costos_totales"] = costos_procesamiento + costos_transporte + costos_jornaleros + costos_asignacion
 
-    i = 1 # iteration number
-
     kpis = {f"iter_{i}": simulation_kpis}
 
     with open("results/kpi.json") as file:
@@ -112,13 +66,50 @@ def loop_semanal():
     with open("results/kpi.json", "w") as file:
         json.dump(data, file)
 
+
+logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
+
+# cargar_data_semana()
+
+dia_inicial = p.INITIAL_DAY
+# Primera optimización
+modelo_principal(dia_inicial, paths=True)
+
+# Inicializacion del simulador
+# Leemos excel de lotes
+lot_data = read_lot_data()
+
+# Instanciamos el motor
+ui = False
+
+# Create empty kpi json
+data = {}
+with open("results/kpi.json", "w") as file:
+    json.dump(data, file)
+
 dmn = True
 if not ui:
     dmn = False
-thrd = threading.Thread(target=loop_semanal, daemon=dmn)
-thrd.start()
-if ui:
-    sys.exit(app.exec())
+
+
+for i in range(p.NUM_ITERATIONS):
+    winifera = Wine(lot_data, ui)
+    cargar_data_semana()
+
+    if ui:
+        app = QApplication(sys.argv)
+        ventana = GUI()
+        winifera.status_signal = ventana.status_signal
+        winifera.command_signal = ventana.command_signal
+
+    winifera.initialize(dia_inicial)
+
+    thrd = threading.Thread(target=loop_semanal, daemon=dmn, args=(i, ))
+    thrd.start()
+    thrd.join()
+
+    if ui:
+        sys.exit(app.exec())
 
 
 
