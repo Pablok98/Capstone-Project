@@ -22,7 +22,8 @@ modelo_principal(dia_inicial, paths=True)
 # Leemos excel de lotes
 lot_data = read_lot_data()
 # Instanciamos el motor
-winifera = Wine(lot_data, True)
+ui = True
+winifera = Wine(lot_data, ui)
 
 
 # Create empty kpi json
@@ -43,10 +44,11 @@ def cargar_data_semana():
 
 cargar_data_semana()
 # Iniciación ui
-app = QApplication(sys.argv)
-ventana = GUI()
-winifera.status_signal = ventana.status_signal
-winifera.command_signal = ventana.command_signal
+if ui:
+    app = QApplication(sys.argv)
+    ventana = GUI()
+    winifera.status_signal = ventana.status_signal
+    winifera.command_signal = ventana.command_signal
 winifera.initialize(dia_inicial)
 
 
@@ -110,9 +112,13 @@ def loop_semanal():
     with open("results/kpi.json", "w") as file:
         json.dump(data, file)
 
-thrd = threading.Thread(target=loop_semanal, daemon=True)
+dmn = True
+if not ui:
+    dmn = False
+thrd = threading.Thread(target=loop_semanal, daemon=dmn)
 thrd.start()
-sys.exit(app.exec())
+if ui:
+    sys.exit(app.exec())
 
 
 
