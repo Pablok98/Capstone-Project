@@ -93,7 +93,7 @@ cap_montacargas = 22
 kg_bin = 486
 kg_tolva = 10000
 cantidad_tolvas = 100
-CFD = 10  #costo fijo diario
+CFD = 150  #costo fijo diario
 penalizacion = 10
 
 UTM = 54171
