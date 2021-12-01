@@ -88,7 +88,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * sum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))    
     m1.addConstrs((sum(c_bines[l,t] for l in L) <= 800 for t in T))
     m1.addConstrs((sum(c_tolva[l,t] for l in L) <= cantidad_tolvas for t in T))
-    m1.addConstrs((sum(c_monta[l,t] for l in L)  <= cap_montacargas for t in T))
+    m1.addConstrs((sum(c_monta[l,t] for l in L)  == cap_montacargas for t in T))
     m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
@@ -122,11 +122,11 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     # #Variables Planta
 
-    p_proc = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='procesado')
-    p_fermentando = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='fermentando')
-    p_disp = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='disp')
-    p_rec = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='recepcionado')
-    p_terceros = m3.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='terceros')
+    p_proc = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='procesado')
+    p_fermentando = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='fermentando')
+    p_disp = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='disp')
+    p_rec = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='recepcionado')
+    p_terceros = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='terceros')
 
 
     ########################
@@ -240,11 +240,11 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     VarCamion = gb.quicksum(t_camion_bin[c,l,p,t] * cap_bines[c] *kg_bin * km[l][p]*costo_camion[c] + t_camion_tolva[c,l,p,t] * cap_tolva[c] *kg_tolva * km[l][p]*costo_camion[c] for c in C for l in L for t in T for p in P)
     TerCamion = gb.quicksum(camion_tercero_b[l,p,t] * kg_bin * km[l][p] * 100 + camion_tercero_t[l,p,t] * kg_tolva * km[l][p] * 100 for l in L for t in T for p in P)
 
-    m2.setObjective(TerCamion + VarCamion)
-    m2.setObjective(TerCamion+VarCamion)
-    m2.Params.MIPGap = 0.02
-    m2.update()
-    m2.optimize()
+    # m2.setObjective(TerCamion + VarCamion)
+    # m2.setObjective(TerCamion+VarCamion)
+    # m2.Params.MIPGap = 0.02
+    # m2.update()
+    # m2.optimize()
 
     ruta = [[[0 for t in T] for p in P] for l in L]
     for v in m2.getVars():
@@ -263,31 +263,31 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
 
     # # #Restricciones Planta
-    m3.addConstrs((p_fermentando[p,t] == p_rec[p,t] + p_fermentando[p,t-1] - p_proc[p,t-1] for p in P for t in T if t >=1))
-    m3.addConstrs((p_fermentando[p,0] == 0 for p in P))
-    m3.addConstrs((p_proc[p,t] <= cap_proc[p]*1000 for p in P for t in T))
-    m3.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
+    m2.addConstrs((p_fermentando[p,t] == p_rec[p,t] + p_fermentando[p,t-1] - p_proc[p,t-1] for p in P for t in T if t >=1))
+    m2.addConstrs((p_fermentando[p,0] == 0 for p in P))
+    m2.addConstrs((p_proc[p,t] <= cap_proc[p]*1000 for p in P for t in T))
+    m2.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
 
     if dia >= 7:
-        m3.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
+        m2.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
     else:
-        m3.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
-    m3.addConstrs((p_disp[p,t] == SimDisponible[p] for p in P for t in T if t == 0))
+        m2.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
+    m2.addConstrs((p_disp[p,t] == SimDisponible[p] for p in P for t in T if t == 0))
 
-    m3.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(cantidad[l][t]*ruta[l][p][t] for l in L) for p in P for t in T))
-    m3.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(cantidad[l][t] for l in L) for p in P for t in T))
-    m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3*1000 for p in P for t in T))
-    m3.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*1000 - p_fermentando[p,t] for p in P for t in T))
-    m3.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p]*1000 for p in P for t in T))
+    m2.addConstrs((p_terceros[p,t] + p_rec[p,t] == sum(cantidad[l][t]*t_ruta[l,p,t] for l in L) for p in P for t in T))
+    m2.addConstrs((sum(p_terceros[p,t] + p_rec[p,t] for p in P) >= sum(cantidad[l][t] for l in L) for p in P for t in T))
+    m2.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*0.3*1000 for p in P for t in T))
+    m2.addConstrs((p_rec[p,t] <= cap_fermentacion[p]*1000 - p_fermentando[p,t] for p in P for t in T))
+    m2.addConstrs((p_fermentando[p,t] <= cap_fermentacion[p]*1000 for p in P for t in T))
 
     VarPlanta = gb.quicksum((p_proc[p, t] * utm_kg[p]) for p in P for t in T)
 
     TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]*100) for p in P for t in T)
 
-    m3.setObjective(gb.quicksum(CFD * (1 - (p_fermentando[p, t] / (cap_fermentacion[p]*1000))) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
-    m3.Params.MIPGap = 0.02
-    m3.update()
-    m3.optimize()
+    m2.setObjective(VarCamion+TerCamion+gb.quicksum(CFD * (1 - (p_fermentando[p, t] / (cap_fermentacion[p]*1000))) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
+    m2.Params.MIPGap = 0.02
+    m2.update()
+    m2.optimize()
 
 
 
@@ -459,7 +459,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             if bool(v.x):
                 truck_type[truck_names[c]][f'dia {t}'] = False
 
-    for v in m3.getVars():
         if 'recepcionado' in v.varName:
             _, i = v.varName.split('[')
             i = i[:-1]
