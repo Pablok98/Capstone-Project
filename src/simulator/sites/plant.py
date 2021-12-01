@@ -73,6 +73,19 @@ class Plant(SimulationObject):
         return load
 
     @property
+    def current_perc(self):
+        return round(self.current_load / self.ferm_cap, 3)
+
+    @property
+    def can_load(self):
+        max_daily = self.daily_grape_percentage <= SimulationObject.MAX_DAILY_UNLOAD
+        # We can't unload more than the plant's capacity
+        max_cap = self.current_load < self.ferm_cap
+        if not max_cap or not max_daily:
+            return False
+        return True
+
+    @property
     def daily_grape_percentage(self) -> float:
         """
         :return: Current percentage of total capacity loaded in the day

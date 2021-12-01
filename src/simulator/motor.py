@@ -262,7 +262,7 @@ class Wine(SimulationObject):
                 if type(retorno) == Truck:
                     planta = self.plantas[retorno.assigned_plant]
                     if not planta.truck_arrival(retorno):
-                        retorno.assigned_plant = "P6"
+                        retorno.assigned_plant = self.lowest_ocupation_plant()
                         planta = self.plantas[retorno.assigned_plant]
                         if not planta.truck_arrival(retorno):
                             logging.warning("Un camion anda en nada")
@@ -303,6 +303,16 @@ class Wine(SimulationObject):
             planta.end_day()
 
         self.pass_day()
+
+    def lowest_ocupation_plant(self):
+        current_plant = ("P6", 1)
+        for plant in self.plantas.values():
+            if plant.name == "P6":
+                continue
+            if plant.current_perc < current_plant[1] and plant.can_load:
+                current_plant = (plant.name, plant.current_perc)
+        return current_plant[0]
+
 
     @property
     def fin_jornada(self) -> datetime:
