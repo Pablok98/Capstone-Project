@@ -284,10 +284,10 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]*100) for p in P for t in T)
 
-    m3.setObjective(VarCamion+TerCamion+gb.quicksum(CFD * (1 - (p_fermentando[p, t] / (cap_fermentacion[p]*1000))) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
-    m3.Params.MIPGap = 0.02
-    m3.update()
-    m3.optimize()
+    m2.setObjective(VarCamion+TerCamion+gb.quicksum(CFD * (1 - (p_fermentando[p, t] / (cap_fermentacion[p]*1000))) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
+    m2.Params.MIPGap = 0.02
+    m2.update()
+    m2.optimize()
 
 
 
