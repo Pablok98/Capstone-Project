@@ -114,10 +114,10 @@ class Wine(SimulationObject):
 
         self.plantas["P6"] = Plant(
             "P6",
-            99999999999999 * 1000,
-            9999999999 * 1000,
-            9999999999 * 1000,
-            9999999999 * 1000
+            1000,
+            1000,
+            1000,
+            1000
         )
 
         for c_type, truck in TRUCK_DATA.items():
