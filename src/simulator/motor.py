@@ -159,6 +159,13 @@ class Wine(SimulationObject):
         for camion in self.camiones.values():
             camion.clean()
 
+        for name, lot in self.lotes.items():
+            if day_str in self.assign_data.routes[name]:
+                plant = self.assign_data.routes[name][day_str]
+                lot.assigned_plant = f"P{plant + 1}"
+            else:
+                lot.assigned_plant = "P6"
+
         for id_, camion in self.camiones.items():
             if day_str in self.assign_data.trucks[str(id_)]:
                 if not (day_str in self.assign_data.truck_type[str(id_)]):
@@ -176,13 +183,6 @@ class Wine(SimulationObject):
                     camion.assign_driver(TruckDriver())
                 self.camiones_originales += 1
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
-
-        for name, lot in self.lotes.items():
-            if day_str in self.assign_data.routes[name]:
-                plant = self.assign_data.routes[name][day_str]
-                lot.assigned_plant = f"P{plant + 1}"
-            else:
-                lot.assigned_plant = "P6"
 
         for lot, assignation in self.assign_data.hoppers.items():
             for _ in range(int(assignation[day_str])):
@@ -261,6 +261,8 @@ class Wine(SimulationObject):
             if retorno:
                 if type(retorno) == Truck:
                     planta = self.plantas[retorno.assigned_plant]
+                    print(retorno.assigned_plant)
+                    print(prox_lote)
                     if not planta.truck_arrival(retorno):
                         retorno.assigned_plant = self.lowest_ocupation_plant()
                         planta = self.plantas[retorno.assigned_plant]
