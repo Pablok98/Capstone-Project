@@ -224,6 +224,7 @@ class Wine(SimulationObject):
                     camion = Truck('A', 2, 36)
                     camion.assign_driver(TruckDriver())
                     self.assign_truck(camion, lote.name)
+                    lote.assigned_plant = self.lowest_ocupation_plant()
                     self.camiones_extra += 1
 
                     if not lote.lift_trucks:
