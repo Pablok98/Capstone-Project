@@ -470,17 +470,8 @@ class Lot(SimulationObject):
 
         # TODO
         # Just a stupid patch, hopefully temporary
-        self.bins = []
-
-        """
-        Borrar bines al dia siguiente
-        if self.bins:
-            if self.clean_test:
-                self.clean_test = False
-                self.bins = []
-            else:
-                self.clean_test = True
-        """
+        if len(self.bins) == 1:
+            self.bins = []
 
 
     @property
