@@ -146,6 +146,8 @@ class Plant(SimulationObject):
         # We only can unload while we comply certain restrictions
         while self.unload_constraint():
             truck = self.trucks[0]  # Truck to unload
+            print(truck)
+            print(truck.bins)
             rate = self.bin_cap if truck.loading_bins else self.hopper_cap  # Maximum hourly rate
 
             print(f"{SimulationObject.current_time} - Descargando camion {truck.id} en la planta {self.name}")
@@ -159,6 +161,7 @@ class Plant(SimulationObject):
                 self.grapes.append(batch)
                 self.daily_grapes += kg
                 unloaded += kg
+                print("Batch", self.name)
             # If the truck doesn't have contents, we remove it from the plant
             if not truck.has_content:
                 self.trucks.pop(0)

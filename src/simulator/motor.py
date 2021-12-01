@@ -114,10 +114,10 @@ class Wine(SimulationObject):
 
         self.plantas["P6"] = Plant(
             "P6",
-            1000,
-            1000,
-            1000,
-            1000
+            99999999,
+            999999999,
+            999999999,
+            9999999999
         )
 
         for c_type, truck in TRUCK_DATA.items():
@@ -225,6 +225,8 @@ class Wine(SimulationObject):
                     camion.assign_driver(TruckDriver())
                     self.assign_truck(camion, lote.name)
                     lote.assigned_plant = self.lowest_ocupation_plant()
+                    print(lote.assigned_plant)
+                    print(lote.name)
                     self.camiones_extra += 1
 
                     if not lote.lift_trucks:
@@ -374,7 +376,10 @@ class Wine(SimulationObject):
                 lift_truck.assign_driver(MachineDriver())
 
                 return True
-        return False
+        lt = LiftTruck()
+        lt.assign_driver(MachineDriver())
+        lot.lift_trucks.append(lt)
+        return True
 
     @staticmethod
     def assign_truck_driver(driver: TruckDriver, truck: Truck) -> None:
