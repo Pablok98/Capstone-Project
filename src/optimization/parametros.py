@@ -9,7 +9,7 @@ cap_cuadrillas = 8 # cuantas cuadrillas podremos ocupar
 ###############################################################################
 
 L = [i for i in range(290)]
-T = [i for i in range(7)]
+T = [i for i in range(14)]
 K = [i for i in range(cap_cuadrillas)]
 C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
 P = [0,1,2,3,4]
@@ -171,7 +171,7 @@ def conseguir_cal2(actual):
     calfinal = []
     for i in lista:
         aux1 = []
-        for j in range(actual, actual+7):
+        for j in range(actual, actual+14):
             aux1.append(i[j])
         calfinal.append(aux1)
     # end_time = datetime.datetime.now()

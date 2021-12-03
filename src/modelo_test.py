@@ -269,7 +269,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m2.addConstrs((p_proc[p,t] <= p_disp[p,t] for p in P for t in T))
 
     if dia >= 7:
-        m2.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1))
+        m2.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1 and t < 7))
+        m2.addConstrs((p_disp[p,t] == p_disp[p,t-1] + p_rec[p,t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 7))
+
     else:
         m2.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
     m2.addConstrs((p_disp[p,t] == SimDisponible[p] for p in P for t in T if t == 0))
