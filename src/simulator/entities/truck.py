@@ -1,5 +1,4 @@
 from __future__ import annotations
-import logging
 
 import params as p
 from typing import Union
@@ -63,12 +62,12 @@ class Truck(Machine):
             self.driver = driver
             driver.assign_truck(self)
             msg += f'El conductor {driver.id} fue asignado al camion {self.id}'
-            logging.info(msg)
+            SimulationObject.logger.info(msg)
             return True
         else:
             msg +=f"El conductor {driver.id} no pudo ser asignado al camion {self.id}" + \
                   "porque excede los dias maximos de trabajo"
-            logging.warning(msg)
+            SimulationObject.logger.warning(msg)
             return False
 
     @property

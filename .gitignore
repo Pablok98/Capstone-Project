@@ -140,3 +140,4 @@ extras/*
 src/results/*.json
 src/data/results/*.json
 src/data/lluvia_generada.xlsx
+src/data/results/kpi/*.json

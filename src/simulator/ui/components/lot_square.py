@@ -7,11 +7,11 @@ from PyQt5.QtGui import QFont, QColor
 
 def color_grad(level, name):
     ceilings = {
-        'ctd_jornaleros': 40,
+        'ctd_jornaleros': 20,
         'ctd_cosechadoras': 2,
-        'ctd_bines': 20,
+        'ctd_bines': 60,
         'ctd_tolvas': 2,
-        'ctd_camiones': 3
+        'ctd_camiones': 4
     }
     prc_l = min(1, level/ceilings[name]) * 40
     colors = {
