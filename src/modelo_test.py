@@ -124,10 +124,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     m1.setParam("LogFile", path_logger)
     m1.setParam("LogToConsole", 0)
-    m2.setParam("LogFile", path_logger)
-    m2.setParam("LogToConsole", 0)
-    m3.setParam("LogFile", path_logger)
-    m3.setParam("LogToConsole", 0)
 
     m1.update()
     m1.optimize()
@@ -209,6 +205,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     #Modelo transporte y plantas
 
     m2 = gb.Model()
+
+    m2.setParam("LogFile", path_logger)
+    m2.setParam("LogToConsole", 0)
 
     # Variables Transporte
     t_ruta = m2.addVars(len(L),len(P),len(T), vtype=gb.GRB.BINARY, name='ruta')

@@ -64,7 +64,8 @@ def loop_semanal(motor, n_it, window):
     print(("*" * 10 + "INICIANDO LOOP SEMANAL" + "*" * 10).center(60))
     while SimulationObject.current_day <= (p.TOTAL_DAYS - 7):
         print(SimulationObject.current_day)
-        window.restart()
+        if p.UI:
+            window.restart()
         print(("*" * 10 + f"OPTIMIZANDO SEMANA {motor.week_number}" + "*" * 10).center(60))
         print()
         cargar_data_semana(motor)
@@ -81,7 +82,7 @@ def loop_semanal(motor, n_it, window):
 
 def run_process(ctd):
     lot_data = read_lot_data()
-    ui = True
+    ui = p.UI
     ventana = None
 
     if ui:
@@ -135,7 +136,8 @@ def iterate_opt(ctd, lot_data, ui, ventana):
         Bin._id = 0
         Harvester._id = 0
 
-        ventana.restart()
+        if p.UI:
+            ventana.restart()
 
 
 def optimizar(n_it, lot_data, ui, window=None):
@@ -170,6 +172,6 @@ def optimizar(n_it, lot_data, ui, window=None):
 
 
 if __name__ == "__main__":
-    run_process(50)
+    run_process(2)
 
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Union
-from params import MAX_DIAS_TRABAJO_JORNALERO
+from params import MAX_DIAS_TRABAJO_JORNALERO, CONTRACTS_DATA
 from ..entities import *
 from ..sim import SimulationObject, event
 
@@ -60,6 +60,8 @@ class Lot(SimulationObject):
 
         self.clean_test = False
 
+        self.contract = '1'
+
     # -----------------------------------  General methods  ----------------------------------------
 
     @property
@@ -98,6 +100,11 @@ class Lot(SimulationObject):
         quality = quality * (1 - self.penalty)
         quality = quality if quality <= 1 else 1
         quality = quality if quality >= 0 else 0
+
+        # Winery absorption
+        quality_absortion = 1 - CONTRACTS_DATA[self.contract]['a_j']
+        quality = min(quality + quality_absortion, 1)
+
         return quality
 
     # --------------------------------  Assignment methods  ----------------------------------------
