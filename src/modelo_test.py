@@ -86,8 +86,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((c_tolva[l,t] <= M* c_cosecha[l,t] for l in L for t in T))  
     m1.addConstrs((sum(c_bines[l,t] for l in L) <= cantidad_bines for t in T))
     m1.addConstrs((sum(c_tolva[l,t] for l in L) <= cantidad_tolvas for t in T))
-    # m1.addConstrs((sum(c_monta[l,t] for l in L)  == cap_montacargas for t in T))
-    # m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
     #Posible Restriccion
@@ -100,7 +98,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((c_man_bin[k,l,t] <= c_cosecha[l,t] for k in K for l in L for t in T))
     #talvez agregar una restriccion tipo heuristica sobre la capacidad de los camiones?
     m1.addConstrs((gb.quicksum(ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * gb.quicksum(c_man_bin[k,l,t] for k in K) for l in L) <= cap_montacargas*60*kg_bin for t in T))
-    m1.addConstrs((gb.quicksum(ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L) <= 25*32*kg_bin for t in T))
+    # m1.addConstrs((gb.quicksum(ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L) <= 25*40*kg_bin for t in T))
 
 
 
@@ -139,9 +137,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
 
-            if v.x != 0:
-                print(v.VarName)
-                print(v.x)
+            # if v.x != 0:
+            #     print(v.VarName)
+            #     print(v.x)
             
 
             try:
@@ -154,9 +152,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             _, i = v.varName.split('[')
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
-            if v.x != 0:
-                print(v.VarName)
-                print(v.x)
+            # if v.x != 0:
+            #     print(v.VarName)
+            #     print(v.x)
 
             try:
                 bines[l][t] = v.x
@@ -170,9 +168,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
 
-            if v.x != 0:
-                print(v.VarName)
-                print(v.x)
+            # if v.x != 0:
+            #     print(v.VarName)
+            #     print(v.x)
 
 
             try:
@@ -192,18 +190,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 print("Hubo un error")
     
-    # for dato in tolva:
-    #     for i in dato:
-    #         if i != 0:
-    #             print("Hay tolvas")
-    
-    # print("\n")
-    # print("La cantidad de tolvas: ")
-    # print
-    # print(tolva)
-    # print("\n")
-    # print(cosecha)
-    # print
+
     total_lotes_cosechados = sum(cosecha[l][t] for l in L for t in T)
     if total_lotes_cosechados == 0:
         calidad_promedio = 0
@@ -250,7 +237,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) >= t_ruta[l,p,t] for l in L for p in P for t in T)) #si hay ruta se tiene q asignar por lo menos uno
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) <= 1000 * t_ruta[l,p,t] for l in L for p in P for t in T)) #si no hay ruta no se puede asignar
     #Nuevas restricciones
-    # m2.addConstrs(gb.quicksum(camion_tercero_b[l,p,t] + camion_tercero_t[l,p,t] for p in P) <= gb.quicksum(t_ruta[l,p,t] * M for p in P)for l in L  for t in T)
+    m2.addConstrs(camion_tercero_b[l,p,t] + camion_tercero_t[l,p,t]  <= t_ruta[l,p,t] * M for p in P for l in L  for t in T)
     m2.addConstrs((gb.quicksum(t_monta[l,t] for l in L)  <= cap_montacargas for t in T))
     m2.addConstrs((t_monta[l,t] >= gb.quicksum(t_camion_bin[c,l,p,t] for c in C for p in P)  for l in L for t in T))
     #+ gb.quicksum(camion_tercero_b[l,p,t] for p in P)
@@ -314,48 +301,18 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     # print(bines)
     # print(tolva)
 
-    # for v in m2.getVars():
-    #     if "ctercerob" in v.VarName:
-    #         if v.x != 0:
-    #             print("Los terceros con bines:")
-    #             print(v.VarName)
-    #             print(v.x)
+    for v in m2.getVars():
+        if "ctercerob" in v.VarName:
+            if v.x != 0:
+                print("Los terceros con bines:")
+                print(v.VarName)
+                print(v.x)
         
-    #     if "ctercerot" in v.VarName:
-    #         if v.x != 0:
-    #             print("Los terceros con tolva:")
-    #             print(v.VarName)
-    #             print(v.x)
-    #     if "cambin" in v.VarName:
-    #         if v.x != 0:
-    #             cont1 += 1
-    #             # print("Los camiones con bin:")
-    #             # print(v.VarName)
-    #             # print(v.x)
-    #     if "camtolva" in v.VarName:
-    #         if v.x != 0:
-    #             cont2 += 1
-    #             # print("Los camiones con tolva:")
-    #             # print(v.VarName)
-    #             # print(v.x)
-    #     if "camion" in v.VarName:
-    #         if v.x != 0:
-    #             contador += 1
-    #             # print("Los camiones:")
-    #             # print(v.VarName)
-    #             # print(v.x)
-
-    #     if "ruta" in v.VarName:
-    #         if v.x != 0:
-    #             print(v.VarName)
-    #             print(v.x)
-    # print(contador)
-    # print(cont1)
-    # print(cont2)
-
-
-
-
+        if "ctercerot" in v.VarName:
+            if v.x != 0:
+                print("Los terceros con tolva:")
+                print(v.VarName)
+                print(v.x)
 
 
     # with open('archivo.obj', 'w') as file:
@@ -408,7 +365,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 lot_harvest[lot_names[l]] = {}
 
-            lot_harvest[lot_names[l]][f'dia {t}'] = bool(v.x)
+            lot_harvest[lot_names[l]][f'dia {t}'] = bool(round(v.x))
 
         if 'cuadrillas' in v.varName:
             _, i = v.varName.split('[')
@@ -420,7 +377,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 lot_cuad[cuad_names[k]] = {}
 
-            if bool(v.x):
+            if bool(round(v.x)):
                 lot_cuad[cuad_names[k]][f'dia {t}'] = numtolot[l]
 
         if 'numtolva' in v.varName:
@@ -453,20 +410,6 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
             lot_cosechadoras[lot_names[l]][f'dia {t}'] = v.x
 
-        # if 'montacargas' in v.varName:
-        #     _, i = v.varName.split('[')
-        #     i = i[:-1]
-        #     l, t = [int(n) for n in i.split(',')]
-        #     if v.x != 0 or v.x != -0:
-        #         pass
-
-        #     try:
-        #         lot_montas[lot_names[l]]
-
-        #     except KeyError:
-        #         lot_montas[lot_names[l]] = {}
-
-        #     lot_montas[lot_names[l]][f'dia {t}'] = v.x
 
             
     for v in m2.getVars():
@@ -483,7 +426,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 routes[lot_names[l]] = {}
             
-            if bool(v.x):
+            if bool(round(v.x)):
                 routes[lot_names[l]][f'dia {t}'] = p
 
         if 'camion' in v.varName:
@@ -496,7 +439,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 lot_trucks[truck_names[c]] = {}
 
-            if bool(v.x):
+            if bool(round(v.x)):
                 lot_trucks[truck_names[c]][f'dia {t}'] = numtolot[l]
         if 'cambin' in v.varName:
             _, i = v.varName.split('[')
@@ -508,7 +451,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 lot_trucks[truck_names[c]] = {}
 
-            if bool(v.x):
+            if bool(round(v.x)):
                 truck_type[truck_names[c]][f'dia {t}'] = True
 
         if 'camtolva' in v.varName:
@@ -521,7 +464,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 lot_trucks[truck_names[c]] = {}
 
-            if bool(v.x):
+            if bool(round(v.x)):
                 truck_type[truck_names[c]][f'dia {t}'] = False
 
         if 'recepcionado' in v.varName:
