@@ -1,4 +1,3 @@
-import logging
 from abc import ABC
 from params import MAX_DIAS_TRABAJO_CONDUCTORES
 from ..entities import *
@@ -26,11 +25,11 @@ class Machine(ABC):
             self.driver = driver
             driver.assign_machine(self)
             msg += f'El conductor {driver.id} fue asignado al {self.nombre} con {self.id}'
-            logging.info(msg)
+            SimulationObject.logger.info(msg)
         else:
             msg += f"El conductor {driver.id} no pudo ser asignado al {self.nombre} con {self.id}" + \
                   "porque excede los dias maximos de trabajo"
-            logging.warning(msg)
+            SimulationObject.logger.warning(msg)
 
     def depreciar(self) -> None:
         if self.days_used == 30:

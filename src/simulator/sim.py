@@ -2,11 +2,19 @@ from datetime import datetime
 from random import randint
 import params as p
 
+
+def reset_sim():
+    SimulationObject.current_time = datetime(2021, 1, 1, hour=6, minute=0, second=0)
+    SimulationObject.current_day = p.INITIAL_DAY
+
+
 class SimulationObject:
     current_time = datetime(2021, 1, 1, hour=6, minute=0, second=0)
     never_date = datetime(3000, 1, 1, hour=6, minute=0, second=0)
     current_day = p.INITIAL_DAY
     MAX_DAILY_UNLOAD = 0.3
+    logger = None
+    path_logger = None
 
 
 class Interface(SimulationObject):
@@ -23,6 +31,13 @@ class Interface(SimulationObject):
         self.routes = None
 
     def load_data(self, name, data):
+        de_lote = []
+        if name in de_lote:
+            for lote, asignaciones in data.items():
+                if not asignaciones:
+                    data[lote] = {
+
+                    }
         setattr(self, name, data)
 
 
@@ -53,7 +68,3 @@ def simulate_rain(lot_frame, time_range):
             resultado = 1 if (randint(0, 100)/100 < rain_prob) else 0
             rain_data[index][f'day {day}'] = resultado
     return rain_data
-
-
-def snapshot(motor) -> dict:
-    pass

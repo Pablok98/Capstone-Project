@@ -2,7 +2,6 @@ from ..entities import *
 from typing import Union
 from datetime import datetime
 from params import TASA_DEPRECIACION_TOLVA, COSTO_POR_TONELADA_TOLVA
-import logging
 from ..sim import SimulationObject
 Load = Union["tuple[int, float]", None]
 
@@ -49,7 +48,7 @@ class Hopper:
         :param crate: Crate to load into the hopper
         """
         if self.full:
-            logging.warning(f"{SimulationObject.current_time} - El tolva {self._id} esta lleno!")
+            SimulationObject.logger.warning(f"{SimulationObject.current_time} - El tolva {self._id} esta lleno!")
             return
         self.crates.append(crate)
 

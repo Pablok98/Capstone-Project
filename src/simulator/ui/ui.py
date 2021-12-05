@@ -43,5 +43,8 @@ class GUI(QMainWindow):
     def actualizar_estado(self, data):
         self.lot_grid.actualizar(data)
 
+    def restart(self):
+        self.lot_grid.reset()
+
 
 

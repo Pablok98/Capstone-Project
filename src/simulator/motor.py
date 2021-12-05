@@ -3,7 +3,6 @@ from collections import deque
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Union
-import logging
 import pandas as pd
 from math import ceil, floor
 
@@ -19,13 +18,13 @@ from params import (CANTIDAD_CUADRILLAS, COSTO_ASIGNACION_CAMIONES, COSTO_ASIGNA
                     SUELDO_MENSUAL_CUADRILLAS, SUELDO_VARIABLE_CUADRILLAS, TAMANO_CUADRILLAS,  
                     TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES, 
                     COSECHADORAS, MONTACARGAS)
-import logging
 
 
 class Wine(SimulationObject):
-    def __init__(self, lot_data: dict, ui=False):
+    def __init__(self, lot_data: dict, ui=False, logger=None):
         self.lot_data = lot_data
         self.ui = ui
+        self.logger = logger
 
         self.lotes: dict[str, Lot] = {}
         self.plantas: dict[str, Plant] = {}
@@ -90,7 +89,7 @@ class Wine(SimulationObject):
             }
             self.lotes[name] = Lot(name, info_lote["Tipo_UVA"], info_lote["Tn"]*1000,
                                    info_lote["Dia_optimo_cosecha"], info_lote["rango_calidad"],
-                                   dist_plantas)
+                                   dist_plantas, self.logger)
 
     def set_initial_day(self, day):
         if day % 7 != 0:
@@ -169,7 +168,7 @@ class Wine(SimulationObject):
         for id_, camion in self.camiones.items():
             if day_str in self.assign_data.trucks[str(id_)]:
                 if not (day_str in self.assign_data.truck_type[str(id_)]):
-                    logging.warning(f"El camion con id {id_} está asignado a un lote pero no su tipo")
+                    self.logger.warning(f"El camion con id {id_} está asignado a un lote pero no su tipo")
                     camion.loading_bins = True
                 else:
                     camion.loading_bins = self.assign_data.truck_type[str(id_)][day_str]
@@ -178,8 +177,8 @@ class Wine(SimulationObject):
                     if camion.assign_driver(camionero):
                         break
                 else:
-                    logging.warning("No hay camioneros para camionar")
-                    logging.warning("Se asignó un camionero fake igual")
+                    self.logger.warning("No hay camioneros para camionar")
+                    self.logger.warning("Se asignó un camionero fake igual")
                     camion.assign_driver(TruckDriver())
                 self.camiones_originales += 1
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
@@ -188,7 +187,7 @@ class Wine(SimulationObject):
             for _ in range(int(assignation[day_str])):
                 to_assign = self.lotes[lot]
                 if not self.assign_hopper(to_assign):
-                    logging.warning('Se intentó asignar un tolva pero no quedan disponibles')
+                    self.logger.warning('Se intentó asignar un tolva pero no quedan disponibles')
                     break
             else:
                 continue
@@ -198,7 +197,7 @@ class Wine(SimulationObject):
             for _ in range(int(assignation[day_str])):
                 to_assign = self.lotes[lot]
                 if not self.assign_harvester(to_assign):
-                    logging.warning('Se intentó asignar una cosechadora pero no quedan disponibles')
+                    self.logger.warning('Se intentó asignar una cosechadora pero no quedan disponibles')
                     break
             else:
                 continue
@@ -208,7 +207,7 @@ class Wine(SimulationObject):
             for _ in range(int(assignation[day_str])):
                 to_assign = self.lotes[lot]
                 if not self.assign_lift_truck(to_assign):
-                    logging.warning('Se intentó asignar un montacarga pero no quedan disponibles')
+                    self.logger.warning('Se intentó asignar un montacarga pero no quedan disponibles')
                     break
             else:
                 continue
@@ -237,13 +236,16 @@ class Wine(SimulationObject):
 
     # ========= SIMULATION CYCLE ==============================================
     def simular_dia(self) -> None:
+        print(("*" * 10 + f"OPTIMIZANDO DIA {self.current_day}" + "*" * 10).center(60))
+        print()
+
         for lote in self.lotes.values():
             lote.start_day()
 
         if self.ui:
             self.command_signal.emit('lotes_inicial', self.lotes_veraison)
-        sleep(0.5)
-        logging.info(f'{SimulationObject.current_time} - Inicia el dia')
+        sleep(0.2)
+        self.logger.info(f'{SimulationObject.current_time} - Inicia el dia')
         ui_counter = 0
         while SimulationObject.current_time < self.fin_jornada:
             eventos = {}
@@ -270,11 +272,11 @@ class Wine(SimulationObject):
                         retorno.assigned_plant = self.lowest_ocupation_plant()
                         planta = self.plantas[retorno.assigned_plant]
                         if not planta.truck_arrival(retorno):
-                            logging.warning("Un camion anda en nada")
+                            self.logger.warning("Un camion anda en nada")
                     retorno.travel()
             if self.ui:
                 # ui delay
-                if ui_counter == 100:
+                if ui_counter == 200:
                     self.status_signal.emit(self.estado_lotes_ui())
                     ui_counter = 0
                 else:
@@ -510,7 +512,8 @@ class Wine(SimulationObject):
                     kilos_planta_terceros += planta.total_grape
 
                 i += 1
-
+            if kilos_totales == 0:
+                return 0
             return kilos_planta_terceros / kilos_totales
 
         
@@ -644,8 +647,8 @@ class Wine(SimulationObject):
             "P5": 5
         }
         # Overwrite test lots
-        self.lotes['U_1_8_58_118'] = Lot('U_1_8_58_118', 1, 58000, 1, [0.9, 0.85], test_d)
-        self.lotes['U_2_6_138_123'] = Lot('U_2_6_138_123', 3, 58000, 4, [0.9, 0.85], test_d)
+        self.lotes['U_1_8_58_118'] = Lot('U_1_8_58_118', 1, 58000, 1, [0.9, 0.85], test_d, None)
+        self.lotes['U_2_6_138_123'] = Lot('U_2_6_138_123', 3, 58000, 4, [0.9, 0.85], test_d, None)
         # Plant instancing
         self.plantas['P1'] = Plant('P1', 2500000, 150000, 50000, 40000)
 

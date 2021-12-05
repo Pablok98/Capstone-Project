@@ -28,7 +28,7 @@ dic_neutro = {
 }
 
 
-def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_planta = None, paths=None):
+def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_planta = None, paths=None, path_logger=None):
 
 
     cal = conseguir_cal2(dia)
@@ -147,6 +147,13 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.setObjective(PerdidaCalidad + gb.quicksum((c_disponibilidad[l, t] - c_cant_uva[l, t]) * cal[l][t] * 0.004 for l in L for t in T) + VarJornaleros + VarConductores + VarTractores + VarTolva + VarCosechadora + RepBines)
 
     m1.Params.MIPGap = 0.02
+
+    m1.setParam("LogFile", path_logger)
+    m1.setParam("LogToConsole", 0)
+    m2.setParam("LogFile", path_logger)
+    m2.setParam("LogToConsole", 0)
+    m3.setParam("LogFile", path_logger)
+    m3.setParam("LogToConsole", 0)
 
     m1.update()
     m1.optimize()
