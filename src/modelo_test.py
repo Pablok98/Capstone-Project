@@ -61,19 +61,16 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     c_man_bin = m1.addVars(len(K), len(L), len(T), vtype=gb.GRB.BINARY, name='asigbin')
     c_man_tolva = m1.addVars(len(K), len(L), len(T), vtype=gb.GRB.BINARY, name='asigtolva')
     c_cant_uva = m1.addVars(len(L), len(T), vtype=gb.GRB.CONTINUOUS, name='cantidad')
-    c_monta = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='montacargas')
+    # c_monta = m1.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='montacargas')
     c_disponibilidad = m1.addVars(len(L), len(T), vtype=gb.GRB.CONTINUOUS, name='disponibilidad')
     #c_cajones
-
-    # #Variable Auxiliar
-    # auxiliar = m1.addVar(vtype=GRB.CONTINUOUS, name='auxiliar')
 
     m1.update()
 
 
     #Restricciones Cosecha
     
-    m1.addConstrs((c_cant_uva[l,t] <= ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T)) #POR QUE NO IGUALAMOS?
+    m1.addConstrs((c_cant_uva[l,t] == ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L for t in T)) #POR QUE NO IGUALAMOS?
     m1.addConstrs((c_cosecha[l,t] * M >= c_cant_uva[l,t] for l in L for t in T))
     m1.addConstrs((c_cosecha[l,t] <= cal[l][t] * M for l in L for t in T))
     m1.addConstrs((c_cant_uva[l,t] <= c_disponibilidad[l,t] for l in L for t in T))
@@ -84,49 +81,28 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m1.addConstrs((sum(c_auto[l,t] for l in L) <= 5 for t in T))
     m1.addConstrs((gb.quicksum(c_manual[l, t] for l in L) <= cap_cuadrillas for t in T)) #aca es el limite de cuadrillas, podria no necesitarse    
     m1.addConstrs((sum(c_cuad[k,l,t] for k in K) == c_manual[l,t] for l in L for t in T)) 
-    m1.addConstrs((c_bines[l,t] >= ((ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * sum(c_man_bin[k,l,t] for k in K))/kg_bin) for l in L for t in T)) 
-    m1.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * sum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))    
-    m1.addConstrs((sum(c_bines[l,t] for l in L) <= 800 for t in T))
+    m1.addConstrs((c_bines[l,t] >= ((ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * gb.quicksum(c_man_bin[k,l,t] for k in K))/kg_bin)  for l in L for t in T)) 
+    m1.addConstrs((c_tolva[l,t] >= ((ef_cuad[l][t] * gb.quicksum(c_man_tolva[k,l,t] for k in K))/kg_tolva) for l in L for t in T))
+    m1.addConstrs((c_tolva[l,t] <= M* c_cosecha[l,t] for l in L for t in T))  
+    m1.addConstrs((sum(c_bines[l,t] for l in L) <= cantidad_bines for t in T))
     m1.addConstrs((sum(c_tolva[l,t] for l in L) <= cantidad_tolvas for t in T))
-    m1.addConstrs((sum(c_monta[l,t] for l in L)  == cap_montacargas for t in T))
-    m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
+    # m1.addConstrs((sum(c_monta[l,t] for l in L)  == cap_montacargas for t in T))
+    # m1.addConstrs((c_monta[l,t] >= c_cosecha[l,t] for l in L for t in T))
     m1.addConstrs((c_disponibilidad[l,t] == c_disponibilidad[l,t-1] - c_cant_uva[l,t-1] for l in L for t in T if t >= 1))
     m1.addConstrs((c_disponibilidad[l,0] == actual_DI[l] for l in L))#esta en toneladas?
-
-    # m1.addConstr((auxiliar * quicksum(c_cosecha[l,t] for l in L for t in T) == quicksum(c_cosecha[l,t] * cal[l][t] for l in L for t in T)))
-    #restriccion carros tolva 17
-    #restriccion cajones??
-
-    ###################
-
-    m2 = gb.Model()
-
-    # Variables Transporte
-    # t_ruta = m2.addVars(len(L), len(P), len(T), vtype=gb.GRB.BINARY, name='ruta')
-    # t_camion = m2.addVars(len(C), len(L), len(T), vtype=gb.GRB.BINARY, name='camion')
-    # t_camion_bin = m2.addVars(len(C), len(L), len(T), vtype=gb.GRB.BINARY, name='cambin')
-    # t_camion_tolva = m2.addVars(len(C), len(L), len(T), vtype=gb.GRB.BINARY, name='camtolva')
-    # camion_tercero_b = m2.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='ctercerob')
-    # camion_tercero_t = m2.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='ctercerot')
-    t_ruta = m2.addVars(len(L),len(P),len(T), vtype=gb.GRB.BINARY, name='ruta')
-    t_camion = m2.addVars(len(C),len(L), len(P),len(T), vtype=gb.GRB.BINARY, name='camion')
-    t_camion_bin = m2.addVars(len(C),len(L), len(P), len(T), vtype=gb.GRB.BINARY, name='cambin')
-    t_camion_tolva = m2.addVars(len(C),len(L), len(P), len(T), vtype=gb.GRB.BINARY, name='camtolva')
-    camion_tercero_b = m2.addVars(len(L), len(P),len(T), vtype=gb.GRB.INTEGER, name='ctercerob')
-    camion_tercero_t = m2.addVars(len(L), len(P),len(T), vtype=gb.GRB.INTEGER, name='ctercerot')
+    #Posible Restriccion
+    m1.addConstrs((gb.quicksum(c_man_bin[k,l,t]+c_man_tolva[k,l,t] for k in K) == c_manual[l,t] for l in L for t in T))
+    m1.addConstrs((gb.quicksum(c_man_bin[k,l,t]+c_man_tolva[k,l,t] for k in K for l in L) == gb.quicksum(c_manual[l,t] for l in L )for t in T))
+    m1.addConstrs((c_man_bin[k,l,t] + c_man_tolva[k,l,t] <= 1 for k in K for l in L for t in T))
+    m1.addConstrs((gb.quicksum(c_man_tolva[k,l,t] for l in L) <= 1 for k in K for t in T))
+    m1.addConstrs((gb.quicksum(c_man_bin[k,l,t] for l in L) <= 1 for k in K for t in T))
+    m1.addConstrs((c_man_tolva[k,l,t] <= c_cosecha[l,t] for k in K for l in L for t in T))
+    m1.addConstrs((c_man_bin[k,l,t] <= c_cosecha[l,t] for k in K for l in L for t in T))
+    #talvez agregar una restriccion tipo heuristica sobre la capacidad de los camiones?
+    m1.addConstrs((gb.quicksum(ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * gb.quicksum(c_man_bin[k,l,t] for k in K) for l in L) <= cap_montacargas*60*kg_bin for t in T))
+    m1.addConstrs((gb.quicksum(ef_cos[l][t] * c_auto[l,t] + ef_cuad[l][t] * c_manual[l,t] for l in L) <= 25*32*kg_bin for t in T))
 
 
-    #######################
-
-    m3 = gb.Model()
-
-    # #Variables Planta
-
-    p_proc = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='procesado')
-    p_fermentando = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='fermentando')
-    p_disp = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='disp')
-    p_rec = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='recepcionado')
-    p_terceros = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='terceros')
 
 
     ########################
@@ -163,6 +139,11 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
 
+            if v.x != 0:
+                print(v.VarName)
+                print(v.x)
+            
+
             try:
                 cosecha[l][t] = v.x
 
@@ -173,6 +154,9 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             _, i = v.varName.split('[')
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
+            if v.x != 0:
+                print(v.VarName)
+                print(v.x)
 
             try:
                 bines[l][t] = v.x
@@ -185,6 +169,12 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             _, i = v.varName.split('[')
             i = i[:-1]
             l, t = [int(n) for n in i.split(',')]
+
+            if v.x != 0:
+                print(v.VarName)
+                print(v.x)
+
+
             try:
                 tolva[l][t] = v.x
 
@@ -202,31 +192,52 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
             except KeyError:
                 print("Hubo un error")
     
-    print("\n")
-    print("La calidad promedio es: ")
+    # for dato in tolva:
+    #     for i in dato:
+    #         if i != 0:
+    #             print("Hay tolvas")
+    
+    # print("\n")
+    # print("La cantidad de tolvas: ")
+    # print
+    # print(tolva)
+    # print("\n")
+    # print(cosecha)
+    # print
     total_lotes_cosechados = sum(cosecha[l][t] for l in L for t in T)
     if total_lotes_cosechados == 0:
         calidad_promedio = 0
     else:
         calidad_promedio = gb.quicksum(cal[l][t] * cosecha[l][t] for l in L for t in T) / total_lotes_cosechados
+    print("La calidad promedio es: ")
     print(calidad_promedio)
 
+    #Modelo transporte y plantas
+
+    m2 = gb.Model()
+
+    # Variables Transporte
+    t_ruta = m2.addVars(len(L),len(P),len(T), vtype=gb.GRB.BINARY, name='ruta')
+    t_camion = m2.addVars(len(C),len(L), len(P),len(T), vtype=gb.GRB.BINARY, name='camion')
+    t_camion_bin = m2.addVars(len(C),len(L), len(P), len(T), vtype=gb.GRB.BINARY, name='cambin')
+    t_camion_tolva = m2.addVars(len(C),len(L), len(P), len(T), vtype=gb.GRB.BINARY, name='camtolva')
+    camion_tercero_b = m2.addVars(len(L), len(P),len(T), vtype=gb.GRB.INTEGER, name='ctercerob')#cantidad de camiones de terceros q llevan bines q se asignan el dia t al lote l y van a la planta p
+    camion_tercero_t = m2.addVars(len(L), len(P),len(T), vtype=gb.GRB.INTEGER, name='ctercerot')
+    t_monta = m2.addVars(len(L), len(T), vtype=gb.GRB.INTEGER, name='montacargas')
+
+    # #Variables Planta
+
+    p_proc = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='procesado')
+    p_fermentando = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='fermentando')
+    p_disp = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='disp')
+    p_rec = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='recepcionado')
+    p_terceros = m2.addVars(len(P), len(T), vtype=gb.GRB.CONTINUOUS, name='terceros')
 
 
-    #Restricciones Transporte
-    # m2.addConstrs((gb.quicksum(t_ruta[l, p, t] for p in P) == cosecha[l][t] for l in L for t in T))
-    # m2.addConstrs((camion_tercero_b[l,t] + gb.quicksum(t_camion_bin[c, l, t] * cap_bines[c] for c in C) >= bines[l][t] for l in L for t in T))
-    # m2.addConstrs((camion_tercero_t[l,t] + gb.quicksum(t_camion_tolva[c, l, t] * cap_tolva[c] for c in C) >= tolva[l][t] for l in L for t in T))
-    # m2.addConstrs((t_camion_tolva[c,l,t] + t_camion_bin[c,l,t] == t_camion[c,l,t] for c in C for l in L for t in T))
-    # m2.addConstrs((gb.quicksum(t_camion[c, l, t] for c in C for l in L) <= 25 for t in T))
-
-
-    # VarCamion = gb.quicksum((t_camion_bin[c,l,t] * cap_bines[c] *kg_bin * 30*costo_camion[c] + t_camion_tolva[c,l,t] * cap_tolva[c] *kg_tolva * 30*costo_camion[c]) for c in C for l in L for t in T)
-    # TerCamion = gb.quicksum((camion_tercero_b[l,t]* 36 * kg_bin * 30 *1.15 * 0.02 / 1000 + camion_tercero_t[l,t] * 2* kg_tolva * 30 * 1.15*0.02 / 1000) for l in L for t in T)
 
     m2.addConstrs((gb.quicksum(t_ruta[l,p,t] for p in P) == cosecha[l][t] for l in L for t in T))
-    m2.addConstrs((gb.quicksum(camion_tercero_b[l,p,t] for p in P) + gb.quicksum(t_camion_bin[c,l,p,t] * cap_bines[c] for c in C for p in P) >= bines[l][t] for l in L for t in T))
-    m2.addConstrs((gb.quicksum(camion_tercero_t[l,p,t] for p in P) + gb.quicksum(t_camion_tolva[c,l,p,t] * cap_tolva[c] for c in C for p in P) >= tolva[l][t] for l in L for t in T))
+    m2.addConstrs((gb.quicksum(camion_tercero_b[l,p,t] * 36 for p in P) + gb.quicksum(t_camion_bin[c,l,p,t] * cap_bines[c] for c in C for p in P) >= bines[l][t] for l in L for t in T))
+    m2.addConstrs((gb.quicksum(camion_tercero_t[l,p,t] * 2 for p in P) + gb.quicksum(t_camion_tolva[c,l,p,t] * cap_tolva[c] for c in C for p in P) >= tolva[l][t] for l in L for t in T))
     m2.addConstrs((t_camion_tolva[c,l,p,t] + t_camion_bin[c,l,p,t] == t_camion[c,l,p,t] for c in C for l in L for t in T for p in P))
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C for l in L for p in P) <= 25 for t in T))
     #posibles agreggb.aciones
@@ -234,31 +245,36 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for l in L) <= 1 for c in C for t in T for p in P))
     m2.addConstrs((gb.quicksum(t_camion_tolva[c,l,p,t] for l in L) <= 1 for c in C for t in T for p in P))
     m2.addConstrs((gb.quicksum(t_camion_bin[c,l,p,t] for l in L) <= 1 for c in C for t in T for p in P))
+    m2.addConstrs((gb.quicksum(t_camion_tolva[c,l,p,t] for p in P) <= 1 for c in C for t in T for l in L))
+    m2.addConstrs((gb.quicksum(t_camion_bin[c,l,p,t] for p in P) <= 1 for c in C for t in T for l in L))
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) >= t_ruta[l,p,t] for l in L for p in P for t in T)) #si hay ruta se tiene q asignar por lo menos uno
     m2.addConstrs((gb.quicksum(t_camion[c,l,p,t] for c in C) <= 1000 * t_ruta[l,p,t] for l in L for p in P for t in T)) #si no hay ruta no se puede asignar
+    #Nuevas restricciones
+    # m2.addConstrs(gb.quicksum(camion_tercero_b[l,p,t] + camion_tercero_t[l,p,t] for p in P) <= gb.quicksum(t_ruta[l,p,t] * M for p in P)for l in L  for t in T)
+    m2.addConstrs((gb.quicksum(t_monta[l,t] for l in L)  <= cap_montacargas for t in T))
+    m2.addConstrs((t_monta[l,t] >= gb.quicksum(t_camion_bin[c,l,p,t] for c in C for p in P)  for l in L for t in T))
+    #+ gb.quicksum(camion_tercero_b[l,p,t] for p in P)
 
     VarCamion = gb.quicksum(t_camion_bin[c,l,p,t] * cap_bines[c] *kg_bin * km[l][p]*costo_camion[c] + t_camion_tolva[c,l,p,t] * cap_tolva[c] *kg_tolva * km[l][p]*costo_camion[c] for c in C for l in L for t in T for p in P)
-    TerCamion = gb.quicksum(camion_tercero_b[l,p,t] * kg_bin * km[l][p] * 100 + camion_tercero_t[l,p,t] * kg_tolva * km[l][p] * 100 for l in L for t in T for p in P)
+    TerCamion_b = gb.quicksum(camion_tercero_b[l,p,t] *36* kg_bin * km[l][p] * 1.12 *0.032 for l in L for t in T for p in P)
+    TerCamion_t = gb.quicksum(camion_tercero_t[l,p,t] *2* kg_tolva * km[l][p] * 1.12 * 0.032 for l in L for t in T for p in P)
+    # TerCamion_t = 0
 
-    # m2.setObjective(TerCamion + VarCamion)
-    # m2.setObjective(TerCamion+VarCamion)
-    # m2.Params.MIPGap = 0.02
-    # m2.update()
-    # m2.optimize()
 
-    ruta = [[[0 for t in T] for p in P] for l in L]
-    for v in m2.getVars():
 
-        if 'ruta' in v.varName:
-            _, i = v.varName.split('[')
-            i = i[:-1]
-            l, p, t = [int(n) for n in i.split(',')]
+    # ruta = [[[0 for t in T] for p in P] for l in L]
+    # for v in m2.getVars():
 
-            try:
-                ruta[l][p][t] = v.x
+    #     if 'ruta' in v.varName:
+    #         _, i = v.varName.split('[')
+    #         i = i[:-1]
+    #         l, p, t = [int(n) for n in i.split(',')]
 
-            except KeyError:
-                print("Hubo un error")
+    #         try:
+    #             ruta[l][p][t] = v.x
+
+    #         except KeyError:
+    #             print("Hubo un error")
     # print(ruta)
 
 
@@ -270,7 +286,7 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     if dia >= 7:
         m2.addConstrs((p_disp[p,t] == p_disp[p,t-1] + recepcionado[p][t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 1 and t < 7))
-        m2.addConstrs((p_disp[p,t] == p_disp[p,t-1] + p_rec[p,t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 7))
+        m2.addConstrs((p_disp[p,t] == p_disp[p,t-1] + p_rec[p,t - 7] - p_proc[p,t-1] for p in P for t in T if t >= 7))#comentar esta linea para horizonte temporal
 
     else:
         m2.addConstrs((p_disp[p,t] == 0 for p in P for t in T))
@@ -286,10 +302,57 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
     TercerizacionPlanta = gb.quicksum((p_terceros[p, t] * 1.12 * utm_kg[p]*100) for p in P for t in T)
 
-    m2.setObjective(VarCamion+TerCamion+gb.quicksum(CFD * (1 - (p_fermentando[p, t] / (cap_fermentacion[p]*1000))) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
+
+    m2.setObjective(VarCamion + TerCamion_t+TerCamion_b+gb.quicksum(CFD * (1 - (p_fermentando[p, t] / (cap_fermentacion[p]*1000))) for p in P for t in T) + VarPlanta + TercerizacionPlanta)
     m2.Params.MIPGap = 0.02
     m2.update()
     m2.optimize()
+
+    # contador = 0
+    # cont1 = 0
+    # cont2 = 0
+    # print(bines)
+    # print(tolva)
+
+    # for v in m2.getVars():
+    #     if "ctercerob" in v.VarName:
+    #         if v.x != 0:
+    #             print("Los terceros con bines:")
+    #             print(v.VarName)
+    #             print(v.x)
+        
+    #     if "ctercerot" in v.VarName:
+    #         if v.x != 0:
+    #             print("Los terceros con tolva:")
+    #             print(v.VarName)
+    #             print(v.x)
+    #     if "cambin" in v.VarName:
+    #         if v.x != 0:
+    #             cont1 += 1
+    #             # print("Los camiones con bin:")
+    #             # print(v.VarName)
+    #             # print(v.x)
+    #     if "camtolva" in v.VarName:
+    #         if v.x != 0:
+    #             cont2 += 1
+    #             # print("Los camiones con tolva:")
+    #             # print(v.VarName)
+    #             # print(v.x)
+    #     if "camion" in v.VarName:
+    #         if v.x != 0:
+    #             contador += 1
+    #             # print("Los camiones:")
+    #             # print(v.VarName)
+    #             # print(v.x)
+
+    #     if "ruta" in v.VarName:
+    #         if v.x != 0:
+    #             print(v.VarName)
+    #             print(v.x)
+    # print(contador)
+    # print(cont1)
+    # print(cont2)
+
 
 
 
@@ -390,20 +453,20 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
 
             lot_cosechadoras[lot_names[l]][f'dia {t}'] = v.x
 
-        if 'montacargas' in v.varName:
-            _, i = v.varName.split('[')
-            i = i[:-1]
-            l, t = [int(n) for n in i.split(',')]
-            if v.x != 0 or v.x != -0:
-                pass
+        # if 'montacargas' in v.varName:
+        #     _, i = v.varName.split('[')
+        #     i = i[:-1]
+        #     l, t = [int(n) for n in i.split(',')]
+        #     if v.x != 0 or v.x != -0:
+        #         pass
 
-            try:
-                lot_montas[lot_names[l]]
+        #     try:
+        #         lot_montas[lot_names[l]]
 
-            except KeyError:
-                lot_montas[lot_names[l]] = {}
+        #     except KeyError:
+        #         lot_montas[lot_names[l]] = {}
 
-            lot_montas[lot_names[l]][f'dia {t}'] = v.x
+        #     lot_montas[lot_names[l]][f'dia {t}'] = v.x
 
             
     for v in m2.getVars():
@@ -472,6 +535,21 @@ def modelo_principal(dia, disponible_cosecha = None, rec = None, disponible_plan
                     plants[nom_plant][dia + t] = v.x
             except:
                 print(v.varName, 'no tiene valor')
+        
+        if 'montacargas' in v.varName:
+            _, i = v.varName.split('[')
+            i = i[:-1]
+            l, t = [int(n) for n in i.split(',')]
+            if v.x != 0 or v.x != -0:
+                pass
+
+            try:
+                lot_montas[lot_names[l]]
+
+            except KeyError:
+                lot_montas[lot_names[l]] = {}
+
+            lot_montas[lot_names[l]][f'dia {t}'] = v.x
     if not paths:
         dict_paths = {
             join('data', 'results', 'lots.json'): lot_harvest,
