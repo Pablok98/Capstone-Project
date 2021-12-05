@@ -6,14 +6,15 @@ import datetime
 
 ###############################################################################
 cap_cuadrillas = 8 # cuantas cuadrillas podremos ocupar
+horizonte_t = 7
 ###############################################################################
 
 L = [i for i in range(290)]
-T = [i for i in range(7)]
+T = [i for i in range(horizonte_t)]
 K = [i for i in range(cap_cuadrillas)]
 C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
 P = [0,1,2,3,4]
-M = 1000000
+M = 10000000
 
 
 ###############################################################################
@@ -92,7 +93,8 @@ while contador < len(costo_camion):
 cap_montacargas = 22
 kg_bin = 486
 kg_tolva = 10000
-cantidad_tolvas = 100
+cantidad_tolvas = 12
+cantidad_bines = 200
 CFD = 10  #costo fijo diario
 penalizacion = 10
 
@@ -171,7 +173,7 @@ def conseguir_cal2(actual):
     calfinal = []
     for i in lista:
         aux1 = []
-        for j in range(actual, actual+7):
+        for j in range(actual, actual+horizonte_t):
             aux1.append(i[j])
         calfinal.append(aux1)
     # end_time = datetime.datetime.now()
