@@ -5,7 +5,7 @@ from os.path import join
 
 TOTAL_DAYS = 110
 INITIAL_DAY = 63
-
+UI = False
 
 # Modelo inicial
 DEMAND_WEIGHT = 0.2
