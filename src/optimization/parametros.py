@@ -5,7 +5,7 @@ import pandas as pd
 import datetime
 
 ###############################################################################
-cap_cuadrillas = 8 # cuantas cuadrillas podremos ocupar
+cap_cuadrillas = 11 # cuantas cuadrillas podremos ocupar
 horizonte_t = 7
 ###############################################################################
 

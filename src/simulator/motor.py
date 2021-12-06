@@ -253,10 +253,10 @@ class Wine(SimulationObject):
                         self.ent_camiones_ex.append(camion)
                         self.camiones_extra += 1
 
-                        if not lote.lift_trucks:
-                            lt = LiftTruck()
-                            lt.assign_driver(MachineDriver())
-                            lote.lift_trucks.append(lt)
+                    if not lote.lift_trucks:
+                        lt = LiftTruck()
+                        lt.assign_driver(MachineDriver())
+                        lote.lift_trucks.append(lt)
 
 
     # ========= SIMULATION CYCLE ==============================================
