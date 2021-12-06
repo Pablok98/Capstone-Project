@@ -70,8 +70,8 @@ DI = load_DI() #kg
 
 
 #p
-cap_proc = [150, 65, 100, 90, 120]  #[P1, P2, P3, P4, P5] tn/dia
-cap_fermentacion = [2500, 1250, 3500, 950, 900]  #[P1, P2, P3, P4, P5] tn
+cap_proc = [0, 65, 100, 90, 120]  #[P1, P2, P3, P4, P5] tn/dia
+cap_fermentacion = [0.0001, 1250, 3500, 950, 900]  #[P1, P2, P3, P4, P5] tn
 costo_fijo = [27000, 18000, 18700, 22500, 31500]  #UTM
 costo_procesado = [20.0, 30.8, 20.8, 27.8, 29.2]  #Ch$ /kg
 
