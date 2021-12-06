@@ -17,7 +17,7 @@ class Hopper:
         Hopper._id += 1
         self.id = Hopper._id
 
-        self.max_load = 5
+        self.max_load = 555
 
         self.crates: list[Crate] = []
         self.transport_time: Union[datetime, None] = None
@@ -71,7 +71,7 @@ class Hopper:
     def real_quality(self, crate):
         harvest = crate.time_harvested
         current = SimulationObject.current_time
-        days = (harvest - current).days
+        days = abs((harvest - current).days)
         if days > 3:
             return 0
         q = {
@@ -80,7 +80,6 @@ class Hopper:
             3: 0.8,
         }
         return crate.quality * q[days]
-
 
     def reset(self) -> None:
         self.transport_time = None

@@ -71,7 +71,7 @@ class Bin:
     def real_quality(self, crate):
         harvest = crate.time_harvested
         current = SimulationObject.current_time
-        days = (current - harvest).days
+        days = abs((current - harvest).days)
         if days > 3:
             return 0
         q = {
