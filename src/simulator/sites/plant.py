@@ -161,7 +161,9 @@ class Plant(SimulationObject):
                 unloaded += kg
             # If the truck doesn't have contents, we remove it from the plant
             if not truck.has_content:
-                self.trucks.pop(0)
+                truck = self.trucks.pop(0)
+                truck.clean()
+
             if unloaded >= rate:
                 break
 

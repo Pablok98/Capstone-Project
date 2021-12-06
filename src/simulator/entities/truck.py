@@ -40,6 +40,8 @@ class Truck(Machine):
         """
         Clears the Truck of any events or assignments it had during a day. Used when reassigned.
         """
+        for hopper in self.hoppers:
+            hopper.assigned = False
         self.hoppers = []
         self.loading_bins = True
         self.bins = []

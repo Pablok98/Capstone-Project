@@ -17,7 +17,7 @@ from params import (CANTIDAD_CUADRILLAS, COSTO_ASIGNACION_CAMIONES, COSTO_ASIGNA
                     COSTO_ASIGNACION_JORNALEROS, EXTERNAL_PLANT, SUELDO_MENSUAL_CAMIONEROS, 
                     SUELDO_MENSUAL_CUADRILLAS, SUELDO_VARIABLE_CUADRILLAS, TAMANO_CUADRILLAS,  
                     TOTAL_DAYS, TRUCK_DATA, PLANTS_DATA, INITIAL_DAY, CAMIONEROS, CONDUCTORES, 
-                    COSECHADORAS, MONTACARGAS)
+                    COSECHADORAS, MONTACARGAS, TOLVAS)
 
 
 class Wine(SimulationObject):
@@ -134,7 +134,8 @@ class Wine(SimulationObject):
             self.cosechadoras.append(Harvester())
         for _ in range(MONTACARGAS):
             self.monta_cargas.append(LiftTruck())
-
+        for _ in range(TOLVAS):
+            self.tolvas.append(Hopper())
         # TODO: Special day set
 
     def set_rain_data(self) -> None:
@@ -157,8 +158,8 @@ class Wine(SimulationObject):
                 self.asignar_jornalero(Laborer(), assignation[day_str])
 
         # Los camiones se sacan de las plantas si quedan a las 10
-        for camion in self.camiones.values():
-            camion.clean()
+        # for camion in self.camiones.values():
+        #     camion.clean()
 
         for name, lot in self.lotes.items():
             if day_str in self.assign_data.routes[name]:
@@ -169,6 +170,10 @@ class Wine(SimulationObject):
 
         for id_, camion in self.camiones.items():
             if day_str in self.assign_data.trucks[str(id_)]:
+                if camion.has_content:
+                    print("Se intentó asignar un camion que sigue descargando")
+                    continue
+
                 if not (day_str in self.assign_data.truck_type[str(id_)]):
                     self.logger.warning(f"El camion con id {id_} está asignado a un lote pero no su tipo")
                     camion.loading_bins = True
@@ -180,7 +185,6 @@ class Wine(SimulationObject):
                         break
                 else:
                     self.logger.warning("No hay camioneros para camionar")
-                    self.logger.warning("Se asignó un camionero fake igual")
                     camion.assign_driver(TruckDriver())
                 self.camiones_originales += 1
                 self.assign_truck(camion, self.assign_data.trucks[str(id_)][day_str])
@@ -189,7 +193,7 @@ class Wine(SimulationObject):
             for _ in range(int(assignation[day_str])):
                 to_assign = self.lotes[lot]
                 if not self.assign_hopper(to_assign):
-                    self.logger.warning('Se intentó asignar un tolva pero no quedan disponibles')
+                    self.logger.warning('Se intento asignar un tolva pero no quedan disponibles')
                     break
             else:
                 continue
@@ -199,7 +203,7 @@ class Wine(SimulationObject):
             for _ in range(int(assignation[day_str])):
                 to_assign = self.lotes[lot]
                 if not self.assign_harvester(to_assign):
-                    self.logger.warning('Se intentó asignar una cosechadora pero no quedan disponibles')
+                    self.logger.warning('Se intento asignar una cosechadora pero no quedan disponibles')
                     break
             else:
                 continue
@@ -209,7 +213,7 @@ class Wine(SimulationObject):
             for _ in range(int(assignation[day_str])):
                 to_assign = self.lotes[lot]
                 if not self.assign_lift_truck(to_assign):
-                    self.logger.warning('Se intentó asignar un montacarga pero no quedan disponibles')
+                    self.logger.warning('Se intento asignar un montacarga pero no quedan disponibles')
                     break
             else:
                 continue
@@ -225,19 +229,34 @@ class Wine(SimulationObject):
     def special_assignations(self):
         for lote in self.lotes.values():
             if not lote.trucks:
-                cond = (lote.laborers) or (lote.harvesters)
+                cond = (lote.laborers) or (lote.harvesters) or (lote.harvesters)
                 if cond:
-                    camion = Truck('A', 2, 36)
-                    camion.assign_driver(TruckDriver())
-                    self.assign_truck(camion, lote.name)
-                    lote.assigned_plant = self.lowest_ocupation_plant()
-                    self.ent_camiones_ex.append(camion)
-                    self.camiones_extra += 1
+                    for camion in self.camiones.values():
+                        if not camion.current_lot:
+                            for camionero in self.camioneros:
+                                if camion.assign_driver(camionero):
+                                    break
+                            else:
+                                self.logger.warning("No hay camioneros para camionar")
+                                camion.assign_driver(TruckDriver())
+                            self.camiones_originales += 1
+                            self.assign_truck(camion, lote.name)
+                            if lote.hoppers:
+                                camion.loading_bins = False
+                            break
 
-                    if not lote.lift_trucks:
-                        lt = LiftTruck()
-                        lt.assign_driver(MachineDriver())
-                        lote.lift_trucks.append(lt)
+                    else:
+                        camion = Truck('A', 2, 36)
+                        camion.assign_driver(TruckDriver())
+                        self.assign_truck(camion, lote.name)
+                        lote.assigned_plant = self.lowest_ocupation_plant()
+                        self.ent_camiones_ex.append(camion)
+                        self.camiones_extra += 1
+
+                        if not lote.lift_trucks:
+                            lt = LiftTruck()
+                            lt.assign_driver(MachineDriver())
+                            lote.lift_trucks.append(lt)
 
 
     # ========= SIMULATION CYCLE ==============================================

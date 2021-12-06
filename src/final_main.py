@@ -175,6 +175,6 @@ def optimizar(n_it, lot_data, ui, window=None):
 
 
 if __name__ == "__main__":
-    run_process(10)
+    run_process(1)
 
 
