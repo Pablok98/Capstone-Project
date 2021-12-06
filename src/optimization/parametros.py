@@ -5,7 +5,7 @@ import pandas as pd
 import datetime
 
 ###############################################################################
-cap_cuadrillas = 40 # cuantas cuadrillas podremos ocupar
+cap_cuadrillas = 11 # cuantas cuadrillas podremos ocupar
 horizonte_t = 7
 ###############################################################################
 
@@ -94,7 +94,7 @@ cap_montacargas = 22
 kg_bin = 486
 kg_tolva = 10000
 cantidad_tolvas = 24
-cantidad_bines = 200
+cantidad_bines = 1000
 CFD = 10  #costo fijo diario
 penalizacion = 10
 
