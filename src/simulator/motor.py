@@ -50,6 +50,8 @@ class Wine(SimulationObject):
         self.camiones_originales = 0
         self.camiones_extra = 0
 
+        self.ent_camiones_ex = []
+
     def run(self):
         self.instanciar_lotes(self.lot_data)
         self.set_initial_day(INITIAL_DAY)
@@ -213,19 +215,23 @@ class Wine(SimulationObject):
                 continue
             break
 
+        self.clean_bins()
         self.special_assignations()
+
+    def clean_bins(self):
+        for lot in self.lotes.values():
+            lot.bins = []
 
     def special_assignations(self):
         for lote in self.lotes.values():
             if not lote.trucks:
-                cond = (lote.laborers) or (lote.harvesters) or (lote.bins)
+                cond = (lote.laborers) or (lote.harvesters)
                 if cond:
                     camion = Truck('A', 2, 36)
                     camion.assign_driver(TruckDriver())
                     self.assign_truck(camion, lote.name)
                     lote.assigned_plant = self.lowest_ocupation_plant()
-                    print(lote.assigned_plant)
-                    print(lote.name)
+                    self.ent_camiones_ex.append(camion)
                     self.camiones_extra += 1
 
                     if not lote.lift_trucks:
@@ -266,8 +272,6 @@ class Wine(SimulationObject):
             if retorno:
                 if type(retorno) == Truck:
                     planta = self.plantas[retorno.assigned_plant]
-                    print(retorno.assigned_plant)
-                    print(prox_lote)
                     if not planta.truck_arrival(retorno):
                         retorno.assigned_plant = self.lowest_ocupation_plant()
                         planta = self.plantas[retorno.assigned_plant]
@@ -549,7 +553,15 @@ class Wine(SimulationObject):
                 costo_por_unidad = TRUCK_DATA[camion.t_type]['cost_per_km']
                 costo = costo_por_unidad * unit
                 costo_camiones += costo
-                
+
+            for camion in self.ent_camiones_ex:
+                print(costo_camiones)
+                ton = camion.total_kgs / 1000
+                unit = ton * camion.distance_travelled
+                costo_por_unidad = TRUCK_DATA[camion.t_type]['cost_per_km'] * 1.15
+                costo = costo_por_unidad * unit
+                costo_camiones += costo
+
             # Costos conductores (camioneros)
 
             meses = ceil((TOTAL_DAYS - INITIAL_DAY) / 30)

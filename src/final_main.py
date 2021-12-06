@@ -56,7 +56,7 @@ def obtener_kpis(motor, n_it):
     data.update(kpis)
 
     with open(path_kpi, "w") as file:
-        json.dump(data, file)
+        json.dump(data, file, indent=4)
 
 
 def loop_semanal(motor, n_it, window):
@@ -139,6 +139,9 @@ def iterate_opt(ctd, lot_data, ui, ventana):
         if p.UI:
             ventana.restart()
 
+    print("Simulación terminada")
+    sys.exit()
+
 
 def optimizar(n_it, lot_data, ui, window=None):
     path_logger = join('results', 'logs', f'simulation_{n_it}.log')
@@ -172,6 +175,6 @@ def optimizar(n_it, lot_data, ui, window=None):
 
 
 if __name__ == "__main__":
-    run_process(2)
+    run_process(10)
 
 
