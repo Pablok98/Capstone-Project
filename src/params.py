@@ -3,8 +3,8 @@ from os.path import join
 
 # General
 
-TOTAL_DAYS = 126
-INITIAL_DAY = 63
+TOTAL_DAYS = 180
+INITIAL_DAY = 0
 UI = False
 
 # Modelo inicial
@@ -83,7 +83,7 @@ CAMIONEROS = 25
 CONDUCTORES = 22
 COSECHADORAS = 5
 MONTACARGAS = 10
-TOLVAS = 12
+TOLVAS = 50
 
 
 # Contratos

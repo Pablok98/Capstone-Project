@@ -93,8 +93,8 @@ while contador < len(costo_camion):
 cap_montacargas = 22
 kg_bin = 486
 kg_tolva = 10000
-cantidad_tolvas = 12
-cantidad_bines = 200
+cantidad_tolvas = 50
+cantidad_bines = 1000
 CFD = 10  #costo fijo diario
 penalizacion = 10
 
