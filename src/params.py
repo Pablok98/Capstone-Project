@@ -2,7 +2,10 @@ from os.path import join
 
 
 # General
+
 TOTAL_DAYS = 180
+INITIAL_DAY = 0
+UI = False
 
 # Modelo inicial
 DEMAND_WEIGHT = 0.2
@@ -29,6 +32,8 @@ PLANTS_DATA = {
     'P5': {'ferm_cap': 900, 'prod_cap': 120, 'hopper_cap': 50, 'bin_cap': 30, 'fixed_cost': 31500 * UTM, 'var_cost': 29.2}
 }
 
+EXTERNAL_PLANT = {'var_cost': 34.496}
+
 
 # Camiones
 
@@ -39,8 +44,18 @@ TRUCK_DATA = {
     'D': {'avail_units': 7, 'hopper_cap': 1, 'bin_cap': 12, 'cost_per_km': 0.032 * UTM}
 }
 
+COSTO_ASIGNACION_CAMIONES = 15000
+
 # Jornaleros
 MAX_DIAS_TRABAJO_JORNALERO = 6
+CANTIDAD_CUADRILLAS = 11
+TAMANO_CUADRILLAS = 5
+SUELDO_MENSUAL_CUADRILLAS = 7 * UTM * TAMANO_CUADRILLAS
+SUELDO_VARIABLE_CUADRILLAS= 1 * UTM * TAMANO_CUADRILLAS
+COSTO_ASIGNACION_JORNALEROS = 2000
+
+# Camioneros
+SUELDO_MENSUAL_CAMIONEROS = 20 * UTM
 
 # Conductores
 MAX_DIAS_TRABAJO_CONDUCTORES = 5
@@ -61,3 +76,44 @@ COSTO_POR_TONELADA_TOLVA = 0.01
 TASA_DEPRECIACION_COSECHADORA = 10
 COSTO_POR_TONELADA_COSECHADORA = 0.1
 VELOCIDAD_COSECHADORA = 4000   # por hora
+COSTO_ASIGNACION_COSECHADORA = 20000
+
+# Disp
+CAMIONEROS = 25
+CONDUCTORES = 22
+COSECHADORAS = 5
+MONTACARGAS = 10
+TOLVAS = 50
+
+
+# Contratos
+CONTRACTS_DATA = {
+    '1': {'a_j': 0.9, 'c_j': 1, 'ps_j': 0},
+    '2': {'a_j': 0.95, 'c_j': 0.7, 'ps_j': 1.15},
+    '3': {'a_j': 1, 'c_j': 0.5, 'ps_j': 1.15}
+}
+
+
+PATHS_DUMP = {
+    join('data', 'results', 'lots.json'): 'harvesters',
+    join('data', 'results', 'trucks.json'): 'trucks',
+    join('data', 'results', 'cuads.json'): 'laborers',
+    join('data', 'results', 'hoppers.json'): 'hoppers',
+    join('data', 'results', 'harvesters.json'): 'harvesters',
+    join('data', 'results', 'lift.json'): 'lift_trucks',
+    join('data', 'results', 'plants.json'): 'plants',
+    join('data', 'results', 'truck_type.json'): 'truck_type'
+}
+
+PATHS_FINAL = {
+    join('results', 'lots.json'): 'harvesters',
+    join('results', 'trucks.json'): 'trucks',
+    join('results', 'cuads.json'): 'laborers',
+    join('results', 'hoppers.json'): 'hoppers',
+    join('results', 'harvesters.json'): 'harvesters',
+    join('results', 'lift.json'): 'lift_trucks',
+    join('results', 'plants.json'): 'plants',
+    join('results', 'truck_type.json'): 'truck_type',
+    join('results', 'routes.json'): 'routes'
+}
+

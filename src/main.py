@@ -1,20 +1,30 @@
+import json
+
 from files import load_initial_data, write_excel_listed, read_lot_data
 import params as p
 from simulator.motor import Wine
 from simulator.ui.ui import GUI
 import threading
 import sys
+from os.path import join
+from simulator.sim import SimulationObject
+import logging
 
-"""
-dfs = load_initial_data()
-rain_data = simulate_rain(dfs[0], p.TIME_RANGE)
-write_excel_listed(rain_data, p.RAIN_DATA_PATH)
-"""
+logging.basicConfig(filename='simulation.log', filemode='w', format='%(levelname)s - %(message)s', level=logging.INFO)
+# from modelo_test import modelo_principal
 
 ui = True
 lot_data = read_lot_data()
 winifera = Wine(lot_data, ui)
 
+
+for path, name in p.PATHS_DUMP.items():
+
+    with open(path, 'r') as file:
+        data = json.load(file)
+        winifera.assign_data.load_data(name, data)
+
+# -----------------------------
 
 if ui:
     from PyQt5.QtWidgets import QApplication
@@ -28,3 +38,6 @@ if ui:
     sys.exit(app.exec())
 else:
     winifera.run()
+
+
+# modelo_principal(winifera.current_day, winifera.grape_disp(), winifera.plant_recv(), winifera.fermented_unprocessed())

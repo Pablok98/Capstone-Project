@@ -1,5 +1,5 @@
 from .machine import Machine
-from src.params import TASA_DEPRECIACION_COSECHADORA, COSTO_POR_TONELADA_COSECHADORA, VELOCIDAD_COSECHADORA
+from params import TASA_DEPRECIACION_COSECHADORA, COSTO_POR_TONELADA_COSECHADORA, VELOCIDAD_COSECHADORA
 
 
 class Harvester(Machine):
@@ -12,3 +12,4 @@ class Harvester(Machine):
         Harvester._id += 1
         self.id = Harvester._id
         self.velocidad_cosecha = VELOCIDAD_COSECHADORA  # por hora
+        self.times_assigned = 0

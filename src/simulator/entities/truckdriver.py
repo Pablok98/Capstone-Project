@@ -1,5 +1,6 @@
 from ..entities import *
 from typing import Union
+from ..sim import SimulationObject
 
 
 class TruckDriver:
@@ -17,4 +18,10 @@ class TruckDriver:
 
     def assign_truck(self, truck: Truck) -> None:
         self.truck = truck
+        self.available = False
 
+    def unassign(self):
+        self.truck = None
+        self.available = False
+        self.weekly_days += 1
+        self.total_days += 1

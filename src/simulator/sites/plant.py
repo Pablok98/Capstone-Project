@@ -1,3 +1,4 @@
+from __future__ import annotations
 from ..sim import SimulationObject
 from ..datastruct import Batch
 from ..entities import *
@@ -38,6 +39,26 @@ class Plant(SimulationObject):
 
         self.daily_grapes = 0
 
+        self.recv_grapes = []
+
+        self.historical_grapes = []
+        # obtener los batch de toda la simulacion
+        self.historical_ferm = []
+
+    def end_day(self):
+        self.recv_grapes.append(self.daily_grapes)
+        self.daily_grapes = 0
+
+    @property
+    def fermented(self):
+        load = 0
+        for grape in self.grapes:
+            fermented = (SimulationObject.current_time - grape.date).days >= 7
+            if not fermented:
+                break
+            load += grape.kilograms
+        return load
+
     @property
     def current_load(self) -> int:
         """
@@ -52,19 +73,39 @@ class Plant(SimulationObject):
         return load
 
     @property
+    def current_perc(self):
+        return round(self.current_load / self.ferm_cap, 3)
+
+    @property
+    def can_load(self):
+        max_daily = self.daily_grape_percentage <= SimulationObject.MAX_DAILY_UNLOAD
+        # We can't unload more than the plant's capacity
+        max_cap = self.current_load < self.ferm_cap
+        if not max_cap or not max_daily:
+            return False
+        return True
+
+    @property
     def daily_grape_percentage(self) -> float:
         """
         :return: Current percentage of total capacity loaded in the day
         """
         return round(self.daily_grapes / self.ferm_cap, 3)
 
-    def truck_arrival(self, truck) -> None:
+    def truck_arrival(self, truck) -> bool:
         """
         Method to call when a truck gets to the plant.
 
         :param truck: truck to add to the plant
         """
+        # We can only unload a percentage of the max capacity (per day)
+        max_daily = self.daily_grape_percentage <= SimulationObject.MAX_DAILY_UNLOAD
+        # We can't unload more than the plant's capacity
+        max_cap = self.current_load < self.ferm_cap
+        if not max_cap or not max_daily:
+            return False
         self.trucks.append(truck)
+        return True
 
     @property
     def next_event(self) -> tuple[str, str, datetime]:
@@ -107,19 +148,24 @@ class Plant(SimulationObject):
             truck = self.trucks[0]  # Truck to unload
             rate = self.bin_cap if truck.loading_bins else self.hopper_cap  # Maximum hourly rate
 
-            print(f"Descargando camion {truck.id} en la planta {self.name}")
+            print(f"{SimulationObject.current_time} - Descargando camion {truck.id} en la planta {self.name}")
             # While we still can unload grapes, we take grape batched from the truck and store them
             # in the plant's storage
             while unloaded < rate and truck.has_content:
                 kg, quality = truck.unload()
                 batch = Batch(kg, quality, SimulationObject.current_time)
 
+                self.historical_grapes.append(batch)
                 self.grapes.append(batch)
                 self.daily_grapes += kg
                 unloaded += kg
             # If the truck doesn't have contents, we remove it from the plant
             if not truck.has_content:
-                self.trucks.pop(0)
+                truck = self.trucks.pop(0)
+                truck.clean()
+
+            if unloaded >= rate:
+                break
 
     def process_day(self) -> None:
         """
@@ -130,15 +176,16 @@ class Plant(SimulationObject):
 
         processed = 0
         # We process grape until we reach the maximum daily capacity or grape is exhausted
-        while processed < self.prod_cap:
+        while processed < self.prod_cap and self.grapes:
             # We must check if the next grape in the queue has been fermented
             fermented = (SimulationObject.current_time - self.grapes[0].date).days >= 7
-            if not self.grapes or not fermented:
+            if not fermented:
                 break
             batch = self.grapes.pop(0)
             processed += batch.kilograms
             self.total_grape += batch.kilograms
             self.total_wine += (batch.kilograms * batch.quality) * 0.55
+        self.historical_ferm.append(self.current_load)
         print(self)
 
     def resolve_event(self, event: str) -> None:

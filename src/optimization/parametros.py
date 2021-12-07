@@ -2,24 +2,33 @@ import numpy as np
 import os
 import json
 import pandas as pd
-
-L = [i for i in range(100)]
-T = [i for i in range(7)]
-K = [i for i in range(100)]
-C = [i for i in range(20)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
-P = [0,1,2,3,4]
-M = 1000000
+import datetime
 
 ###############################################################################
+cap_cuadrillas = 11 # cuantas cuadrillas podremos ocupar
+horizonte_t = 7
+###############################################################################
+
+L = [i for i in range(290)]
+T = [i for i in range(horizonte_t)]
+K = [i for i in range(cap_cuadrillas)]
+C = [i for i in range(25)]  #Camiones desde 0 hasta 25 -> 7A, 3B, 8C, 7D
+P = [0,1,2,3,4]
+M = 10000000
+
+
+###############################################################################
+recepcionado = [[0 for i in range(180)] for i in P]
+###############################################################################
+
+
+###############################################################################
+tam_cuadrillas = [5 for i in range(cap_cuadrillas)]
 ef_cos = [[4000 * 10 for t in T] for l in L]  #10 hras  ->  #kg/día                       #lt
 ef_jorn = 700 #kg/dia                                           #lt
-ef_cuad = [[5 * ef_jorn for t in T] for l in L]  #Cuadrillas de 5 personas                #lt
+ef_cuad = [[tam_cuadrillas[0] * ef_jorn for t in T] for l in L]  #Cuadrillas de 5 personas                #lt
 ###############################################################################
 
-
-###############################################################################
-cap_cuadrillas = 200 # cuantas cuadrillas podremos ocupar
-###############################################################################
 
 
 def load_km():
@@ -57,7 +66,7 @@ def load_DI():
 km = load_km() #lp
 ###############################################################################
 #l
-DI = load_DI() #tn
+DI = load_DI() #kg
 
 
 #p
@@ -75,19 +84,29 @@ cap_bines = [36, 36, 36, 36, 36, 36, 36, 32, 32, 32, 36, 36, 36, 36, 36, 36, 36,
 cap_tolva = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1]
 costo_camion = [0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.02, 0.025, 0.025, 0.025, 0.018, 0.018, 
 0.018, 0.018, 0.018, 0.018, 0.018, 0.018, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032, 0.032]  #UTM/TKM
+contador = 0
+while contador < len(costo_camion):
+    costo_camion[contador] = costo_camion[contador] / 1000 
+    contador += 1#UTM/KgKM
 
 
 cap_montacargas = 22
 kg_bin = 486
 kg_tolva = 10000
-cantidad_tolvas = 100
+cantidad_tolvas = 50
+cantidad_bines = 1000
 CFD = 10  #costo fijo diario
 penalizacion = 10
+
+UTM = 54171
+
+utm_kg = [20/UTM, 30.8/UTM, 20.8/UTM, 27.8/UTM, 29.2/UTM]
 
 
 
 
 def conseguir_cal(actual):
+    start_time = datetime.datetime.now()
     curr_dir = os.path.dirname(__file__)
     #print(curr_dir)
     parent = os.path.split(curr_dir)[0]
@@ -104,7 +123,6 @@ def conseguir_cal(actual):
 
     file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
 # print(file.head())
-
     aux = []
     for i in range(len(calidades)):
         fila = []
@@ -116,6 +134,7 @@ def conseguir_cal(actual):
                 for dato in calidades[i]:
                     fila.append(dato)
                 dia += 14
+                #break
             else:
                 fila.append(0)
             dia += 1
@@ -126,11 +145,48 @@ def conseguir_cal(actual):
         for j in range(actual, actual+7):
             aux1.append(i[j])
         calfinal.append(aux1)
-
+    end_time = datetime.datetime.now()
+    print(end_time - start_time)
     return calfinal
     #print(aux)
     #print(len(aux))
     #print(len(aux[0]))
+
+def conseguir_cal2(actual):
+    # start_time = datetime.datetime.now()
+    lista = [[0 for i in range(180)] for l in L]
+    curr_dir = os.path.dirname(__file__)
+    parent = os.path.split(curr_dir)[0]
+    with open(os.path.join(parent, 'data', 'simulated_expected_q.json')) as jsonFile:
+        jsonObject = json.load(jsonFile)
+        jsonFile.close()
+
+    calidades = list(jsonObject.values())
+
+    file = pd.read_excel(os.path.join(parent, 'data', 'datos_entregados.xlsx'), engine='openpyxl')
+
+    for i in range(len(calidades)):
+        dia_optimo = file.iloc[i]['Dia optimo cosecha']
+        inicio_veraison = dia_optimo - 7
+        for j in range(len(calidades[i])):
+            lista[i][inicio_veraison + j] = calidades[i][j]
+    calfinal = []
+    for i in lista:
+        aux1 = []
+        for j in range(actual, actual+horizonte_t):
+            aux1.append(i[j])
+        calfinal.append(aux1)
+    # end_time = datetime.datetime.now()
+    # print(end_time - start_time)
+
+    return calfinal
+    
+
+
+        
+
+# print(file.head())
+
 
 
 #print(km)

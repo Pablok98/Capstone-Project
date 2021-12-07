@@ -1,10 +1,9 @@
 from ..entities import *
 from typing import Union
 from datetime import datetime
-from src.params import TASA_DEPRECIACION_TOLVA, COSTO_POR_TONELADA_TOLVA
-
-
-Load = Union[tuple[int, float], None]
+from params import TASA_DEPRECIACION_TOLVA, COSTO_POR_TONELADA_TOLVA
+from ..sim import SimulationObject
+Load = Union["tuple[int, float]", None]
 
 
 class Hopper:
@@ -18,13 +17,15 @@ class Hopper:
         Hopper._id += 1
         self.id = Hopper._id
 
-        self.max_load = 5
+        self.max_load = 555
 
         self.crates: list[Crate] = []
         self.transport_time: Union[datetime, None] = None
 
         self.depreciation_rate = TASA_DEPRECIACION_TOLVA
         self.ton_cost = COSTO_POR_TONELADA_TOLVA
+
+        self.assigned = False
 
     @property
     def full(self) -> bool:
@@ -47,7 +48,7 @@ class Hopper:
         :param crate: Crate to load into the hopper
         """
         if self.full:
-            print(f"El tolva {self._id} esta full!")
+            SimulationObject.logger.warning(f"{SimulationObject.current_time} - El tolva {self._id} esta lleno!")
             return
         self.crates.append(crate)
 
@@ -60,12 +61,26 @@ class Hopper:
         if not self.crates:
             return
         crate = self.crates.pop(0)
-        quality = crate.quality
+        quality = self.real_quality(crate)
         kg = 18
         # If there's no more content, then we're ready for reset.
         if not self.crates:
             self.reset()
         return kg, quality
+
+    def real_quality(self, crate):
+        harvest = crate.time_harvested
+        current = SimulationObject.current_time
+        days = abs((harvest - current).days)
+        if days > 3:
+            return 0
+        q = {
+            0: 0.95,
+            1: 0.95,
+            2: 0.85,
+            3: 0.8,
+        }
+        return crate.quality * q[days]
 
     def reset(self) -> None:
         self.transport_time = None

@@ -1,15 +1,17 @@
+from __future__ import annotations
+
 import params as p
 from typing import Union
 from ..entities import *
 from ..sites import *
 from .machine import Machine
+from ..sim import SimulationObject
 
-
-Load = Union[tuple[int, float], None]
+Load = Union["tuple[int, float]", None]
 
 
 class Truck(Machine):
-    _id = 0
+    _id = -1
 
     def __init__(self, type_: str, hopper: int, bins: int):
         super().__init__(p.TASA_DEPRECIACION_TRACTOR, p.COSTO_POR_TONELADA_TRACTOR)
@@ -31,29 +33,44 @@ class Truck(Machine):
         self.distance_travelled = 0
         self.loading_bins = True  # True if the truck currently is loading bins (and not hopper)
 
+        self.total_kgs = 0
+        self.times_assigned = 0
+
     def clean(self) -> None:
         """
         Clears the Truck of any events or assignments it had during a day. Used when reassigned.
         """
+        for hopper in self.hoppers:
+            hopper.assigned = False
         self.hoppers = []
         self.loading_bins = True
-        self.driver = None
+        self.bins = []
+        if self.driver:
+            self.driver.unassign()
+            self.driver = None
         self.current_lot = None
         self.assigned_plant = None
 
-    def assign_driver(self, driver: 'TruckDriver') -> None:
+    def assign_driver(self, driver: 'TruckDriver') -> bool:
         """
         Assigns a driver to this truck. The truck can only function if it has a driver.
 
         :param driver: Driver to be assigned (can ONLY be a truck driver)
         """
+        msg = f'{SimulationObject.current_time} -> '
+        if driver.truck:
+            return False
         if driver.weekly_days < p.MAX_DIAS_TRABAJO_CONDUCTORES or self.driver:
             self.driver = driver
             driver.assign_truck(self)
-            print(f'El conductor {driver.id} fue asignado al camion {self._id}')
+            msg += f'El conductor {driver.id} fue asignado al camion {self.id}'
+            SimulationObject.logger.info(msg)
+            return True
         else:
-            print(f"El conductor {driver.id} no pudo ser asignado al camion {self.id}" +
-                  "porque excede los dias maximos de trabajo")
+            msg +=f"El conductor {driver.id} no pudo ser asignado al camion {self.id}" + \
+                  "porque excede los dias maximos de trabajo"
+            SimulationObject.logger.warning(msg)
+            return False
 
     @property
     def full(self) -> bool:
@@ -102,11 +119,20 @@ class Truck(Machine):
         # Bin unload process
         if self.loading_bins:
             bin_ = self.bins.pop()
+            
+            bin_kgs = 0
+            for crate in bin_.crates:
+                bin_kgs += 18
+
+            self.total_kgs += bin_kgs
+
             return bin_.unload()
 
         # Hopper unload process
         for hopper in self.hoppers:
             if hopper.has_content:
+                self.total_kgs += 18
+                    
                 return hopper.unload()
 
     def travel(self) -> None:
@@ -114,7 +140,11 @@ class Truck(Machine):
         Must be called when the truck travels to his assigned plant. This method will calculate
         the distance traveled and stores it.
         """
-        distance = self.current_lot.plant_distances[self.assigned_plant]
+        try:
+            distance = self.current_lot.plant_distances[self.assigned_plant]
+        except KeyError:
+            # In case the plant is the special P6
+            distance = 28
         self.distance_travelled += distance
 
     def state(self) -> dict:
