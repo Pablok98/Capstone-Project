@@ -75,6 +75,7 @@ class Hopper:
         if days > 3:
             return 0
         q = {
+            0: 0.95,
             1: 0.95,
             2: 0.85,
             3: 0.8,

@@ -3,7 +3,7 @@ from os.path import join
 
 # General
 
-TOTAL_DAYS = 110
+TOTAL_DAYS = 126
 INITIAL_DAY = 63
 UI = False
 

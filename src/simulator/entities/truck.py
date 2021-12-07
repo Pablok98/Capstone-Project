@@ -131,11 +131,7 @@ class Truck(Machine):
         # Hopper unload process
         for hopper in self.hoppers:
             if hopper.has_content:
-                hopper_kgs = 0
-                for _ in hopper.crates:
-                    self.total_kgs += 18
-
-                self.total_kgs += hopper_kgs
+                self.total_kgs += 18
                     
                 return hopper.unload()
 
@@ -148,7 +144,7 @@ class Truck(Machine):
             distance = self.current_lot.plant_distances[self.assigned_plant]
         except KeyError:
             # In case the plant is the special P6
-            distance = 20
+            distance = 28
         self.distance_travelled += distance
 
     def state(self) -> dict:
